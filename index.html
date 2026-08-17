@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Puff Paradise</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+    <div class="app-wrapper">
+        <div class="container" id="app-content">
+
+            <!-- ========================================= -->
+            <!-- ===== ГЛАВНАЯ ===== -->
+            <!-- ========================================= -->
+            <div id="page-home" class="page active">
+                <div class="app-header">
+                    <h1>💨 Puff Paradise</h1>
+                    <p>Всё для парения в одном месте</p>
+                </div>
+
+                <!-- Акции -->
+                <div id="promotions-container">
+                    <div class="loading">Загрузка акций...</div>
+                </div>
+
+                <!-- Хиты -->
+                <div class="section-header">
+                    <h2>🔥 Хиты продаж</h2>
+                    <a href="#" onclick="navigateTo('page-catalog')">Смотреть все</a>
+                </div>
+                <div class="product-grid" id="hits-grid"></div>
+
+                <!-- Новинки -->
+                <div class="section-header">
+                    <h2>✨ Новинки</h2>
+                    <a href="#" onclick="navigateTo('page-catalog')">Смотреть все</a>
+                </div>
+                <div class="product-grid" id="new-grid"></div>
+            </div>
+
+            <!-- ========================================= -->
+            <!-- ===== КАТАЛОГ ===== -->
+            <!-- ========================================= -->
+            <div id="page-catalog" class="page">
+                <div class="app-header">
+                    <h1>📋 Каталог</h1>
+                    <p>Все товары в одном месте</p>
+                </div>
+
+                <!-- Сортировка -->
+                <div class="catalog-filters">
+                    <div class="filter-section">
+                        <div class="filter-label">Сортировка</div>
+                        <div class="filter-options" id="sort-filters">
+                            <button class="filter-btn active" data-sort="default">По умолчанию</button>
+                            <button class="filter-btn" data-sort="price-asc">Сначала дешёвые</button>
+                            <button class="filter-btn" data-sort="price-desc">Сначала дорогие</button>
+                            <button class="filter-btn" data-sort="name">По названию</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Результаты -->
+                <div class="catalog-results">
+                    <span id="catalog-count">0 товаров</span>
+                    <div class="product-grid" id="catalog-grid"></div>
+                </div>
+            </div>
+
+            <!-- ========================================= -->
+            <!-- ===== КОРЗИНА ===== -->
+            <!-- ========================================= -->
+            <div id="page-cart" class="page">
+                <div class="app-header">
+                    <h1>🛒 Корзина</h1>
+                    <p>Ваши выбранные товары</p>
+                </div>
+                <div id="cart-content">
+                    <ul id="cart-items">
+                        <li class="cart-empty">Корзина пуста</li>
+                    </ul>
+                    <div class="cart-total">
+                        <span>Итого</span>
+                        <span class="total-price" id="total-price">0 BYN</span>
+                    </div>
+                    <button id="checkout-btn" disabled>📦 Оформить заказ</button>
+                </div>
+            </div>
+
+            <!-- ========================================= -->
+            <!-- ===== ПРИЗЫ ===== -->
+            <!-- ========================================= -->
+            <div id="page-prizes" class="page">
+                <div class="app-header">
+                    <h1>🎁 Призы</h1>
+                    <p>Получайте бонусы за покупки</p>
+                </div>
+                <div class="prizes-list">
+                    <div class="prize-card">
+                        <span>🌟</span>
+                        <div>
+                            <h4>5% кешбэк</h4>
+                            <p>На все заказы от 50 BYN</p>
+                        </div>
+                    </div>
+                    <div class="prize-card">
+                        <span>🎯</span>
+                        <div>
+                            <h4>Бесплатная доставка</h4>
+                            <p>При заказе от 100 BYN</p>
+                        </div>
+                    </div>
+                    <div class="prize-card">
+                        <span>🏆</span>
+                        <div>
+                            <h4>Подарок</h4>
+                            <p>Каждый 5-й заказ — бонус!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================= -->
+            <!-- ===== АДМИН-ПАНЕЛЬ ===== -->
+            <!-- ========================================= -->
+
+            <!-- АДМИН-МЕНЮ -->
+            <div id="page-admin" class="page">
+                <div class="app-header">
+                    <h1>⚙️ Админ-панель</h1>
+                    <p>Управление магазином</p>
+                </div>
+                <div class="admin-menu">
+                    <button class="admin-menu-btn" data-page="page-admin-orders">
+                        <span class="admin-menu-icon">📦</span>
+                        <span class="admin-menu-label">Заказы</span>
+                    </button>
+                    <button class="admin-menu-btn" data-page="page-admin-products">
+                        <span class="admin-menu-icon">🛍️</span>
+                        <span class="admin-menu-label">Товары</span>
+                    </button>
+                    <button class="admin-menu-btn" data-page="page-admin-categories">
+                        <span class="admin-menu-icon">📂</span>
+                        <span class="admin-menu-label">Категории</span>
+                    </button>
+                    <button class="admin-menu-btn" data-page="page-admin-brands">
+                        <span class="admin-menu-icon">🏷️</span>
+                        <span class="admin-menu-label">Бренды</span>
+                    </button>
+                    <button class="admin-menu-btn" data-page="page-admin-models">
+                        <span class="admin-menu-icon">📦</span>
+                        <span class="admin-menu-label">Модели</span>
+                    </button>
+                    <button class="admin-menu-btn" data-page="page-admin-attributes">
+                        <span class="admin-menu-icon">🏷️</span>
+                        <span class="admin-menu-label">Атрибуты</span>
+                    </button>
+                    <button class="admin-menu-btn" data-page="page-admin-promotions">
+                        <span class="admin-menu-icon">🎉</span>
+                        <span class="admin-menu-label">Акции</span>
+                    </button>
+                    <button class="admin-menu-btn" data-page="page-admin-moderators">
+                        <span class="admin-menu-icon">👥</span>
+                        <span class="admin-menu-label">Модераторы</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ЗАКАЗЫ (админка) -->
+            <div id="page-admin-orders" class="page">
+                <div class="app-header">
+                    <h1>📦 Заказы</h1>
+                    <p>Управление заказами</p>
+                </div>
+                <div id="admin-orders-list">
+                    <div class="loading">Загрузка заказов...</div>
+                </div>
+            </div>
+
+            <!-- ТОВАРЫ (админка) -->
+            <div id="page-admin-products" class="page">
+                <div class="app-header">
+                    <h1>🛍️ Товары</h1>
+                    <p>Управление каталогом</p>
+                </div>
+                
+                <!-- Фильтры в админке -->
+                <div class="admin-filters">
+                    <select id="admin-product-filter-category" class="admin-filter-select">
+                        <option value="all">Все категории</option>
+                    </select>
+                    <select id="admin-product-filter-stock" class="admin-filter-select">
+                        <option value="all">Все товары</option>
+                        <option value="in-stock">В наличии</option>
+                        <option value="out-of-stock">Нет в наличии</option>
+                    </select>
+                    <button class="admin-filter-btn" id="admin-product-filter-btn">🔍 Применить</button>
+                </div>
+
+                <button class="admin-add-btn" id="admin-add-product-btn">➕ Добавить товар</button>
+                <div id="admin-products-list">
+                    <div class="loading">Загрузка товаров...</div>
+                </div>
+            </div>
+
+            <!-- КАТЕГОРИИ (админка) -->
+            <div id="page-admin-categories" class="page">
+                <div class="app-header">
+                    <h1>📂 Категории</h1>
+                    <p>Управление категориями</p>
+                </div>
+                <button class="admin-add-btn" id="admin-add-category-btn">➕ Добавить категорию</button>
+                <div id="admin-categories-list">
+                    <div class="loading">Загрузка категорий...</div>
+                </div>
+            </div>
+
+            <!-- БРЕНДЫ (админка) -->
+            <div id="page-admin-brands" class="page">
+                <div class="app-header">
+                    <h1>🏷️ Бренды</h1>
+                    <p>Управление производителями</p>
+                </div>
+                <button class="admin-add-btn" id="admin-add-brand-btn">➕ Добавить бренд</button>
+                <div id="admin-brands-list">
+                    <div class="loading">Загрузка брендов...</div>
+                </div>
+            </div>
+
+            <!-- МОДЕЛИ (админка) -->
+            <div id="page-admin-models" class="page">
+                <div class="app-header">
+                    <h1>📦 Модели</h1>
+                    <p>Управление моделями товаров</p>
+                </div>
+                <button class="admin-add-btn" id="admin-add-model-btn">➕ Добавить модель</button>
+                <div id="admin-models-list">
+                    <div class="loading">Загрузка моделей...</div>
+                </div>
+            </div>
+
+            <!-- АТРИБУТЫ (админка) -->
+            <div id="page-admin-attributes" class="page">
+                <div class="app-header">
+                    <h1>🏷️ Атрибуты</h1>
+                    <p>Управление характеристиками товаров</p>
+                </div>
+                <button class="admin-add-btn" id="admin-add-attribute-btn">➕ Добавить атрибут</button>
+                <div id="admin-attributes-list">
+                    <div class="loading">Загрузка атрибутов...</div>
+                </div>
+            </div>
+
+            <!-- АКЦИИ (админка) -->
+            <div id="page-admin-promotions" class="page">
+                <div class="app-header">
+                    <h1>🎉 Акции</h1>
+                    <p>Управление акциями</p>
+                </div>
+                <button class="admin-add-btn" id="admin-add-promotion-btn">➕ Добавить акцию</button>
+                <div id="admin-promotions-list">
+                    <div class="loading">Загрузка акций...</div>
+                </div>
+            </div>
+
+            <!-- МОДЕРАТОРЫ (админка) -->
+            <div id="page-admin-moderators" class="page">
+                <div class="app-header">
+                    <h1>👥 Модераторы</h1>
+                    <p>Управление доступом</p>
+                </div>
+                <div class="admin-add-form">
+                    <input type="text" id="admin-add-id" placeholder="Telegram ID">
+                    <input type="text" id="admin-add-username" placeholder="Имя пользователя">
+                    <button id="admin-add-btn">➕ Добавить</button>
+                </div>
+                <div id="admin-moderators-list">
+                    <div class="loading">Загрузка модераторов...</div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ========================================= -->
+        <!-- ===== НИЖНЯЯ НАВИГАЦИЯ ===== -->
+        <!-- ========================================= -->
+        <nav class="bottom-nav">
+            <button class="nav-btn active" data-page="page-home">
+                <span class="nav-icon">🏠</span>
+                <span class="nav-label">Главная</span>
+            </button>
+            <button class="nav-btn" data-page="page-catalog">
+                <span class="nav-icon">📋</span>
+                <span class="nav-label">Каталог</span>
+            </button>
+            <button class="nav-btn" data-page="page-cart" id="nav-cart">
+                <span class="nav-icon">🛒</span>
+                <span class="nav-label">Корзина</span>
+                <span class="cart-badge hidden" id="cart-badge">0</span>
+            </button>
+            <button class="nav-btn" data-page="page-prizes">
+                <span class="nav-icon">🎁</span>
+                <span class="nav-label">Призы</span>
+            </button>
+            <button class="nav-btn admin-only" data-page="page-admin" id="nav-admin" style="display:none;">
+                <span class="nav-icon">⚙️</span>
+                <span class="nav-label">Админка</span>
+            </button>
+        </nav>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
