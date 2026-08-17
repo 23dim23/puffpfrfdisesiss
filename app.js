@@ -1084,7 +1084,7 @@ ${isHit ? '🔥 Хит' : ''} ${isNew ? '✨ Новинка' : ''}
 }
 
 // ==========================================
-// ===== УПРАВЛЕНИЕ БРЕНДАМИ =====
+// ===== УПРАВЛЕНИЕ БРЕНДАМИ (ИСПРАВЛЕНО) =====
 // ==========================================
 
 async function loadAdminBrands() {
@@ -1164,6 +1164,8 @@ async function addNewBrand() {
         if (response.ok) {
             await loadAdminBrands();
             await loadBrands();
+            // ✅ ОБНОВЛЯЕМ КАТАЛОГ
+            renderCatalog();
             tg.showPopup({
                 title: '✅ Бренд добавлен!',
                 message: `"${name}" успешно добавлен`,
@@ -1203,6 +1205,8 @@ async function deleteBrand(brandId) {
         if (response.ok) {
             await loadAdminBrands();
             await loadBrands();
+            // ✅ ОБНОВЛЯЕМ КАТАЛОГ
+            renderCatalog();
             tg.showPopup({
                 title: '✅ Бренд удалён',
                 message: 'Бренд успешно удалён',
@@ -1215,7 +1219,7 @@ async function deleteBrand(brandId) {
 }
 
 // ==========================================
-// ===== УПРАВЛЕНИЕ МОДЕЛЯМИ =====
+// ===== УПРАВЛЕНИЕ МОДЕЛЯМИ (ИСПРАВЛЕНО) =====
 // ==========================================
 
 async function loadAdminModels() {
@@ -1303,6 +1307,8 @@ async function addNewModel() {
         if (response.ok) {
             await loadAdminModels();
             await loadProductModels();
+            // ✅ ОБНОВЛЯЕМ КАТАЛОГ
+            renderCatalog();
             tg.showPopup({
                 title: '✅ Модель добавлена!',
                 message: `"${name}" успешно добавлена`,
@@ -1342,6 +1348,8 @@ async function deleteModel(modelId) {
         if (response.ok) {
             await loadAdminModels();
             await loadProductModels();
+            // ✅ ОБНОВЛЯЕМ КАТАЛОГ
+            renderCatalog();
             tg.showPopup({
                 title: '✅ Модель удалена',
                 message: 'Модель успешно удалена',
