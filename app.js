@@ -597,42 +597,79 @@ function updateBadge() {
     }
 }
 
-// ===== НАВИГАЦИЯ (ИСПРАВЛЕННАЯ) =====
+// ===== НАВИГАЦИЯ - ПОЛНОСТЬЮ ПЕРЕДЕЛАНА =====
 function navigateTo(pageId) {
-    console.log('🔄 Переход на страницу:', pageId);
+    console.log('🔄 ПЕРЕХОД НА СТРАНИЦУ:', pageId);
     
-    // Скрываем все страницы
+    // 1. Скрываем ВСЕ страницы
     document.querySelectorAll('.page').forEach(p => {
         p.classList.remove('active');
-        if (p.id.startsWith('page-admin')) {
-            p.style.display = 'none';
-        }
+        p.style.display = 'none';
+        p.style.visibility = 'hidden';
+        p.style.opacity = '0';
+        p.style.height = '0';
+        p.style.overflow = 'hidden';
+        p.style.padding = '0';
+        p.style.margin = '0';
     });
     
-    // Показываем нужную страницу
+    // 2. Показываем нужную страницу
     const target = document.getElementById(pageId);
-    if (target) {
-        target.classList.add('active');
-        if (pageId.startsWith('page-admin')) {
-            target.style.display = 'block';
-        }
-        console.log('✅ Показана страница:', pageId);
-    } else {
-        console.error('❌ Страница не найдена:', pageId);
+    if (!target) {
+        console.error('❌ СТРАНИЦА НЕ НАЙДЕНА:', pageId);
         return;
     }
     
-    // Обновляем активную кнопку
+    // 3. Принудительно показываем страницу
+    target.classList.add('active');
+    target.style.display = 'block';
+    target.style.visibility = 'visible';
+    target.style.opacity = '1';
+    target.style.height = 'auto';
+    target.style.overflow = 'visible';
+    target.style.padding = '';
+    target.style.margin = '';
+    
+    console.log('✅ СТРАНИЦА ПОКАЗАНА:', pageId);
+    console.log('📐 Высота страницы:', target.scrollHeight);
+    console.log('👁️ Видима:', window.getComputedStyle(target).display);
+    
+    // 4. Обновляем кнопки навигации
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.page === pageId);
     });
     
     currentPage = pageId;
     
-    // Загружаем данные для страниц админки
+    // 5. Для страниц админки - принудительно загружаем данные
     if (pageId.startsWith('page-admin')) {
-        console.log('🔄 Загрузка данных для:', pageId);
+        console.log('🔄 ЗАГРУЗКА ДАННЫХ ДЛЯ:', pageId);
+        
+        // Даем время на рендеринг
         setTimeout(() => {
+            // Показываем контейнеры
+            const containerMap = {
+                'page-admin-attributes': 'admin-attributes-list',
+                'page-admin-promotions': 'admin-promotions-list',
+                'page-admin-moderators': 'admin-moderators-list',
+                'page-admin-orders': 'admin-orders-list',
+                'page-admin-products': 'admin-products-list',
+                'page-admin-brands': 'admin-brands-list',
+                'page-admin-models': 'admin-models-list',
+                'page-admin-categories': 'admin-categories-list'
+            };
+            
+            const containerId = containerMap[pageId];
+            if (containerId) {
+                const container = document.getElementById(containerId);
+                if (container) {
+                    container.style.display = 'block';
+                    container.style.visibility = 'visible';
+                    console.log('📦 Контейнер показан:', containerId);
+                }
+            }
+            
+            // Загружаем данные
             switch(pageId) {
                 case 'page-admin-attributes':
                     loadAdminAttributes();
@@ -659,7 +696,7 @@ function navigateTo(pageId) {
                     loadAdminCategories();
                     break;
             }
-        }, 200);
+        }, 300);
     }
 }
 
@@ -687,13 +724,21 @@ function checkout() {
 }
 
 // ==========================================
-// ===== АДМИН-ПАНЕЛЬ =====
+// ===== АДМИН-ПАНЕЛЬ - ПЕРЕДЕЛАНЫ ВСЕ ФУНКЦИИ =====
 // ==========================================
 
 // --- Заказы ---
 async function loadAdminOrders() {
+    console.log('🔄 ЗАГРУЗКА ЗАКАЗОВ...');
     const container = document.getElementById('admin-orders-list');
-    if (!container) return;
+    if (!container) {
+        console.error('❌ Контейнер admin-orders-list не найден');
+        return;
+    }
+    
+    // Принудительно показываем контейнер
+    container.style.display = 'block';
+    container.style.visibility = 'visible';
     
     try {
         container.innerHTML = '<div class="loading">⏳ Загрузка заказов...</div>';
@@ -741,8 +786,10 @@ async function loadAdminOrders() {
                 await loadAdminOrders();
             });
         });
+        
+        console.log('✅ Заказы отображены');
     } catch (error) {
-        console.error('Error loading orders:', error);
+        console.error('❌ Ошибка загрузки заказов:', error);
         container.innerHTML = '<div class="error-message">Ошибка загрузки заказов</div>';
     }
 }
@@ -773,8 +820,15 @@ async function updateOrderStatus(orderId, status) {
 
 // --- Товары (админка) ---
 async function loadAdminProducts() {
+    console.log('🔄 ЗАГРУЗКА ТОВАРОВ...');
     const container = document.getElementById('admin-products-list');
-    if (!container) return;
+    if (!container) {
+        console.error('❌ Контейнер admin-products-list не найден');
+        return;
+    }
+    
+    container.style.display = 'block';
+    container.style.visibility = 'visible';
     
     try {
         container.innerHTML = '<div class="loading">⏳ Загрузка товаров...</div>';
@@ -843,6 +897,8 @@ async function loadAdminProducts() {
                 showEditProductForm(id);
             });
         });
+        
+        console.log('✅ Товары отображены');
     } catch (error) {
         console.error('Error loading products:', error);
         container.innerHTML = '<div class="error-message">Ошибка загрузки товаров</div>';
@@ -1148,8 +1204,12 @@ ${isHit ? '🔥 Хит' : ''} ${isNew ? '✨ Новинка' : ''}
 // ==========================================
 
 async function loadAdminBrands() {
+    console.log('🔄 ЗАГРУЗКА БРЕНДОВ...');
     const container = document.getElementById('admin-brands-list');
     if (!container) return;
+    
+    container.style.display = 'block';
+    container.style.visibility = 'visible';
     
     try {
         container.innerHTML = '<div class="loading">⏳ Загрузка брендов...</div>';
@@ -1186,6 +1246,8 @@ async function loadAdminBrands() {
                 </div>
             </div>
         `}).join('');
+        
+        console.log('✅ Бренды отображены');
     } catch (error) {
         console.error('Error loading brands:', error);
         container.innerHTML = '<div class="error-message">Ошибка загрузки брендов</div>';
@@ -1284,8 +1346,12 @@ async function deleteBrand(brandId) {
 // ==========================================
 
 async function loadAdminModels() {
+    console.log('🔄 ЗАГРУЗКА МОДЕЛЕЙ...');
     const container = document.getElementById('admin-models-list');
     if (!container) return;
+    
+    container.style.display = 'block';
+    container.style.visibility = 'visible';
     
     try {
         container.innerHTML = '<div class="loading">⏳ Загрузка моделей...</div>';
@@ -1324,6 +1390,8 @@ async function loadAdminModels() {
                 </div>
             </div>
         `}).join('');
+        
+        console.log('✅ Модели отображены');
     } catch (error) {
         console.error('Error loading models:', error);
         container.innerHTML = '<div class="error-message">Ошибка загрузки моделей</div>';
@@ -1424,16 +1492,20 @@ async function deleteModel(modelId) {
 }
 
 // ==========================================
-// ===== АТРИБУТЫ (АДМИНКА) - ИСПРАВЛЕННАЯ =====
+// ===== АТРИБУТЫ (АДМИНКА) =====
 // ==========================================
 
 async function loadAdminAttributes() {
-    console.log('🔄 Загрузка атрибутов...');
+    console.log('🔄 ЗАГРУЗКА АТРИБУТОВ...');
     
     // Принудительно показываем страницу
     const page = document.getElementById('page-admin-attributes');
     if (page) {
         page.style.display = 'block';
+        page.style.visibility = 'visible';
+        page.style.opacity = '1';
+        page.style.height = 'auto';
+        page.style.overflow = 'visible';
         page.classList.add('active');
         console.log('✅ Страница атрибутов показана принудительно');
     }
@@ -1443,6 +1515,9 @@ async function loadAdminAttributes() {
         console.error('❌ Контейнер admin-attributes-list не найден');
         return;
     }
+    
+    container.style.display = 'block';
+    container.style.visibility = 'visible';
     
     try {
         container.innerHTML = '<div class="loading">⏳ Загрузка атрибутов...</div>';
@@ -1457,6 +1532,7 @@ async function loadAdminAttributes() {
         if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         const data = await response.json();
         console.log('📦 Загружено атрибутов:', data.length);
+        console.log('📦 Данные атрибутов:', data);
         
         productAttributes = data;
         
@@ -1570,16 +1646,19 @@ async function deleteAttribute(attributeId) {
 }
 
 // ==========================================
-// ===== АКЦИИ (АДМИНКА) - ИСПРАВЛЕННАЯ =====
+// ===== АКЦИИ (АДМИНКА) =====
 // ==========================================
 
 async function loadAdminPromotions() {
-    console.log('🔄 Загрузка акций...');
+    console.log('🔄 ЗАГРУЗКА АКЦИЙ...');
     
-    // Принудительно показываем страницу
     const page = document.getElementById('page-admin-promotions');
     if (page) {
         page.style.display = 'block';
+        page.style.visibility = 'visible';
+        page.style.opacity = '1';
+        page.style.height = 'auto';
+        page.style.overflow = 'visible';
         page.classList.add('active');
         console.log('✅ Страница акций показана принудительно');
     }
@@ -1589,6 +1668,9 @@ async function loadAdminPromotions() {
         console.error('❌ Контейнер admin-promotions-list не найден');
         return;
     }
+    
+    container.style.display = 'block';
+    container.style.visibility = 'visible';
     
     try {
         container.innerHTML = '<div class="loading">⏳ Загрузка акций...</div>';
@@ -1603,6 +1685,7 @@ async function loadAdminPromotions() {
         if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         const data = await response.json();
         console.log('📦 Загружено акций:', data.length);
+        console.log('📦 Данные акций:', data);
         
         promotions = data;
         
@@ -1718,16 +1801,19 @@ async function deletePromotion(promotionId) {
 }
 
 // ==========================================
-// ===== МОДЕРАТОРЫ (АДМИНКА) - ИСПРАВЛЕННАЯ =====
+// ===== МОДЕРАТОРЫ (АДМИНКА) =====
 // ==========================================
 
 async function loadAdmins() {
-    console.log('🔄 Загрузка модераторов...');
+    console.log('🔄 ЗАГРУЗКА МОДЕРАТОРОВ...');
     
-    // Принудительно показываем страницу
     const page = document.getElementById('page-admin-moderators');
     if (page) {
         page.style.display = 'block';
+        page.style.visibility = 'visible';
+        page.style.opacity = '1';
+        page.style.height = 'auto';
+        page.style.overflow = 'visible';
         page.classList.add('active');
         console.log('✅ Страница модераторов показана принудительно');
     }
@@ -1737,6 +1823,9 @@ async function loadAdmins() {
         console.error('❌ Контейнер admin-moderators-list не найден');
         return;
     }
+    
+    container.style.display = 'block';
+    container.style.visibility = 'visible';
     
     try {
         container.innerHTML = '<div class="loading">⏳ Загрузка модераторов...</div>';
@@ -1751,6 +1840,7 @@ async function loadAdmins() {
         if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         const data = await response.json();
         console.log('📦 Загружено модераторов:', data.length);
+        console.log('📦 Данные модераторов:', data);
         
         if (data.length === 0) {
             container.innerHTML = '<div class="empty-message">Нет модераторов</div>';
@@ -1857,8 +1947,12 @@ async function removeAdmin(adminId) {
 
 // --- Категории (админка) ---
 async function loadAdminCategories() {
+    console.log('🔄 ЗАГРУЗКА КАТЕГОРИЙ...');
     const container = document.getElementById('admin-categories-list');
     if (!container) return;
+    
+    container.style.display = 'block';
+    container.style.visibility = 'visible';
     
     container.innerHTML = `
         <div class="admin-categories-fixed">
@@ -1884,6 +1978,8 @@ async function loadAdminCategories() {
             `).join('')}
         </div>
     `;
+    
+    console.log('✅ Категории отображены');
 }
 
 async function addNewCategory() {
@@ -1899,17 +1995,25 @@ async function addNewCategory() {
 // ==========================================
 
 document.addEventListener('DOMContentLoaded', async () => {
-    console.log('🚀 Инициализация приложения...');
+    console.log('🚀 ИНИЦИАЛИЗАЦИЯ ПРИЛОЖЕНИЯ...');
+    console.log('📱 Telegram WebApp:', window.Telegram.WebApp);
+    console.log('👤 Пользователь:', window.Telegram.WebApp.initDataUnsafe?.user);
     
     isAdmin = await checkAdmin();
     console.log('👑 isAdmin:', isAdmin);
     
+    // Показываем кнопку админки
     const adminNavBtn = document.getElementById('nav-admin');
-    if (adminNavBtn && isAdmin) {
-        adminNavBtn.style.display = 'flex';
-        console.log('✅ Кнопка админки показана');
+    if (adminNavBtn) {
+        if (isAdmin) {
+            adminNavBtn.style.display = 'flex';
+            console.log('✅ Кнопка админки показана');
+        } else {
+            console.log('⚠️ Пользователь не админ, кнопка скрыта');
+        }
     }
     
+    // Загружаем основные данные
     await loadMainCategories();
     await loadBrands();
     await loadProductModels();
@@ -1919,31 +2023,35 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     setupSortFilters();
     
+    // Навигация по нижнему меню
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const page = btn.dataset.page;
             if (page) {
-                console.log('🔽 Навигация к:', page);
+                console.log('🔽 Клик по навигации:', page);
                 navigateTo(page);
             }
         });
     });
     
+    // Навигация по админ-меню
     document.querySelectorAll('.admin-menu-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const page = btn.dataset.page;
             if (page) {
-                console.log('⚙️ Админ-навигация к:', page);
+                console.log('⚙️ Клик по админ-меню:', page);
                 navigateTo(page);
             }
         });
     });
     
+    // Кнопка оформления заказа
     const checkoutBtn = document.getElementById('checkout-btn');
     if (checkoutBtn) {
         checkoutBtn.addEventListener('click', checkout);
     }
     
+    // Кнопки добавления
     if (isAdmin) {
         document.getElementById('admin-add-category-btn')?.addEventListener('click', addNewCategory);
         document.getElementById('admin-add-product-btn')?.addEventListener('click', addNewProduct);
@@ -1957,7 +2065,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateCartUI();
     updateBadge();
     
-    console.log('✅ Инициализация завершена');
+    console.log('✅ ИНИЦИАЛИЗАЦИЯ ЗАВЕРШЕНА');
 });
 
 tg.onEvent('mainButtonClicked', checkout);
