@@ -174,6 +174,9 @@
                     <h1>📦 Заказы</h1>
                     <p>Управление заказами</p>
                 </div>
+                <button class="admin-reload-btn" onclick="loadAdminOrders()" style="margin-bottom:10px; padding:8px 16px; background:#667eea; color:white; border:none; border-radius:8px; cursor:pointer; width:100%; font-weight:600;">
+                    🔄 Принудительно загрузить заказы
+                </button>
                 <div id="admin-orders-list">
                     <div class="loading">Загрузка заказов...</div>
                 </div>
@@ -199,6 +202,9 @@
                     <button class="admin-filter-btn" id="admin-product-filter-btn">🔍 Применить</button>
                 </div>
 
+                <button class="admin-reload-btn" onclick="loadAdminProducts()" style="margin-bottom:10px; padding:8px 16px; background:#667eea; color:white; border:none; border-radius:8px; cursor:pointer; width:100%; font-weight:600;">
+                    🔄 Принудительно загрузить товары
+                </button>
                 <button class="admin-add-btn" id="admin-add-product-btn">➕ Добавить товар</button>
                 <div id="admin-products-list">
                     <div class="loading">Загрузка товаров...</div>
@@ -211,6 +217,9 @@
                     <h1>📂 Категории</h1>
                     <p>Управление категориями</p>
                 </div>
+                <button class="admin-reload-btn" onclick="loadAdminCategories()" style="margin-bottom:10px; padding:8px 16px; background:#667eea; color:white; border:none; border-radius:8px; cursor:pointer; width:100%; font-weight:600;">
+                    🔄 Принудительно загрузить категории
+                </button>
                 <button class="admin-add-btn" id="admin-add-category-btn">➕ Добавить категорию</button>
                 <div id="admin-categories-list">
                     <div class="loading">Загрузка категорий...</div>
@@ -223,6 +232,9 @@
                     <h1>🏷️ Бренды</h1>
                     <p>Управление производителями</p>
                 </div>
+                <button class="admin-reload-btn" onclick="loadAdminBrands()" style="margin-bottom:10px; padding:8px 16px; background:#667eea; color:white; border:none; border-radius:8px; cursor:pointer; width:100%; font-weight:600;">
+                    🔄 Принудительно загрузить бренды
+                </button>
                 <button class="admin-add-btn" id="admin-add-brand-btn">➕ Добавить бренд</button>
                 <div id="admin-brands-list">
                     <div class="loading">Загрузка брендов...</div>
@@ -235,6 +247,9 @@
                     <h1>📦 Модели</h1>
                     <p>Управление моделями товаров</p>
                 </div>
+                <button class="admin-reload-btn" onclick="loadAdminModels()" style="margin-bottom:10px; padding:8px 16px; background:#667eea; color:white; border:none; border-radius:8px; cursor:pointer; width:100%; font-weight:600;">
+                    🔄 Принудительно загрузить модели
+                </button>
                 <button class="admin-add-btn" id="admin-add-model-btn">➕ Добавить модель</button>
                 <div id="admin-models-list">
                     <div class="loading">Загрузка моделей...</div>
@@ -247,6 +262,9 @@
                     <h1>🏷️ Атрибуты</h1>
                     <p>Управление характеристиками товаров</p>
                 </div>
+                <button class="admin-reload-btn" onclick="loadAdminAttributes()" style="margin-bottom:10px; padding:8px 16px; background:#667eea; color:white; border:none; border-radius:8px; cursor:pointer; width:100%; font-weight:600;">
+                    🔄 Принудительно загрузить атрибуты
+                </button>
                 <button class="admin-add-btn" id="admin-add-attribute-btn">➕ Добавить атрибут</button>
                 <div id="admin-attributes-list">
                     <div class="loading">Загрузка атрибутов...</div>
@@ -259,6 +277,9 @@
                     <h1>🎉 Акции</h1>
                     <p>Управление акциями</p>
                 </div>
+                <button class="admin-reload-btn" onclick="loadAdminPromotions()" style="margin-bottom:10px; padding:8px 16px; background:#667eea; color:white; border:none; border-radius:8px; cursor:pointer; width:100%; font-weight:600;">
+                    🔄 Принудительно загрузить акции
+                </button>
                 <button class="admin-add-btn" id="admin-add-promotion-btn">➕ Добавить акцию</button>
                 <div id="admin-promotions-list">
                     <div class="loading">Загрузка акций...</div>
@@ -271,6 +292,9 @@
                     <h1>👥 Модераторы</h1>
                     <p>Управление доступом</p>
                 </div>
+                <button class="admin-reload-btn" onclick="loadAdmins()" style="margin-bottom:10px; padding:8px 16px; background:#667eea; color:white; border:none; border-radius:8px; cursor:pointer; width:100%; font-weight:600;">
+                    🔄 Принудительно загрузить модераторов
+                </button>
                 <div class="admin-add-form">
                     <input type="text" id="admin-add-id" placeholder="Telegram ID">
                     <input type="text" id="admin-add-username" placeholder="Имя пользователя">

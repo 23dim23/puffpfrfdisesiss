@@ -2,10 +2,20 @@
 const tg = window.Telegram.WebApp;
 tg.expand();
 
+// ===== ДИАГНОСТИКА =====
+console.log('🔍 ДИАГНОСТИКА:');
+console.log('📱 initData:', window.Telegram.WebApp.initData);
+console.log('👤 initDataUnsafe:', window.Telegram.WebApp.initDataUnsafe);
+console.log('📱 platform:', window.Telegram.WebApp.platform);
+console.log('📱 version:', window.Telegram.WebApp.version);
+
 // ===== ПОДКЛЮЧЕНИЕ К SUPABASE =====
 const SUPABASE_URL = 'https://prtwcgqidlivkaanbowl.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_XxBLBacZddir7xEUUYsjdA_RdH1NnZz';
 const SUPABASE_SERVICE_ROLE = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBydHdjZ3FpZGxpdmthYW5ib3dsIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4Njc3MzcwNiwiZXhwIjoyMTAyMzQ5NzA2fQ.dvZAnH78ThbtWUTcn9mwveBXhV4RtyefUeFit4mHEUI';
+
+// Используем SERVICE_ROLE для всех запросов (как ты просил)
+const SUPABASE_KEY = SUPABASE_SERVICE_ROLE;
 
 // ===== ФИКСИРОВАННЫЕ КАТЕГОРИИ =====
 const FIXED_CATEGORIES = [
@@ -55,8 +65,8 @@ async function checkAdmin() {
 
         const response = await fetch(`${SUPABASE_URL}/rest/v1/admins?select=*&id=eq.${user.id}`, {
             headers: {
-                'apikey': SUPABASE_ANON_KEY,
-                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`
             }
         });
 
@@ -88,8 +98,8 @@ async function loadBrands() {
     try {
         const response = await fetch(`${SUPABASE_URL}/rest/v1/brands?select=*&order=sort_order.asc`, {
             headers: {
-                'apikey': SUPABASE_ANON_KEY,
-                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`
             }
         });
         
@@ -108,8 +118,8 @@ async function loadProductModels() {
     try {
         const response = await fetch(`${SUPABASE_URL}/rest/v1/product_models?select=*&order=sort_order.asc`, {
             headers: {
-                'apikey': SUPABASE_ANON_KEY,
-                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`
             }
         });
         
@@ -128,8 +138,8 @@ async function loadProductAttributes() {
     try {
         const response = await fetch(`${SUPABASE_URL}/rest/v1/product_attributes?select=*&order=sort_order.asc`, {
             headers: {
-                'apikey': SUPABASE_ANON_KEY,
-                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`
             }
         });
         
@@ -148,8 +158,8 @@ async function loadProductsFromSupabase() {
     try {
         const response = await fetch(`${SUPABASE_URL}/rest/v1/products?select=*`, {
             headers: {
-                'apikey': SUPABASE_ANON_KEY,
-                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`
             }
         });
         
@@ -191,8 +201,8 @@ async function loadPromotionsFromSupabase() {
     try {
         const response = await fetch(`${SUPABASE_URL}/rest/v1/promotions?select=*`, {
             headers: {
-                'apikey': SUPABASE_ANON_KEY,
-                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`
             }
         });
         
@@ -597,55 +607,55 @@ function updateBadge() {
     }
 }
 
-// ===== НАВИГАЦИЯ - ПОЛНОСТЬЮ ПЕРЕДЕЛАНА =====
+// ===== НАВИГАЦИЯ =====
 function navigateTo(pageId) {
     console.log('🔄 ПЕРЕХОД НА СТРАНИЦУ:', pageId);
     
-    // 1. Скрываем ВСЕ страницы
+    // Скрываем все страницы
     document.querySelectorAll('.page').forEach(p => {
         p.classList.remove('active');
-        p.style.display = 'none';
-        p.style.visibility = 'hidden';
-        p.style.opacity = '0';
-        p.style.height = '0';
-        p.style.overflow = 'hidden';
-        p.style.padding = '0';
-        p.style.margin = '0';
+        if (p.id.startsWith('page-admin')) {
+            p.style.display = 'none';
+            p.style.visibility = 'hidden';
+            p.style.opacity = '0';
+            p.style.height = '0';
+            p.style.overflow = 'hidden';
+            p.style.padding = '0';
+            p.style.margin = '0';
+        }
     });
     
-    // 2. Показываем нужную страницу
+    // Показываем нужную страницу
     const target = document.getElementById(pageId);
     if (!target) {
         console.error('❌ СТРАНИЦА НЕ НАЙДЕНА:', pageId);
         return;
     }
     
-    // 3. Принудительно показываем страницу
     target.classList.add('active');
-    target.style.display = 'block';
-    target.style.visibility = 'visible';
-    target.style.opacity = '1';
-    target.style.height = 'auto';
-    target.style.overflow = 'visible';
-    target.style.padding = '';
-    target.style.margin = '';
+    if (pageId.startsWith('page-admin')) {
+        target.style.display = 'block';
+        target.style.visibility = 'visible';
+        target.style.opacity = '1';
+        target.style.height = 'auto';
+        target.style.overflow = 'visible';
+        target.style.padding = '';
+        target.style.margin = '';
+    }
     
     console.log('✅ СТРАНИЦА ПОКАЗАНА:', pageId);
-    console.log('📐 Высота страницы:', target.scrollHeight);
-    console.log('👁️ Видима:', window.getComputedStyle(target).display);
     
-    // 4. Обновляем кнопки навигации
+    // Обновляем кнопки
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.page === pageId);
     });
     
     currentPage = pageId;
     
-    // 5. Для страниц админки - принудительно загружаем данные
+    // Загружаем данные для админ-страниц
     if (pageId.startsWith('page-admin')) {
         console.log('🔄 ЗАГРУЗКА ДАННЫХ ДЛЯ:', pageId);
         
-        // Даем время на рендеринг
         setTimeout(() => {
             // Показываем контейнеры
             const containerMap = {
@@ -724,7 +734,7 @@ function checkout() {
 }
 
 // ==========================================
-// ===== АДМИН-ПАНЕЛЬ - ПЕРЕДЕЛАНЫ ВСЕ ФУНКЦИИ =====
+// ===== АДМИН-ПАНЕЛЬ =====
 // ==========================================
 
 // --- Заказы ---
@@ -736,7 +746,6 @@ async function loadAdminOrders() {
         return;
     }
     
-    // Принудительно показываем контейнер
     container.style.display = 'block';
     container.style.visibility = 'visible';
     
@@ -745,8 +754,8 @@ async function loadAdminOrders() {
         
         const response = await fetch(`${SUPABASE_URL}/rest/v1/orders?select=*&order=created_at.desc`, {
             headers: {
-                'apikey': SUPABASE_ANON_KEY,
-                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`
             }
         });
         
@@ -786,10 +795,8 @@ async function loadAdminOrders() {
                 await loadAdminOrders();
             });
         });
-        
-        console.log('✅ Заказы отображены');
     } catch (error) {
-        console.error('❌ Ошибка загрузки заказов:', error);
+        console.error('Error loading orders:', error);
         container.innerHTML = '<div class="error-message">Ошибка загрузки заказов</div>';
     }
 }
@@ -799,8 +806,8 @@ async function updateOrderStatus(orderId, status) {
         const response = await fetch(`${SUPABASE_URL}/rest/v1/orders?id=eq.${orderId}`, {
             method: 'PATCH',
             headers: {
-                'apikey': SUPABASE_SERVICE_ROLE,
-                'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE}`,
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({ status })
@@ -835,8 +842,8 @@ async function loadAdminProducts() {
         
         const response = await fetch(`${SUPABASE_URL}/rest/v1/products?select=*`, {
             headers: {
-                'apikey': SUPABASE_ANON_KEY,
-                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`
             }
         });
         
@@ -897,8 +904,6 @@ async function loadAdminProducts() {
                 showEditProductForm(id);
             });
         });
-        
-        console.log('✅ Товары отображены');
     } catch (error) {
         console.error('Error loading products:', error);
         container.innerHTML = '<div class="error-message">Ошибка загрузки товаров</div>';
@@ -910,8 +915,8 @@ async function toggleStock(productId, checked) {
         const response = await fetch(`${SUPABASE_URL}/rest/v1/products?id=eq.${productId}`, {
             method: 'PATCH',
             headers: {
-                'apikey': SUPABASE_SERVICE_ROLE,
-                'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE}`,
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({ in_stock: checked })
@@ -936,8 +941,8 @@ async function deleteProduct(productId) {
         const response = await fetch(`${SUPABASE_URL}/rest/v1/products?id=eq.${productId}`, {
             method: 'DELETE',
             headers: {
-                'apikey': SUPABASE_SERVICE_ROLE,
-                'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE}`
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`
             }
         });
         
@@ -980,8 +985,8 @@ async function updateProduct(productId, data) {
         const response = await fetch(`${SUPABASE_URL}/rest/v1/products?id=eq.${productId}`, {
             method: 'PATCH',
             headers: {
-                'apikey': SUPABASE_SERVICE_ROLE,
-                'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE}`,
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(data)
@@ -1153,8 +1158,8 @@ ${isHit ? '🔥 Хит' : ''} ${isNew ? '✨ Новинка' : ''}
         const response = await fetch(`${SUPABASE_URL}/rest/v1/products`, {
             method: 'POST',
             headers: {
-                'apikey': SUPABASE_SERVICE_ROLE,
-                'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE}`,
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
@@ -1216,8 +1221,8 @@ async function loadAdminBrands() {
         
         const response = await fetch(`${SUPABASE_URL}/rest/v1/brands?select=*&order=sort_order.asc`, {
             headers: {
-                'apikey': SUPABASE_ANON_KEY,
-                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`
             }
         });
         
@@ -1246,8 +1251,6 @@ async function loadAdminBrands() {
                 </div>
             </div>
         `}).join('');
-        
-        console.log('✅ Бренды отображены');
     } catch (error) {
         console.error('Error loading brands:', error);
         container.innerHTML = '<div class="error-message">Ошибка загрузки брендов</div>';
@@ -1274,8 +1277,8 @@ async function addNewBrand() {
         const response = await fetch(`${SUPABASE_URL}/rest/v1/brands`, {
             method: 'POST',
             headers: {
-                'apikey': SUPABASE_SERVICE_ROLE,
-                'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE}`,
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
@@ -1321,8 +1324,8 @@ async function deleteBrand(brandId) {
         const response = await fetch(`${SUPABASE_URL}/rest/v1/brands?id=eq.${brandId}`, {
             method: 'DELETE',
             headers: {
-                'apikey': SUPABASE_SERVICE_ROLE,
-                'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE}`
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`
             }
         });
         
@@ -1358,8 +1361,8 @@ async function loadAdminModels() {
         
         const response = await fetch(`${SUPABASE_URL}/rest/v1/product_models?select=*&order=sort_order.asc`, {
             headers: {
-                'apikey': SUPABASE_ANON_KEY,
-                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`
             }
         });
         
@@ -1390,8 +1393,6 @@ async function loadAdminModels() {
                 </div>
             </div>
         `}).join('');
-        
-        console.log('✅ Модели отображены');
     } catch (error) {
         console.error('Error loading models:', error);
         container.innerHTML = '<div class="error-message">Ошибка загрузки моделей</div>';
@@ -1423,8 +1424,8 @@ async function addNewModel() {
         const response = await fetch(`${SUPABASE_URL}/rest/v1/product_models`, {
             method: 'POST',
             headers: {
-                'apikey': SUPABASE_SERVICE_ROLE,
-                'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE}`,
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
@@ -1471,8 +1472,8 @@ async function deleteModel(modelId) {
         const response = await fetch(`${SUPABASE_URL}/rest/v1/product_models?id=eq.${modelId}`, {
             method: 'DELETE',
             headers: {
-                'apikey': SUPABASE_SERVICE_ROLE,
-                'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE}`
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`
             }
         });
         
@@ -1498,7 +1499,6 @@ async function deleteModel(modelId) {
 async function loadAdminAttributes() {
     console.log('🔄 ЗАГРУЗКА АТРИБУТОВ...');
     
-    // Принудительно показываем страницу
     const page = document.getElementById('page-admin-attributes');
     if (page) {
         page.style.display = 'block';
@@ -1524,8 +1524,8 @@ async function loadAdminAttributes() {
         
         const response = await fetch(`${SUPABASE_URL}/rest/v1/product_attributes?select=*&order=sort_order.asc`, {
             headers: {
-                'apikey': SUPABASE_ANON_KEY,
-                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`
             }
         });
         
@@ -1580,8 +1580,8 @@ async function addNewAttribute() {
         const response = await fetch(`${SUPABASE_URL}/rest/v1/product_attributes`, {
             method: 'POST',
             headers: {
-                'apikey': SUPABASE_SERVICE_ROLE,
-                'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE}`,
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
@@ -1626,8 +1626,8 @@ async function deleteAttribute(attributeId) {
         const response = await fetch(`${SUPABASE_URL}/rest/v1/product_attributes?id=eq.${attributeId}`, {
             method: 'DELETE',
             headers: {
-                'apikey': SUPABASE_SERVICE_ROLE,
-                'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE}`
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`
             }
         });
         
@@ -1677,8 +1677,8 @@ async function loadAdminPromotions() {
         
         const response = await fetch(`${SUPABASE_URL}/rest/v1/promotions?select=*&order=created_at.desc`, {
             headers: {
-                'apikey': SUPABASE_ANON_KEY,
-                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`
             }
         });
         
@@ -1735,8 +1735,8 @@ async function addNewPromotion() {
         const response = await fetch(`${SUPABASE_URL}/rest/v1/promotions`, {
             method: 'POST',
             headers: {
-                'apikey': SUPABASE_SERVICE_ROLE,
-                'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE}`,
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
@@ -1781,8 +1781,8 @@ async function deletePromotion(promotionId) {
         const response = await fetch(`${SUPABASE_URL}/rest/v1/promotions?id=eq.${promotionId}`, {
             method: 'DELETE',
             headers: {
-                'apikey': SUPABASE_SERVICE_ROLE,
-                'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE}`
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`
             }
         });
         
@@ -1832,8 +1832,8 @@ async function loadAdmins() {
         
         const response = await fetch(`${SUPABASE_URL}/rest/v1/admins?select=*`, {
             headers: {
-                'apikey': SUPABASE_ANON_KEY,
-                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`
             }
         });
         
@@ -1881,8 +1881,8 @@ async function addAdmin() {
         const response = await fetch(`${SUPABASE_URL}/rest/v1/admins`, {
             method: 'POST',
             headers: {
-                'apikey': SUPABASE_SERVICE_ROLE,
-                'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE}`,
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
@@ -1927,8 +1927,8 @@ async function removeAdmin(adminId) {
         const response = await fetch(`${SUPABASE_URL}/rest/v1/admins?id=eq.${adminId}`, {
             method: 'DELETE',
             headers: {
-                'apikey': SUPABASE_SERVICE_ROLE,
-                'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE}`
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`
             }
         });
         
@@ -1978,8 +1978,6 @@ async function loadAdminCategories() {
             `).join('')}
         </div>
     `;
-    
-    console.log('✅ Категории отображены');
 }
 
 async function addNewCategory() {
@@ -1996,24 +1994,19 @@ async function addNewCategory() {
 
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('🚀 ИНИЦИАЛИЗАЦИЯ ПРИЛОЖЕНИЯ...');
-    console.log('📱 Telegram WebApp:', window.Telegram.WebApp);
-    console.log('👤 Пользователь:', window.Telegram.WebApp.initDataUnsafe?.user);
+    console.log('📱 initData:', window.Telegram.WebApp.initData);
+    console.log('👤 initDataUnsafe:', window.Telegram.WebApp.initDataUnsafe);
+    console.log('📱 platform:', window.Telegram.WebApp.platform);
     
     isAdmin = await checkAdmin();
     console.log('👑 isAdmin:', isAdmin);
     
-    // Показываем кнопку админки
     const adminNavBtn = document.getElementById('nav-admin');
-    if (adminNavBtn) {
-        if (isAdmin) {
-            adminNavBtn.style.display = 'flex';
-            console.log('✅ Кнопка админки показана');
-        } else {
-            console.log('⚠️ Пользователь не админ, кнопка скрыта');
-        }
+    if (adminNavBtn && isAdmin) {
+        adminNavBtn.style.display = 'flex';
+        console.log('✅ Кнопка админки показана');
     }
     
-    // Загружаем основные данные
     await loadMainCategories();
     await loadBrands();
     await loadProductModels();
@@ -2023,7 +2016,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     setupSortFilters();
     
-    // Навигация по нижнему меню
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const page = btn.dataset.page;
@@ -2034,7 +2026,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
     
-    // Навигация по админ-меню
     document.querySelectorAll('.admin-menu-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const page = btn.dataset.page;
@@ -2045,13 +2036,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
     
-    // Кнопка оформления заказа
     const checkoutBtn = document.getElementById('checkout-btn');
     if (checkoutBtn) {
         checkoutBtn.addEventListener('click', checkout);
     }
     
-    // Кнопки добавления
     if (isAdmin) {
         document.getElementById('admin-add-category-btn')?.addEventListener('click', addNewCategory);
         document.getElementById('admin-add-product-btn')?.addEventListener('click', addNewProduct);
