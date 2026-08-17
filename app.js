@@ -599,13 +599,33 @@ function updateBadge() {
     }
 }
 
-// ===== НАВИГАЦИЯ =====
+// ===== НАВИГАЦИЯ (ИСПРАВЛЕННАЯ) =====
 function navigateTo(pageId) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    console.log('🔄 Переход на страницу:', pageId);
     
+    // Скрываем все страницы
+    document.querySelectorAll('.page').forEach(p => {
+        p.classList.remove('active');
+        // Скрываем все страницы админки
+        if (p.id.startsWith('page-admin')) {
+            p.style.display = 'none';
+        }
+    });
+    
+    // Показываем нужную страницу
     const target = document.getElementById(pageId);
-    if (target) target.classList.add('active');
+    if (target) {
+        target.classList.add('active');
+        // Показываем страницу админки
+        if (pageId.startsWith('page-admin')) {
+            target.style.display = 'block';
+        }
+        console.log('✅ Показана страница:', pageId);
+    } else {
+        console.error('❌ Страница не найдена:', pageId);
+    }
     
+    // Обновляем активную кнопку в нижнем меню
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.page === pageId);
     });
@@ -1807,17 +1827,22 @@ async function addNewCategory() {
 }
 
 // ==========================================
-// ===== ИНИЦИАЛИЗАЦИЯ =====
+// ===== ИНИЦИАЛИЗАЦИЯ (ИСПРАВЛЕННАЯ) =====
 // ==========================================
 
 document.addEventListener('DOMContentLoaded', async () => {
+    console.log('🚀 Инициализация приложения...');
+    
     isAdmin = await checkAdmin();
+    console.log('👑 isAdmin:', isAdmin);
     
     const adminNavBtn = document.getElementById('nav-admin');
     if (adminNavBtn && isAdmin) {
         adminNavBtn.style.display = 'flex';
+        console.log('✅ Кнопка админки показана');
     }
     
+    // Загружаем основные данные
     await loadMainCategories();
     await loadBrands();
     await loadProductModels();
@@ -1827,17 +1852,53 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     setupSortFilters();
     
+    // ===== НАВИГАЦИЯ ПО НИЖНЕМУ МЕНЮ =====
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const page = btn.dataset.page;
-            if (page) navigateTo(page);
+            if (page) {
+                console.log('🔽 Навигация к:', page);
+                navigateTo(page);
+            }
         });
     });
     
+    // ===== НАВИГАЦИЯ ПО АДМИН-МЕНЮ =====
     document.querySelectorAll('.admin-menu-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const page = btn.dataset.page;
-            if (page) navigateTo(page);
+            if (page) {
+                console.log('⚙️ Админ-навигация к:', page);
+                navigateTo(page);
+                
+                // Загружаем данные в зависимости от страницы
+                switch(page) {
+                    case 'page-admin-attributes':
+                        loadAdminAttributes();
+                        break;
+                    case 'page-admin-promotions':
+                        loadAdminPromotions();
+                        break;
+                    case 'page-admin-moderators':
+                        loadAdmins();
+                        break;
+                    case 'page-admin-orders':
+                        loadAdminOrders();
+                        break;
+                    case 'page-admin-products':
+                        loadAdminProducts();
+                        break;
+                    case 'page-admin-brands':
+                        loadAdminBrands();
+                        break;
+                    case 'page-admin-models':
+                        loadAdminModels();
+                        break;
+                    case 'page-admin-categories':
+                        loadAdminCategories();
+                        break;
+                }
+            }
         });
     });
     
@@ -1846,34 +1907,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         checkoutBtn.addEventListener('click', checkout);
     }
     
+    // ===== ОБРАБОТЧИКИ ДЛЯ КНОПОК ДОБАВЛЕНИЯ =====
     if (isAdmin) {
-        document.querySelector('[data-page="page-admin-orders"]')?.addEventListener('click', loadAdminOrders);
-        document.querySelector('[data-page="page-admin-products"]')?.addEventListener('click', loadAdminProducts);
-        document.querySelector('[data-page="page-admin-categories"]')?.addEventListener('click', loadAdminCategories);
         document.getElementById('admin-add-category-btn')?.addEventListener('click', addNewCategory);
         document.getElementById('admin-add-product-btn')?.addEventListener('click', addNewProduct);
-        
-        document.querySelector('[data-page="page-admin-brands"]')?.addEventListener('click', loadAdminBrands);
         document.getElementById('admin-add-brand-btn')?.addEventListener('click', addNewBrand);
-        
-        document.querySelector('[data-page="page-admin-models"]')?.addEventListener('click', loadAdminModels);
         document.getElementById('admin-add-model-btn')?.addEventListener('click', addNewModel);
-        
-        // Атрибуты
-        document.querySelector('[data-page="page-admin-attributes"]')?.addEventListener('click', loadAdminAttributes);
         document.getElementById('admin-add-attribute-btn')?.addEventListener('click', addNewAttribute);
-        
-        // Акции
-        document.querySelector('[data-page="page-admin-promotions"]')?.addEventListener('click', loadAdminPromotions);
         document.getElementById('admin-add-promotion-btn')?.addEventListener('click', addNewPromotion);
-        
-        // Модераторы
-        document.querySelector('[data-page="page-admin-moderators"]')?.addEventListener('click', loadAdmins);
         document.getElementById('admin-add-btn')?.addEventListener('click', addAdmin);
     }
     
     updateCartUI();
     updateBadge();
+    
+    console.log('✅ Инициализация завершена');
 });
 
 tg.onEvent('mainButtonClicked', checkout);

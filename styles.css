@@ -1781,3 +1781,11 @@ body {
         font-size: 9px;
     }
 }
+/* ===== СТРАНИЦЫ АДМИНКИ ===== */
+.page[id^="page-admin"] {
+    display: none !important;
+}
+
+.page[id^="page-admin"].active {
+    display: block !important;
+}
