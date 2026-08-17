@@ -89,7 +89,7 @@ async function checkAdmin() {
         });
 
         if (!response.ok) {
-            console.error(`❌ Server error: ${response.status}`);
+            console.error(`❌ Ошибка сервера: ${response.status}`);
             return false;
         }
 
@@ -98,7 +98,7 @@ async function checkAdmin() {
         
         return data.length > 0;
     } catch (error) {
-        console.error('❌ Error checking admin:', error);
+        console.error('❌ Ошибка проверки админа:', error);
         return false;
     }
 }
@@ -121,13 +121,13 @@ async function loadBrands() {
             }
         });
         
-        if (!response.ok) throw new Error('Failed to fetch brands');
+        if (!response.ok) throw new Error('Не удалось загрузить бренды');
         const data = await response.json();
         brands = data;
         console.log('✅ Загружено брендов:', brands.length);
         return brands;
     } catch (error) {
-        console.error('❌ Error loading brands:', error);
+        console.error('❌ Ошибка загрузки брендов:', error);
         return [];
     }
 }
@@ -141,13 +141,13 @@ async function loadProductModels() {
             }
         });
         
-        if (!response.ok) throw new Error('Failed to fetch product models');
+        if (!response.ok) throw new Error('Не удалось загрузить модели');
         const data = await response.json();
         productModels = data;
         console.log('✅ Загружено моделей:', productModels.length);
         return productModels;
     } catch (error) {
-        console.error('❌ Error loading product models:', error);
+        console.error('❌ Ошибка загрузки моделей:', error);
         return [];
     }
 }
@@ -161,13 +161,13 @@ async function loadProductAttributes() {
             }
         });
         
-        if (!response.ok) throw new Error('Failed to fetch product attributes');
+        if (!response.ok) throw new Error('Не удалось загрузить атрибуты');
         const data = await response.json();
         productAttributes = data;
         console.log('✅ Загружено атрибутов:', productAttributes.length);
         return productAttributes;
     } catch (error) {
-        console.error('❌ Error loading product attributes:', error);
+        console.error('❌ Ошибка загрузки атрибутов:', error);
         return [];
     }
 }
@@ -210,7 +210,7 @@ async function loadProductsFromSupabase() {
         
         return products;
     } catch (error) {
-        console.error('❌ Error loading products:', error);
+        console.error('❌ Ошибка загрузки товаров:', error);
         return [];
     }
 }
@@ -224,14 +224,14 @@ async function loadPromotionsFromSupabase() {
             }
         });
         
-        if (!response.ok) throw new Error('Failed to fetch promotions');
+        if (!response.ok) throw new Error('Не удалось загрузить акции');
         const data = await response.json();
         promotions = data;
         console.log('✅ Загружено акций:', promotions.length);
         renderPromotions();
         return promotions;
     } catch (error) {
-        console.error('❌ Error loading promotions:', error);
+        console.error('❌ Ошибка загрузки акций:', error);
         return [];
     }
 }
@@ -739,7 +739,7 @@ function navigateTo(pageId) {
 }
 
 // ==========================================
-// ===== ОФОРМЛЕНИЕ ЗАКАЗА (ИСПРАВЛЕННОЕ) =====
+// ===== ОФОРМЛЕНИЕ ЗАКАЗА =====
 // ==========================================
 async function checkout() {
     if (cart.length === 0) return;
@@ -769,9 +769,8 @@ async function checkout() {
     
     const user = tg.initDataUnsafe?.user;
     
-    // Формируем заказ
     const orderData = {
-        user_id: user?.id || 0,  // ← вместо null отправляем 0
+        user_id: user?.id || 0,
         username: user?.username || user?.first_name || 'Гость',
         total: total,
         status: 'pending',
@@ -786,7 +785,6 @@ async function checkout() {
     try {
         console.log('📦 Сохранение заказа:', orderData);
         
-        // ===== СОХРАНЯЕМ ЗАКАЗ НАПРЯМУЮ В SUPABASE =====
         const response = await fetch(`${SUPABASE_URL}/rest/v1/orders`, {
             method: 'POST',
             headers: {
@@ -815,7 +813,7 @@ async function checkout() {
         }
         console.log('✅ Заказ сохранен в Supabase:', result);
         
-        // ===== ОТПРАВЛЯЕМ УВЕДОМЛЕНИЕ В БОТ =====
+        // Отправляем уведомление в бот
         const botOrderData = {
             action: 'order',
             items: items,
@@ -836,7 +834,7 @@ async function checkout() {
             console.warn('⚠️ Ошибка отправки уведомления в бот:', botError);
         }
         
-        // ===== ОБНОВЛЯЕМ ОСТАТКИ =====
+        // Обновляем остатки
         for (const item of cart) {
             const product = products.find(p => p.id === item.id);
             if (product) {
@@ -861,7 +859,7 @@ async function checkout() {
             }
         }
         
-        // ===== ОЧИЩАЕМ КОРЗИНУ =====
+        // Очищаем корзину
         cart = [];
         updateCartUI();
         updateBadge();
@@ -878,10 +876,8 @@ async function checkout() {
         
         showMessage('✅ Заказ оформлен!', 'Спасибо за заказ! Мы свяжемся с вами в ближайшее время.');
         
-        // Обновляем список товаров
         await loadProductsFromSupabase();
         
-        // Закрываем через 2 секунды
         setTimeout(() => {
             tg.close();
         }, 2000);
@@ -906,7 +902,7 @@ async function loadStats() {
             }
         });
         
-        if (!response.ok) throw new Error('Failed to fetch orders');
+        if (!response.ok) throw new Error('Не удалось загрузить статистику');
         const orders = await response.json();
         
         const now = new Date();
@@ -995,7 +991,7 @@ async function loadAdminOrders() {
             }
         });
         
-        if (!response.ok) throw new Error('Failed to fetch orders');
+        if (!response.ok) throw new Error('Не удалось загрузить заказы');
         const orders = await response.json();
         console.log('📦 Загружено заказов:', orders.length);
         
@@ -1044,7 +1040,7 @@ async function loadAdminOrders() {
         });
         
     } catch (error) {
-        console.error('Error loading orders:', error);
+        console.error('❌ Ошибка загрузки заказов:', error);
         container.innerHTML = '<div class="error-message">Ошибка загрузки заказов</div>';
     }
 }
@@ -1062,10 +1058,10 @@ async function updateOrderStatus(orderId, status) {
         });
         
         if (response.ok) {
-            showMessage('✅ Статус обновлён', `Заказ #${orderId} теперь ${status}`);
+            showMessage('✅ Статус обновлён', `Заказ #${orderId} теперь ${status === 'completed' ? 'выполнен' : 'отправлен'}`);
         }
     } catch (error) {
-        console.error('Error updating order status:', error);
+        console.error('❌ Ошибка обновления статуса:', error);
     }
 }
 
@@ -1091,7 +1087,7 @@ async function loadAdminProducts() {
             }
         });
         
-        if (!response.ok) throw new Error('Failed to fetch products');
+        if (!response.ok) throw new Error('Не удалось загрузить товары');
         const data = await response.json();
         console.log('📦 Загружено товаров в админке:', data.length);
         
@@ -1136,7 +1132,7 @@ async function loadAdminProducts() {
         container.querySelectorAll('.admin-delete-btn').forEach(btn => {
             btn.addEventListener('click', async () => {
                 const id = parseInt(btn.dataset.id);
-                if (confirm('Удалить товар?')) {
+                if (confirm('Удалить этот товар?')) {
                     await deleteProduct(id);
                 }
             });
@@ -1149,7 +1145,7 @@ async function loadAdminProducts() {
             });
         });
     } catch (error) {
-        console.error('Error loading products:', error);
+        console.error('❌ Ошибка загрузки товаров:', error);
         container.innerHTML = '<div class="error-message">Ошибка загрузки товаров</div>';
     }
 }
@@ -1171,8 +1167,8 @@ async function toggleStock(productId, checked) {
             await loadProductsFromSupabase();
         }
     } catch (error) {
-        console.error('Error toggling stock:', error);
-        showMessage('❌ Ошибка', 'Не удалось обновить статус');
+        console.error('❌ Ошибка обновления статуса:', error);
+        showMessage('❌ Ошибка', 'Не удалось обновить статус товара');
     }
 }
 
@@ -1189,9 +1185,10 @@ async function deleteProduct(productId) {
         if (response.ok) {
             await loadAdminProducts();
             await loadProductsFromSupabase();
+            showMessage('✅ Удалено', 'Товар успешно удален');
         }
     } catch (error) {
-        console.error('Error deleting product:', error);
+        console.error('❌ Ошибка удаления товара:', error);
     }
 }
 
@@ -1235,16 +1232,21 @@ async function updateProduct(productId, data) {
         if (response.ok) {
             await loadAdminProducts();
             await loadProductsFromSupabase();
+            showMessage('✅ Обновлено', 'Товар успешно обновлен');
         }
     } catch (error) {
-        console.error('Error updating product:', error);
+        console.error('❌ Ошибка обновления товара:', error);
     }
 }
 
-// ===== ОБНОВЛЁННАЯ ФУНКЦИЯ ДОБАВЛЕНИЯ ТОВАРА =====
+// ===== ДОБАВЛЕНИЕ ТОВАРА (С ПОДСКАЗКАМИ) =====
 async function addNewProduct() {
     const categoryOptions = FIXED_CATEGORIES.map((c, i) => `${i+1}. ${c.icon} ${c.name}`).join('\n');
-    const categoryChoice = prompt(`📂 Выберите категорию товара:\n\n${categoryOptions}\n\nВведите номер:`);
+    const categoryChoice = prompt(
+        `📂 ВЫБЕРИТЕ КАТЕГОРИЮ ТОВАРА\n\n` +
+        `${categoryOptions}\n\n` +
+        `💡 Введите номер категории:`
+    );
     if (!categoryChoice) return;
     const categoryIndex = parseInt(categoryChoice) - 1;
     if (isNaN(categoryIndex) || categoryIndex < 0 || categoryIndex >= FIXED_CATEGORIES.length) {
@@ -1263,7 +1265,11 @@ async function addNewProduct() {
             return;
         }
         const brandOptions = categoryBrands.map((b, i) => `${i+1}. ${b.name}`).join('\n');
-        const brandChoice = prompt(`🏷️ Выберите бренд для "${category.name}":\n\n${brandOptions}\n\nВведите номер:`);
+        const brandChoice = prompt(
+            `🏷️ ВЫБЕРИТЕ БРЕНД\n\n` +
+            `${brandOptions}\n\n` +
+            `💡 Введите номер бренда:`
+        );
         if (!brandChoice) return;
         const brandIndex = parseInt(brandChoice) - 1;
         if (isNaN(brandIndex) || brandIndex < 0 || brandIndex >= categoryBrands.length) {
@@ -1285,7 +1291,11 @@ async function addNewProduct() {
             return;
         }
         modelOptions = accessoriesModels.map((m, i) => `${i+1}. ${m.name}`).join('\n');
-        const modelChoice = prompt(`🔧 Выберите комплектующее:\n\n${modelOptions}\n\nВведите номер:`);
+        const modelChoice = prompt(
+            `🔧 ВЫБЕРИТЕ КОМПЛЕКТУЮЩЕЕ\n\n` +
+            `${modelOptions}\n\n` +
+            `💡 Введите номер:`
+        );
         if (!modelChoice) return;
         const modelIndex = parseInt(modelChoice) - 1;
         if (isNaN(modelIndex) || modelIndex < 0 || modelIndex >= accessoriesModels.length) {
@@ -1301,7 +1311,11 @@ async function addNewProduct() {
             return;
         }
         modelOptions = disposableModels.map((m, i) => `${i+1}. ${m.name}`).join('\n');
-        const modelChoice = prompt(`⚡ Выберите одноразовый pod:\n\n${modelOptions}\n\nВведите номер:`);
+        const modelChoice = prompt(
+            `⚡ ВЫБЕРИТЕ ОДНОРАЗОВЫЙ POD\n\n` +
+            `${modelOptions}\n\n` +
+            `💡 Введите номер:`
+        );
         if (!modelChoice) return;
         const modelIndex = parseInt(modelChoice) - 1;
         if (isNaN(modelIndex) || modelIndex < 0 || modelIndex >= disposableModels.length) {
@@ -1317,7 +1331,11 @@ async function addNewProduct() {
             return;
         }
         modelOptions = brandModels.map((m, i) => `${i+1}. ${m.name}`).join('\n');
-        const modelChoice = prompt(`📦 Выберите модель для "${brandName}":\n\n${modelOptions}\n\nВведите номер:`);
+        const modelChoice = prompt(
+            `📦 ВЫБЕРИТЕ МОДЕЛЬ ДЛЯ "${brandName}"\n\n` +
+            `${modelOptions}\n\n` +
+            `💡 Введите номер:`
+        );
         if (!modelChoice) return;
         const modelIndex = parseInt(modelChoice) - 1;
         if (isNaN(modelIndex) || modelIndex < 0 || modelIndex >= brandModels.length) {
@@ -1342,7 +1360,11 @@ async function addNewProduct() {
 
         for (const [attrName, values] of Object.entries(attrGroups)) {
             const valueOptions = values.map((v, i) => `${i+1}. ${v}`).join('\n');
-            const valueChoice = prompt(`🎨 Выберите ${attrName}:\n\n${valueOptions}\n\nВведите номер:`);
+            const valueChoice = prompt(
+                `🎨 ВЫБЕРИТЕ ${attrName.toUpperCase()}\n\n` +
+                `${valueOptions}\n\n` +
+                `💡 Введите номер:`
+            );
             if (!valueChoice) return;
             const valueIndex = parseInt(valueChoice) - 1;
             if (isNaN(valueIndex) || valueIndex < 0 || valueIndex >= values.length) {
@@ -1353,23 +1375,23 @@ async function addNewProduct() {
         }
     } else {
         if (mainCategorySlug === 'accessories') {
-            const resistance = prompt('🔧 Сопротивление (например, 0.8 Ом):');
+            const resistance = prompt('🔧 Введите сопротивление (например, 0.8):');
             if (resistance === null) return;
-            if (resistance) attributes.push({ name: 'Сопротивление', value: resistance });
+            if (resistance) attributes.push({ name: 'Сопротивление', value: resistance + ' Ом' });
         } else if (mainCategorySlug === 'snus') {
-            const strength = prompt('💪 Крепость (например, 20мг):');
+            const strength = prompt('💪 Введите крепость (например, 20):');
             if (strength === null) return;
-            if (strength) attributes.push({ name: 'Крепость', value: strength });
+            if (strength) attributes.push({ name: 'Крепость', value: strength + ' мг' });
         }
     }
 
-    const name = prompt('📝 Название товара:');
+    const name = prompt('📝 Введите название товара:');
     if (!name) return;
-    const price = prompt('💰 Цена (BYN):');
+    const price = prompt('💰 Введите цену (BYN):');
     if (!price) return;
-    const emoji = prompt('😊 Эмодзи (например, 💨):', '📦');
+    const emoji = prompt('😊 Выберите эмодзи для товара (по умолчанию 📦):', '📦');
     if (emoji === null) return;
-    const stock = prompt('📦 Количество на складе:', '0');
+    const stock = prompt('📦 Введите количество на складе (по умолчанию 0):', '0');
     if (stock === null) return;
     const isHit = confirm('🔥 Это хит продаж? (OK - да, Отмена - нет)');
     const isNew = confirm('✨ Это новинка? (OK - да, Отмена - нет)');
@@ -1380,16 +1402,17 @@ async function addNewProduct() {
     }
 
     const confirmMsg = `
-📋 Проверьте данные:
-Категория: ${category.icon} ${category.name}
-${brandName ? `Бренд: ${brandName}` : ''}
-Модель: ${modelName}
-${description ? `Характеристики: ${description}` : ''}
-Название: ${name}
-Цена: ${price} BYN
-Остаток: ${stock} шт.
+📋 ПРОВЕРЬТЕ ДАННЫЕ:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📂 Категория: ${category.icon} ${category.name}
+${brandName ? `🏷️ Бренд: ${brandName}` : ''}
+📦 Модель: ${modelName}
+${description ? `🎨 Характеристики: ${description}` : ''}
+📝 Название: ${name}
+💰 Цена: ${price} BYN
+📦 Остаток: ${stock} шт.
 ${isHit ? '🔥 Хит' : ''} ${isNew ? '✨ Новинка' : ''}
-
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Подтвердить добавление?
     `;
     if (!confirm(confirmMsg)) return;
@@ -1454,7 +1477,7 @@ async function loadAdminBrands() {
             }
         });
         
-        if (!response.ok) throw new Error('Failed to fetch brands');
+        if (!response.ok) throw new Error('Не удалось загрузить бренды');
         const data = await response.json();
         console.log('📦 Загружено брендов в админке:', data.length);
         
@@ -1480,23 +1503,27 @@ async function loadAdminBrands() {
             </div>
         `}).join('');
     } catch (error) {
-        console.error('Error loading brands:', error);
+        console.error('❌ Ошибка загрузки брендов:', error);
         container.innerHTML = '<div class="error-message">Ошибка загрузки брендов</div>';
     }
 }
 
 async function addNewBrand() {
-    const name = prompt('Название бренда:');
+    const name = prompt('🏷️ Введите название бренда:');
     if (!name) return;
-    const slug = prompt('Slug (уникальный идентификатор, латиница):');
+    const slug = prompt('🔑 Введите slug (уникальный идентификатор на латинице, например: "smok"):');
     if (!slug) return;
     
     const categoryOptions = FIXED_CATEGORIES.map((c, i) => `${i+1}. ${c.name} (${c.slug})`).join('\n');
-    const categoryChoice = prompt(`Выберите категорию:\n${categoryOptions}`);
+    const categoryChoice = prompt(
+        `📂 ВЫБЕРИТЕ КАТЕГОРИЮ ДЛЯ БРЕНДА\n\n` +
+        `${categoryOptions}\n\n` +
+        `💡 Введите номер:`
+    );
     if (!categoryChoice) return;
     const categoryIndex = parseInt(categoryChoice) - 1;
     if (isNaN(categoryIndex) || categoryIndex < 0 || categoryIndex >= FIXED_CATEGORIES.length) {
-        alert('Неверный выбор категории');
+        alert('❌ Неверный выбор категории');
         return;
     }
     const mainCategorySlug = FIXED_CATEGORIES[categoryIndex].slug;
@@ -1552,7 +1579,7 @@ async function deleteBrand(brandId) {
             showMessage('✅ Бренд удалён', 'Бренд успешно удалён');
         }
     } catch (error) {
-        console.error('Error deleting brand:', error);
+        console.error('❌ Ошибка удаления бренда:', error);
     }
 }
 
@@ -1578,7 +1605,7 @@ async function loadAdminModels() {
             }
         });
         
-        if (!response.ok) throw new Error('Failed to fetch models');
+        if (!response.ok) throw new Error('Не удалось загрузить модели');
         const data = await response.json();
         console.log('📦 Загружено моделей в админке:', data.length);
         
@@ -1606,27 +1633,31 @@ async function loadAdminModels() {
             </div>
         `}).join('');
     } catch (error) {
-        console.error('Error loading models:', error);
+        console.error('❌ Ошибка загрузки моделей:', error);
         container.innerHTML = '<div class="error-message">Ошибка загрузки моделей</div>';
     }
 }
 
 async function addNewModel() {
-    const name = prompt('Название модели:');
+    const name = prompt('📦 Введите название модели:');
     if (!name) return;
-    const slug = prompt('Slug (уникальный идентификатор, латиница):');
+    const slug = prompt('🔑 Введите slug (уникальный идентификатор на латинице, например: "xros-3"):');
     if (!slug) return;
     
     const brandOptions = brands.map((b, i) => `${i+1}. ${b.name} (${b.slug})`).join('\n');
     if (brands.length === 0) {
-        alert('Сначала добавьте бренд через админку!');
+        alert('⚠️ Сначала добавьте бренд через админку → Бренды.');
         return;
     }
-    const brandChoice = prompt(`Выберите бренд:\n${brandOptions}`);
+    const brandChoice = prompt(
+        `🏷️ ВЫБЕРИТЕ БРЕНД ДЛЯ МОДЕЛИ\n\n` +
+        `${brandOptions}\n\n` +
+        `💡 Введите номер:`
+    );
     if (!brandChoice) return;
     const brandIndex = parseInt(brandChoice) - 1;
     if (isNaN(brandIndex) || brandIndex < 0 || brandIndex >= brands.length) {
-        alert('Неверный выбор бренда');
+        alert('❌ Неверный выбор бренда');
         return;
     }
     const brandSlug = brands[brandIndex].slug;
@@ -1684,7 +1715,7 @@ async function deleteModel(modelId) {
             showMessage('✅ Модель удалена', 'Модель успешно удалена');
         }
     } catch (error) {
-        console.error('Error deleting model:', error);
+        console.error('❌ Ошибка удаления модели:', error);
     }
 }
 
@@ -1768,11 +1799,11 @@ async function loadAdminAttributes() {
 }
 
 async function addNewAttribute() {
-    const attrName = prompt('Название атрибута (например, "Цвет", "Сопротивление"):');
+    const attrName = prompt('🏷️ Введите название атрибута (например, "Цвет", "Сопротивление"):');
     if (!attrName) return;
-    const attrValue = prompt('Значение атрибута (например, "Чёрный", "0.8 Ом"):');
+    const attrValue = prompt('🎨 Введите значение атрибута (например, "Чёрный", "0.8 Ом"):');
     if (!attrValue) return;
-    const modelSlug = prompt('Slug модели (например, "xros-3"):');
+    const modelSlug = prompt('📦 Введите slug модели (например, "xros-3"):');
     if (!modelSlug) return;
     
     try {
@@ -1824,7 +1855,7 @@ async function deleteAttribute(attributeId) {
             showMessage('✅ Атрибут удалён', 'Атрибут успешно удалён');
         }
     } catch (error) {
-        console.error('Error deleting attribute:', error);
+        console.error('❌ Ошибка удаления атрибута:', error);
     }
 }
 
@@ -1907,11 +1938,11 @@ async function loadAdminPromotions() {
 }
 
 async function addNewPromotion() {
-    const title = prompt('Название акции:');
+    const title = prompt('🎉 Введите название акции:');
     if (!title) return;
-    const description = prompt('Описание акции:');
+    const description = prompt('📝 Введите описание акции:');
     if (description === null) return;
-    const emoji = prompt('Эмодзи:', '🎉');
+    const emoji = prompt('😊 Выберите эмодзи для акции (по умолчанию 🎉):', '🎉');
     if (emoji === null) return;
     
     try {
@@ -1963,7 +1994,7 @@ async function deletePromotion(promotionId) {
             showMessage('✅ Акция удалена', 'Акция успешно удалена');
         }
     } catch (error) {
-        console.error('Error deleting promotion:', error);
+        console.error('❌ Ошибка удаления акции:', error);
     }
 }
 
@@ -2040,7 +2071,7 @@ async function addAdmin() {
     const username = document.getElementById('admin-add-username').value || 'unknown';
     
     if (!id) {
-        alert('Введите Telegram ID');
+        alert('⚠️ Введите Telegram ID пользователя');
         return;
     }
     
@@ -2092,7 +2123,7 @@ async function removeAdmin(adminId) {
             showMessage('✅ Модератор удалён', 'Модератор успешно удалён');
         }
     } catch (error) {
-        console.error('Error removing admin:', error);
+        console.error('❌ Ошибка удаления модератора:', error);
     }
 }
 
