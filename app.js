@@ -533,7 +533,7 @@ function setupSortFilters() {
 }
 
 // ==========================================
-// ===== КОРЗИНА (ОБНОВЛЕННАЯ) =====
+// ===== КОРЗИНА =====
 // ==========================================
 function addToCart(productId) {
     const product = products.find(p => p.id === productId);
@@ -631,7 +631,6 @@ function updateBadge() {
 function navigateTo(pageId) {
     console.log('🔄 ПЕРЕХОД НА СТРАНИЦУ:', pageId);
     
-    // Скрываем все страницы
     document.querySelectorAll('.page').forEach(p => {
         p.classList.remove('active');
         if (p.id.startsWith('page-admin')) {
@@ -645,7 +644,6 @@ function navigateTo(pageId) {
         }
     });
     
-    // Показываем нужную страницу
     const target = document.getElementById(pageId);
     if (!target) {
         console.error('❌ СТРАНИЦА НЕ НАЙДЕНА:', pageId);
@@ -665,14 +663,12 @@ function navigateTo(pageId) {
     
     console.log('✅ СТРАНИЦА ПОКАЗАНА:', pageId);
     
-    // Обновляем кнопки
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.page === pageId);
     });
     
     currentPage = pageId;
     
-    // Загружаем данные для админ-страниц
     if (pageId.startsWith('page-admin')) {
         console.log('🔄 ЗАГРУЗКА ДАННЫХ ДЛЯ:', pageId);
         
@@ -733,18 +729,16 @@ function navigateTo(pageId) {
 }
 
 // ==========================================
-// ===== ОФОРМЛЕНИЕ ЗАКАЗА (ОБНОВЛЕННОЕ) =====
+// ===== ОФОРМЛЕНИЕ ЗАКАЗА (ИСПРАВЛЕННОЕ) =====
 // ==========================================
 async function checkout() {
     if (cart.length === 0) return;
     
-    // Получаем данные из формы
     const phone = document.getElementById('order-phone')?.value?.trim() || '';
     const deliveryType = document.getElementById('order-delivery-type')?.value || 'pickup';
     const address = document.getElementById('order-address')?.value?.trim() || '';
     const comment = document.getElementById('order-comment')?.value?.trim() || '';
     
-    // Проверяем телефон
     if (!phone) {
         tg.showPopup({
             title: '⚠️ Введите телефон',
@@ -754,7 +748,6 @@ async function checkout() {
         return;
     }
     
-    // Если доставка - проверяем адрес
     if (deliveryType === 'delivery' && !address) {
         tg.showPopup({
             title: '⚠️ Введите адрес',
@@ -773,24 +766,25 @@ async function checkout() {
     }));
     
     const user = tg.initDataUnsafe?.user;
+    
+    // Формируем заказ
     const orderData = {
-        action: 'order',
-        items: items,
+        user_id: user?.id || null,
+        username: user?.username || user?.first_name || 'Гость',
         total: total,
+        status: 'pending',
         currency: 'BYN',
         phone: phone,
         delivery_type: deliveryType,
         delivery_address: address || null,
         comment: comment || null,
-        user_id: user?.id || null,
-        username: user?.username || user?.first_name || 'Гость'
+        items_json: items
     };
     
     try {
-        // Отправляем заказ в бот
-        tg.sendData(JSON.stringify(orderData));
+        console.log('📦 Сохранение заказа:', orderData);
         
-        // Сохраняем заказ в Supabase
+        // ===== СОХРАНЯЕМ ЗАКАЗ НАПРЯМУЮ В SUPABASE =====
         const response = await fetch(`${SUPABASE_URL}/rest/v1/orders`, {
             method: 'POST',
             headers: {
@@ -798,52 +792,79 @@ async function checkout() {
                 'Authorization': `Bearer ${SUPABASE_KEY}`,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                user_id: user?.id || null,
-                username: user?.username || user?.first_name || 'Гость',
-                total: total,
-                status: 'pending',
-                currency: 'BYN',
-                phone: phone,
-                delivery_type: deliveryType,
-                delivery_address: address || null,
-                comment: comment || null,
-                items_json: items
-            })
+            body: JSON.stringify(orderData)
         });
         
         if (!response.ok) {
-            console.error('❌ Ошибка сохранения заказа:', await response.text());
+            const errorText = await response.text();
+            console.error('❌ Ошибка сохранения заказа:', errorText);
+            tg.showPopup({
+                title: '❌ Ошибка',
+                message: 'Не удалось сохранить заказ. Попробуйте еще раз.',
+                buttons: [{ type: 'ok' }]
+            });
+            return;
         }
         
-        // Обновляем остатки товаров
+        const result = await response.json();
+        console.log('✅ Заказ сохранен в Supabase:', result);
+        
+        // ===== ОТПРАВЛЯЕМ УВЕДОМЛЕНИЕ В БОТ =====
+        // Отправляем данные в бот для уведомления админов
+        const botOrderData = {
+            action: 'order',
+            items: items,
+            total: total,
+            currency: 'BYN',
+            phone: phone,
+            delivery_type: deliveryType,
+            delivery_address: address || null,
+            comment: comment || null,
+            user_id: user?.id || null,
+            username: user?.username || user?.first_name || 'Гость'
+        };
+        
+        try {
+            tg.sendData(JSON.stringify(botOrderData));
+            console.log('📤 Уведомление отправлено в бот');
+        } catch (botError) {
+            console.warn('⚠️ Ошибка отправки уведомления в бот:', botError);
+            // Не критично - заказ уже сохранен
+        }
+        
+        // ===== ОБНОВЛЯЕМ ОСТАТКИ =====
         for (const item of cart) {
             const product = products.find(p => p.id === item.id);
             if (product) {
                 const newStock = Math.max(0, (product.stockQuantity || 0) - 1);
-                await fetch(`${SUPABASE_URL}/rest/v1/products?id=eq.${item.id}`, {
-                    method: 'PATCH',
-                    headers: {
-                        'apikey': SUPABASE_KEY,
-                        'Authorization': `Bearer ${SUPABASE_KEY}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ 
-                        stock_quantity: newStock,
-                        in_stock: newStock > 0
-                    })
-                });
+                try {
+                    await fetch(`${SUPABASE_URL}/rest/v1/products?id=eq.${item.id}`, {
+                        method: 'PATCH',
+                        headers: {
+                            'apikey': SUPABASE_KEY,
+                            'Authorization': `Bearer ${SUPABASE_KEY}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ 
+                            stock_quantity: newStock,
+                            in_stock: newStock > 0
+                        })
+                    });
+                    console.log(`✅ Обновлен остаток товара ${item.id}: ${newStock}`);
+                } catch (stockError) {
+                    console.error('❌ Ошибка обновления остатка:', stockError);
+                }
             }
         }
         
-        // Очищаем корзину
+        // ===== ОЧИЩАЕМ КОРЗИНУ =====
         cart = [];
         updateCartUI();
         updateBadge();
+        
         const orderForm = document.getElementById('order-form');
         if (orderForm) orderForm.style.display = 'none';
         
-        // Очищаем поля формы
         const phoneInput = document.getElementById('order-phone');
         const addressInput = document.getElementById('order-address');
         const commentInput = document.getElementById('order-comment');
@@ -851,6 +872,7 @@ async function checkout() {
         if (addressInput) addressInput.value = '';
         if (commentInput) commentInput.value = '';
         
+        // ===== ПОКАЗЫВАЕМ УВЕДОМЛЕНИЕ =====
         tg.showPopup({
             title: '✅ Заказ оформлен!',
             message: 'Спасибо за заказ! Мы свяжемся с вами в ближайшее время.',
@@ -860,7 +882,11 @@ async function checkout() {
         // Обновляем список товаров
         await loadProductsFromSupabase();
         
-        tg.close();
+        // Закрываем через 2 секунды
+        setTimeout(() => {
+            tg.close();
+        }, 2000);
+        
     } catch (error) {
         console.error('❌ Ошибка оформления заказа:', error);
         tg.showPopup({
@@ -878,7 +904,6 @@ async function loadStats() {
     console.log('🔄 ЗАГРУЗКА СТАТИСТИКИ...');
     
     try {
-        // Получаем все завершенные заказы
         const response = await fetch(`${SUPABASE_URL}/rest/v1/orders?select=*&status=eq.completed`, {
             headers: {
                 'apikey': SUPABASE_KEY,
@@ -905,7 +930,6 @@ async function loadStats() {
             ordersPending: 0
         };
         
-        // Считаем завершенные заказы
         orders.forEach(order => {
             const orderDate = new Date(order.created_at);
             const amount = Number(order.total) || 0;
@@ -924,7 +948,6 @@ async function loadStats() {
             }
         });
         
-        // Считаем заказы в обработке
         const pendingResponse = await fetch(`${SUPABASE_URL}/rest/v1/orders?select=id&status=eq.pending`, {
             headers: {
                 'apikey': SUPABASE_KEY,
@@ -936,7 +959,6 @@ async function loadStats() {
             stats.ordersPending = pending.length;
         }
         
-        // Обновляем UI
         document.getElementById('stat-today').textContent = stats.today.toFixed(2) + ' BYN';
         document.getElementById('stat-week').textContent = stats.week.toFixed(2) + ' BYN';
         document.getElementById('stat-month').textContent = stats.month.toFixed(2) + ' BYN';
@@ -960,7 +982,7 @@ async function loadStats() {
 // ===== АДМИН-ПАНЕЛЬ =====
 // ==========================================
 
-// --- Заказы (ОБНОВЛЕННЫЕ) ---
+// --- Заказы ---
 async function loadAdminOrders() {
     console.log('🔄 ЗАГРУЗКА ЗАКАЗОВ...');
     const container = document.getElementById('admin-orders-list');
@@ -1021,7 +1043,6 @@ async function loadAdminOrders() {
             </div>
         `}).join('');
         
-        // Обработчики кнопок статуса
         container.querySelectorAll('.order-status-btn[data-id]').forEach(btn => {
             btn.addEventListener('click', async () => {
                 const id = parseInt(btn.dataset.id);
