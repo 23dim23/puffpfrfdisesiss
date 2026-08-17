@@ -36,7 +36,6 @@ let adminFilterStock = 'all';
 let selectedAttributes = {};
 
 // ===== РЕЖИМ РАЗРАБОТКИ =====
-// Если ты открываешь сайт не через Telegram, включи тестовый режим
 const isDevelopment = !window.Telegram.WebApp.initDataUnsafe?.user;
 
 if (isDevelopment) {
@@ -49,8 +48,7 @@ async function checkAdmin() {
         const user = tg.initDataUnsafe.user;
         if (!user) {
             console.log('⚠️ Режим разработки: пользователь не найден');
-            // В режиме разработки показываем админку для тестирования
-            return true; // Возвращаем true, чтобы показать админку
+            return true;
         }
 
         console.log(`🔍 Проверка админа для ID: ${user.id}`);
@@ -599,14 +597,13 @@ function updateBadge() {
     }
 }
 
-// ===== НАВИГАЦИЯ (ИСПРАВЛЕННАЯ - РАБОТАЕТ В TELEGRAM) =====
+// ===== НАВИГАЦИЯ (ИСПРАВЛЕННАЯ) =====
 function navigateTo(pageId) {
     console.log('🔄 Переход на страницу:', pageId);
     
     // Скрываем все страницы
     document.querySelectorAll('.page').forEach(p => {
         p.classList.remove('active');
-        // Для страниц админки - скрываем через display
         if (p.id.startsWith('page-admin')) {
             p.style.display = 'none';
         }
@@ -616,7 +613,6 @@ function navigateTo(pageId) {
     const target = document.getElementById(pageId);
     if (target) {
         target.classList.add('active');
-        // Для страниц админки - показываем через display: block
         if (pageId.startsWith('page-admin')) {
             target.style.display = 'block';
         }
@@ -626,17 +622,16 @@ function navigateTo(pageId) {
         return;
     }
     
-    // Обновляем активную кнопку в нижнем меню
+    // Обновляем активную кнопку
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.page === pageId);
     });
     
     currentPage = pageId;
     
-    // Если это страница админки - загружаем данные
+    // Загружаем данные для страниц админки
     if (pageId.startsWith('page-admin')) {
-        console.log('🔄 Загрузка данных для админ-страницы:', pageId);
-        // Загружаем данные через небольшую задержку, чтобы страница успела отрендериться
+        console.log('🔄 Загрузка данных для:', pageId);
         setTimeout(() => {
             switch(pageId) {
                 case 'page-admin-attributes':
@@ -664,7 +659,7 @@ function navigateTo(pageId) {
                     loadAdminCategories();
                     break;
             }
-        }, 100);
+        }, 200);
     }
 }
 
@@ -947,7 +942,6 @@ async function updateProduct(productId, data) {
 
 // ===== ОБНОВЛЁННАЯ ФУНКЦИЯ ДОБАВЛЕНИЯ ТОВАРА =====
 async function addNewProduct() {
-    // Шаг 1: Выбор категории
     const categoryOptions = FIXED_CATEGORIES.map((c, i) => `${i+1}. ${c.icon} ${c.name}`).join('\n');
     const categoryChoice = prompt(`📂 Выберите категорию товара:\n\n${categoryOptions}\n\nВведите номер:`);
     if (!categoryChoice) return;
@@ -959,7 +953,6 @@ async function addNewProduct() {
     const category = FIXED_CATEGORIES[categoryIndex];
     const mainCategorySlug = category.slug;
 
-    // Шаг 2: Выбор бренда
     let brandSlug = null;
     let brandName = null;
     if (mainCategorySlug !== 'accessories' && mainCategorySlug !== 'disposable') {
@@ -980,7 +973,6 @@ async function addNewProduct() {
         brandName = categoryBrands[brandIndex].name;
     }
 
-    // Шаг 3: Выбор модели
     let modelSlug = null;
     let modelName = null;
     let modelOptions = [];
@@ -1035,7 +1027,6 @@ async function addNewProduct() {
         modelName = brandModels[modelIndex].name;
     }
 
-    // Шаг 4: Атрибуты
     let attributes = [];
     const modelAttributes = productAttributes.filter(a => a.product_model_slug === modelSlug);
     
@@ -1071,7 +1062,6 @@ async function addNewProduct() {
         }
     }
 
-    // Шаг 5: Основные данные
     const name = prompt('📝 Название товара:');
     if (!name) return;
     const price = prompt('💰 Цена (BYN):');
@@ -1434,10 +1424,20 @@ async function deleteModel(modelId) {
 }
 
 // ==========================================
-// ===== АТРИБУТЫ (АДМИНКА) =====
+// ===== АТРИБУТЫ (АДМИНКА) - ИСПРАВЛЕННАЯ =====
 // ==========================================
 
 async function loadAdminAttributes() {
+    console.log('🔄 Загрузка атрибутов...');
+    
+    // Принудительно показываем страницу
+    const page = document.getElementById('page-admin-attributes');
+    if (page) {
+        page.style.display = 'block';
+        page.classList.add('active');
+        console.log('✅ Страница атрибутов показана принудительно');
+    }
+    
     const container = document.getElementById('admin-attributes-list');
     if (!container) {
         console.error('❌ Контейнер admin-attributes-list не найден');
@@ -1456,10 +1456,8 @@ async function loadAdminAttributes() {
         
         if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         const data = await response.json();
-        console.log('📦 Загружено атрибутов в админке:', data.length);
-        console.log('📦 Данные атрибутов:', data);
+        console.log('📦 Загружено атрибутов:', data.length);
         
-        // Обновляем глобальную переменную
         productAttributes = data;
         
         if (data.length === 0) {
@@ -1467,7 +1465,9 @@ async function loadAdminAttributes() {
             return;
         }
         
-        container.innerHTML = data.map(attr => `
+        let html = '';
+        data.forEach(attr => {
+            html += `
             <div class="admin-attribute-card" data-id="${attr.id}">
                 <div class="admin-attribute-info">
                     <div class="admin-attribute-name">${attr.attribute_name || 'Без названия'}</div>
@@ -1480,7 +1480,11 @@ async function loadAdminAttributes() {
                     <button class="admin-delete-btn" onclick="deleteAttribute(${attr.id})">🗑️</button>
                 </div>
             </div>
-        `).join('');
+            `;
+        });
+        
+        container.innerHTML = html;
+        console.log('✅ Атрибуты отображены, количество карточек:', container.children.length);
         
     } catch (error) {
         console.error('❌ Ошибка загрузки атрибутов:', error);
@@ -1566,10 +1570,20 @@ async function deleteAttribute(attributeId) {
 }
 
 // ==========================================
-// ===== АКЦИИ (АДМИНКА) =====
+// ===== АКЦИИ (АДМИНКА) - ИСПРАВЛЕННАЯ =====
 // ==========================================
 
 async function loadAdminPromotions() {
+    console.log('🔄 Загрузка акций...');
+    
+    // Принудительно показываем страницу
+    const page = document.getElementById('page-admin-promotions');
+    if (page) {
+        page.style.display = 'block';
+        page.classList.add('active');
+        console.log('✅ Страница акций показана принудительно');
+    }
+    
     const container = document.getElementById('admin-promotions-list');
     if (!container) {
         console.error('❌ Контейнер admin-promotions-list не найден');
@@ -1588,10 +1602,8 @@ async function loadAdminPromotions() {
         
         if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         const data = await response.json();
-        console.log('📦 Загружено акций в админке:', data.length);
-        console.log('📦 Данные акций:', data);
+        console.log('📦 Загружено акций:', data.length);
         
-        // Обновляем глобальную переменную
         promotions = data;
         
         if (data.length === 0) {
@@ -1599,7 +1611,9 @@ async function loadAdminPromotions() {
             return;
         }
         
-        container.innerHTML = data.map(p => `
+        let html = '';
+        data.forEach(p => {
+            html += `
             <div class="admin-promotion-card" data-id="${p.id}">
                 <span class="admin-promotion-emoji">${p.image_emoji || '🎉'}</span>
                 <div class="admin-promotion-info">
@@ -1614,7 +1628,11 @@ async function loadAdminPromotions() {
                     <button class="admin-delete-btn" onclick="deletePromotion(${p.id})">🗑️</button>
                 </div>
             </div>
-        `).join('');
+            `;
+        });
+        
+        container.innerHTML = html;
+        console.log('✅ Акции отображены, количество карточек:', container.children.length);
         
     } catch (error) {
         console.error('❌ Ошибка загрузки акций:', error);
@@ -1700,10 +1718,20 @@ async function deletePromotion(promotionId) {
 }
 
 // ==========================================
-// ===== МОДЕРАТОРЫ (АДМИНКА) =====
+// ===== МОДЕРАТОРЫ (АДМИНКА) - ИСПРАВЛЕННАЯ =====
 // ==========================================
 
 async function loadAdmins() {
+    console.log('🔄 Загрузка модераторов...');
+    
+    // Принудительно показываем страницу
+    const page = document.getElementById('page-admin-moderators');
+    if (page) {
+        page.style.display = 'block';
+        page.classList.add('active');
+        console.log('✅ Страница модераторов показана принудительно');
+    }
+    
     const container = document.getElementById('admin-moderators-list');
     if (!container) {
         console.error('❌ Контейнер admin-moderators-list не найден');
@@ -1722,22 +1750,27 @@ async function loadAdmins() {
         
         if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         const data = await response.json();
-        console.log('📦 Загружено модераторов в админке:', data.length);
-        console.log('📦 Данные модераторов:', data);
+        console.log('📦 Загружено модераторов:', data.length);
         
         if (data.length === 0) {
             container.innerHTML = '<div class="empty-message">Нет модераторов</div>';
             return;
         }
         
-        container.innerHTML = data.map(admin => `
+        let html = '';
+        data.forEach(admin => {
+            html += `
             <div class="admin-card">
                 <span>👤 ${admin.username || 'Unknown'}</span>
                 <span>ID: ${admin.id || 'Нет ID'}</span>
                 <span class="admin-role">${admin.role || 'admin'}</span>
                 <button class="admin-remove-btn" onclick="removeAdmin(${admin.id})">❌</button>
             </div>
-        `).join('');
+            `;
+        });
+        
+        container.innerHTML = html;
+        console.log('✅ Модераторы отображены, количество карточек:', container.children.length);
         
     } catch (error) {
         console.error('❌ Ошибка загрузки модераторов:', error);
@@ -1877,7 +1910,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.log('✅ Кнопка админки показана');
     }
     
-    // Загружаем основные данные
     await loadMainCategories();
     await loadBrands();
     await loadProductModels();
@@ -1887,7 +1919,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     setupSortFilters();
     
-    // ===== НАВИГАЦИЯ ПО НИЖНЕМУ МЕНЮ =====
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const page = btn.dataset.page;
@@ -1898,7 +1929,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
     
-    // ===== НАВИГАЦИЯ ПО АДМИН-МЕНЮ =====
     document.querySelectorAll('.admin-menu-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const page = btn.dataset.page;
@@ -1914,7 +1944,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         checkoutBtn.addEventListener('click', checkout);
     }
     
-    // ===== ОБРАБОТЧИКИ ДЛЯ КНОПОК ДОБАВЛЕНИЯ =====
     if (isAdmin) {
         document.getElementById('admin-add-category-btn')?.addEventListener('click', addNewCategory);
         document.getElementById('admin-add-product-btn')?.addEventListener('click', addNewProduct);
