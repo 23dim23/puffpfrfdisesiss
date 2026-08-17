@@ -88,7 +88,6 @@ async function loadBrands() {
         
         if (!response.ok) throw new Error('Failed to fetch brands');
         const data = await response.json();
-        // Убираем фильтрацию по active, так как его может не быть
         brands = data;
         console.log('✅ Загружено брендов:', brands.length);
         return brands;
@@ -109,7 +108,6 @@ async function loadProductModels() {
         
         if (!response.ok) throw new Error('Failed to fetch product models');
         const data = await response.json();
-        // Убираем фильтрацию по active, так как его может не быть
         productModels = data;
         console.log('✅ Загружено моделей:', productModels.length);
         return productModels;
@@ -130,7 +128,6 @@ async function loadProductAttributes() {
         
         if (!response.ok) throw new Error('Failed to fetch product attributes');
         const data = await response.json();
-        // Убираем фильтрацию по active, так как его может не быть
         productAttributes = data;
         console.log('✅ Загружено атрибутов:', productAttributes.length);
         return productAttributes;
@@ -185,7 +182,6 @@ async function loadProductsFromSupabase() {
 
 async function loadPromotionsFromSupabase() {
     try {
-        // Убираем фильтрацию по active, так как его может не быть
         const response = await fetch(`${SUPABASE_URL}/rest/v1/promotions?select=*`, {
             headers: {
                 'apikey': SUPABASE_ANON_KEY,
@@ -288,7 +284,6 @@ function renderMainCategories(grid) {
 }
 
 function renderBrands(grid) {
-    // Убираем фильтрацию по active
     const categoryBrands = brands.filter(b => b.main_category_slug === currentCategorySlug);
     
     if (categoryBrands.length === 0) {
@@ -312,7 +307,6 @@ function renderBrands(grid) {
 }
 
 function renderModels(grid) {
-    // Убираем фильтрацию по active
     const brandModels = productModels.filter(m => m.brand_slug === currentBrandSlug);
     
     if (brandModels.length === 0) {
@@ -336,7 +330,6 @@ function renderModels(grid) {
 }
 
 function renderAttributes(grid) {
-    // Убираем фильтрацию по active
     const modelAttributes = productAttributes.filter(a => a.product_model_slug === currentModelSlug);
     
     if (modelAttributes.length === 0) {
@@ -644,6 +637,8 @@ async function loadAdminOrders() {
     if (!container) return;
     
     try {
+        container.innerHTML = '<div class="loading">⏳ Загрузка заказов...</div>';
+        
         const response = await fetch(`${SUPABASE_URL}/rest/v1/orders?select=*&order=created_at.desc`, {
             headers: {
                 'apikey': SUPABASE_ANON_KEY,
@@ -653,6 +648,7 @@ async function loadAdminOrders() {
         
         if (!response.ok) throw new Error('Failed to fetch orders');
         const orders = await response.json();
+        console.log('📦 Загружено заказов:', orders.length);
         
         if (orders.length === 0) {
             container.innerHTML = '<div class="empty-message">Заказов пока нет</div>';
@@ -722,6 +718,8 @@ async function loadAdminProducts() {
     if (!container) return;
     
     try {
+        container.innerHTML = '<div class="loading">⏳ Загрузка товаров...</div>';
+        
         const response = await fetch(`${SUPABASE_URL}/rest/v1/products?select=*`, {
             headers: {
                 'apikey': SUPABASE_ANON_KEY,
@@ -731,6 +729,7 @@ async function loadAdminProducts() {
         
         if (!response.ok) throw new Error('Failed to fetch products');
         const data = await response.json();
+        console.log('📦 Загружено товаров в админке:', data.length);
         
         if (data.length === 0) {
             container.innerHTML = '<div class="empty-message">Товаров не найдено</div>';
@@ -900,7 +899,6 @@ async function addNewProduct() {
     let brandSlug = null;
     let brandName = null;
     if (mainCategorySlug !== 'accessories' && mainCategorySlug !== 'disposable') {
-        // Убираем фильтрацию по active
         const categoryBrands = brands.filter(b => b.main_category_slug === mainCategorySlug);
         if (categoryBrands.length === 0) {
             alert(`❌ Нет брендов для категории "${category.name}". Сначала добавьте бренд через админку → Бренды.`);
@@ -924,8 +922,6 @@ async function addNewProduct() {
     let modelOptions = [];
 
     if (mainCategorySlug === 'accessories') {
-        // Комплектующие
-        // Убираем фильтрацию по active
         const accessoriesModels = productModels.filter(m => m.main_category_slug === 'accessories');
         if (accessoriesModels.length === 0) {
             alert('❌ Нет комплектующих. Сначала добавьте комплектующие через админку → Модели.');
@@ -942,8 +938,6 @@ async function addNewProduct() {
         modelSlug = accessoriesModels[modelIndex].slug;
         modelName = accessoriesModels[modelIndex].name;
     } else if (mainCategorySlug === 'disposable') {
-        // Одноразовые pod
-        // Убираем фильтрацию по active
         const disposableModels = productModels.filter(m => m.main_category_slug === 'disposable');
         if (disposableModels.length === 0) {
             alert('❌ Нет одноразовых pod. Сначала добавьте через админку → Модели.');
@@ -960,8 +954,6 @@ async function addNewProduct() {
         modelSlug = disposableModels[modelIndex].slug;
         modelName = disposableModels[modelIndex].name;
     } else {
-        // Остальные категории (pod, liquid, snus)
-        // Убираем фильтрацию по active
         const brandModels = productModels.filter(m => m.brand_slug === brandSlug);
         if (brandModels.length === 0) {
             alert(`❌ Нет моделей для бренда "${brandName}". Сначала добавьте модели через админку → Модели.`);
@@ -981,7 +973,6 @@ async function addNewProduct() {
 
     // Шаг 4: Атрибуты
     let attributes = [];
-    // Убираем фильтрацию по active
     const modelAttributes = productAttributes.filter(a => a.product_model_slug === modelSlug);
     
     if (modelAttributes.length > 0) {
@@ -1005,7 +996,6 @@ async function addNewProduct() {
             attributes.push({ name: attrName, value: values[valueIndex] });
         }
     } else {
-        // Если атрибутов нет — спросим дополнительно
         if (mainCategorySlug === 'accessories') {
             const resistance = prompt('🔧 Сопротивление (например, 0.8 Ом):');
             if (resistance === null) return;
@@ -1108,6 +1098,8 @@ async function loadAdminBrands() {
     if (!container) return;
     
     try {
+        container.innerHTML = '<div class="loading">⏳ Загрузка брендов...</div>';
+        
         const response = await fetch(`${SUPABASE_URL}/rest/v1/brands?select=*&order=sort_order.asc`, {
             headers: {
                 'apikey': SUPABASE_ANON_KEY,
@@ -1117,6 +1109,7 @@ async function loadAdminBrands() {
         
         if (!response.ok) throw new Error('Failed to fetch brands');
         const data = await response.json();
+        console.log('📦 Загружено брендов в админке:', data.length);
         
         if (data.length === 0) {
             container.innerHTML = '<div class="empty-message">Брендов пока нет</div>';
@@ -1241,6 +1234,8 @@ async function loadAdminModels() {
     if (!container) return;
     
     try {
+        container.innerHTML = '<div class="loading">⏳ Загрузка моделей...</div>';
+        
         const response = await fetch(`${SUPABASE_URL}/rest/v1/product_models?select=*&order=sort_order.asc`, {
             headers: {
                 'apikey': SUPABASE_ANON_KEY,
@@ -1250,6 +1245,7 @@ async function loadAdminModels() {
         
         if (!response.ok) throw new Error('Failed to fetch models');
         const data = await response.json();
+        console.log('📦 Загружено моделей в админке:', data.length);
         
         if (data.length === 0) {
             container.innerHTML = '<div class="empty-message">Моделей пока нет</div>';
@@ -1286,7 +1282,6 @@ async function addNewModel() {
     const slug = prompt('Slug (уникальный идентификатор, латиница):');
     if (!slug) return;
     
-    // Убираем фильтрацию по active
     const brandOptions = brands.map((b, i) => `${i+1}. ${b.name} (${b.slug})`).join('\n');
     if (brands.length === 0) {
         alert('Сначала добавьте бренд через админку!');
@@ -1395,9 +1390,13 @@ async function loadAdminAttributes() {
             }
         });
         
-        if (!response.ok) throw new Error('Failed to fetch attributes');
+        if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         const data = await response.json();
-        console.log('📦 Загружено атрибутов:', data.length);
+        console.log('📦 Загружено атрибутов в админке:', data.length);
+        console.log('📦 Данные атрибутов:', data);
+        
+        // Обновляем глобальную переменную
+        productAttributes = data;
         
         if (data.length === 0) {
             container.innerHTML = '<div class="empty-message">Атрибутов пока нет</div>';
@@ -1407,9 +1406,10 @@ async function loadAdminAttributes() {
         container.innerHTML = data.map(attr => `
             <div class="admin-attribute-card" data-id="${attr.id}">
                 <div class="admin-attribute-info">
-                    <div class="admin-attribute-name">${attr.attribute_name}</div>
-                    <div class="admin-attribute-slug">${attr.attribute_value}</div>
-                    <div class="admin-attribute-category">Модель: ${attr.product_model_slug || 'Не указана'}</div>
+                    <div class="admin-attribute-name">${attr.attribute_name || 'Без названия'}</div>
+                    <div class="admin-attribute-value">${attr.attribute_value || 'Без значения'}</div>
+                    <div class="admin-attribute-model">Модель: ${attr.product_model_slug || 'Не указана'}</div>
+                    <div class="admin-attribute-status">${attr.active !== false ? '🟢 Активен' : '🔴 Неактивен'}</div>
                 </div>
                 <div class="admin-attribute-actions">
                     <button class="admin-edit-btn" onclick="editAttribute(${attr.id})">✏️</button>
@@ -1419,7 +1419,7 @@ async function loadAdminAttributes() {
         `).join('');
         
     } catch (error) {
-        console.error('Error loading attributes:', error);
+        console.error('❌ Ошибка загрузки атрибутов:', error);
         container.innerHTML = `<div class="error-message">❌ Ошибка загрузки: ${error.message}</div>`;
     }
 }
@@ -1522,9 +1522,13 @@ async function loadAdminPromotions() {
             }
         });
         
-        if (!response.ok) throw new Error('Failed to fetch promotions');
+        if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         const data = await response.json();
-        console.log('📦 Загружено акций:', data.length);
+        console.log('📦 Загружено акций в админке:', data.length);
+        console.log('📦 Данные акций:', data);
+        
+        // Обновляем глобальную переменную
+        promotions = data;
         
         if (data.length === 0) {
             container.innerHTML = '<div class="empty-message">Акций пока нет</div>';
@@ -1535,10 +1539,10 @@ async function loadAdminPromotions() {
             <div class="admin-promotion-card" data-id="${p.id}">
                 <span class="admin-promotion-emoji">${p.image_emoji || '🎉'}</span>
                 <div class="admin-promotion-info">
-                    <div class="admin-promotion-title">${p.title}</div>
+                    <div class="admin-promotion-title">${p.title || 'Без названия'}</div>
                     <div class="admin-promotion-desc">${p.description || ''}</div>
-                    <span class="admin-promotion-status ${p.active ? 'active' : 'inactive'}">
-                        ${p.active ? '✅ Активна' : '❌ Неактивна'}
+                    <span class="admin-promotion-status ${p.active !== false ? 'active' : 'inactive'}">
+                        ${p.active !== false ? '✅ Активна' : '❌ Неактивна'}
                     </span>
                 </div>
                 <div class="admin-promotion-actions">
@@ -1549,7 +1553,7 @@ async function loadAdminPromotions() {
         `).join('');
         
     } catch (error) {
-        console.error('Error loading promotions:', error);
+        console.error('❌ Ошибка загрузки акций:', error);
         container.innerHTML = `<div class="error-message">❌ Ошибка загрузки: ${error.message}</div>`;
     }
 }
@@ -1652,9 +1656,10 @@ async function loadAdmins() {
             }
         });
         
-        if (!response.ok) throw new Error('Failed to fetch admins');
+        if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         const data = await response.json();
-        console.log('📦 Загружено модераторов:', data.length);
+        console.log('📦 Загружено модераторов в админке:', data.length);
+        console.log('📦 Данные модераторов:', data);
         
         if (data.length === 0) {
             container.innerHTML = '<div class="empty-message">Нет модераторов</div>';
@@ -1664,14 +1669,14 @@ async function loadAdmins() {
         container.innerHTML = data.map(admin => `
             <div class="admin-card">
                 <span>👤 ${admin.username || 'Unknown'}</span>
-                <span>ID: ${admin.id}</span>
+                <span>ID: ${admin.id || 'Нет ID'}</span>
                 <span class="admin-role">${admin.role || 'admin'}</span>
                 <button class="admin-remove-btn" onclick="removeAdmin(${admin.id})">❌</button>
             </div>
         `).join('');
         
     } catch (error) {
-        console.error('Error loading admins:', error);
+        console.error('❌ Ошибка загрузки модераторов:', error);
         container.innerHTML = `<div class="error-message">❌ Ошибка загрузки: ${error.message}</div>`;
     }
 }
