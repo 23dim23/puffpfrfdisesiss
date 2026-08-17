@@ -599,14 +599,14 @@ function updateBadge() {
     }
 }
 
-// ===== НАВИГАЦИЯ (ИСПРАВЛЕННАЯ) =====
+// ===== НАВИГАЦИЯ (ИСПРАВЛЕННАЯ - РАБОТАЕТ В TELEGRAM) =====
 function navigateTo(pageId) {
     console.log('🔄 Переход на страницу:', pageId);
     
     // Скрываем все страницы
     document.querySelectorAll('.page').forEach(p => {
         p.classList.remove('active');
-        // Скрываем все страницы админки
+        // Для страниц админки - скрываем через display
         if (p.id.startsWith('page-admin')) {
             p.style.display = 'none';
         }
@@ -616,13 +616,14 @@ function navigateTo(pageId) {
     const target = document.getElementById(pageId);
     if (target) {
         target.classList.add('active');
-        // Показываем страницу админки
+        // Для страниц админки - показываем через display: block
         if (pageId.startsWith('page-admin')) {
             target.style.display = 'block';
         }
         console.log('✅ Показана страница:', pageId);
     } else {
         console.error('❌ Страница не найдена:', pageId);
+        return;
     }
     
     // Обновляем активную кнопку в нижнем меню
@@ -631,6 +632,40 @@ function navigateTo(pageId) {
     });
     
     currentPage = pageId;
+    
+    // Если это страница админки - загружаем данные
+    if (pageId.startsWith('page-admin')) {
+        console.log('🔄 Загрузка данных для админ-страницы:', pageId);
+        // Загружаем данные через небольшую задержку, чтобы страница успела отрендериться
+        setTimeout(() => {
+            switch(pageId) {
+                case 'page-admin-attributes':
+                    loadAdminAttributes();
+                    break;
+                case 'page-admin-promotions':
+                    loadAdminPromotions();
+                    break;
+                case 'page-admin-moderators':
+                    loadAdmins();
+                    break;
+                case 'page-admin-orders':
+                    loadAdminOrders();
+                    break;
+                case 'page-admin-products':
+                    loadAdminProducts();
+                    break;
+                case 'page-admin-brands':
+                    loadAdminBrands();
+                    break;
+                case 'page-admin-models':
+                    loadAdminModels();
+                    break;
+                case 'page-admin-categories':
+                    loadAdminCategories();
+                    break;
+            }
+        }, 100);
+    }
 }
 
 // ===== ОФОРМЛЕНИЕ ЗАКАЗА =====
@@ -1827,7 +1862,7 @@ async function addNewCategory() {
 }
 
 // ==========================================
-// ===== ИНИЦИАЛИЗАЦИЯ (ИСПРАВЛЕННАЯ) =====
+// ===== ИНИЦИАЛИЗАЦИЯ =====
 // ==========================================
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -1870,34 +1905,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (page) {
                 console.log('⚙️ Админ-навигация к:', page);
                 navigateTo(page);
-                
-                // Загружаем данные в зависимости от страницы
-                switch(page) {
-                    case 'page-admin-attributes':
-                        loadAdminAttributes();
-                        break;
-                    case 'page-admin-promotions':
-                        loadAdminPromotions();
-                        break;
-                    case 'page-admin-moderators':
-                        loadAdmins();
-                        break;
-                    case 'page-admin-orders':
-                        loadAdminOrders();
-                        break;
-                    case 'page-admin-products':
-                        loadAdminProducts();
-                        break;
-                    case 'page-admin-brands':
-                        loadAdminBrands();
-                        break;
-                    case 'page-admin-models':
-                        loadAdminModels();
-                        break;
-                    case 'page-admin-categories':
-                        loadAdminCategories();
-                        break;
-                }
             }
         });
     });
