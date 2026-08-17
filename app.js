@@ -2,6 +2,24 @@
 const tg = window.Telegram.WebApp;
 tg.expand();
 
+// ===== ЗАГЛУШКА ДЛЯ ПОКАЗА В БРАУЗЕРЕ =====
+function showMessage(title, message) {
+    console.log(`📢 ${title}: ${message}`);
+    if (window.Telegram.WebApp.platform === 'unknown' || window.Telegram.WebApp.version === '6.0') {
+        alert(`${title}\n\n${message}`);
+    } else {
+        try {
+            tg.showPopup({
+                title: title,
+                message: message,
+                buttons: [{ type: 'ok' }]
+            });
+        } catch (e) {
+            alert(`${title}\n\n${message}`);
+        }
+    }
+}
+
 // ===== ДИАГНОСТИКА =====
 console.log('🔍 ДИАГНОСТИКА:');
 console.log('📱 initData:', window.Telegram.WebApp.initData);
@@ -540,11 +558,7 @@ function addToCart(productId) {
     if (!product) return;
     
     if (product.stockQuantity <= 0) {
-        tg.showPopup({
-            title: '❌ Нет в наличии',
-            message: 'Товар закончился на складе',
-            buttons: [{ type: 'ok' }]
-        });
+        showMessage('❌ Нет в наличии', 'Товар закончился на складе');
         return;
     }
     
@@ -564,11 +578,7 @@ function addToCart(productId) {
         orderForm.style.display = 'block';
     }
     
-    tg.showPopup({
-        title: '✅ Добавлено!',
-        message: `${product.emoji} ${product.name} — ${product.discountPrice || product.price} BYN`,
-        buttons: [{ type: 'ok' }]
-    });
+    showMessage('✅ Добавлено!', `${product.emoji} ${product.name} — ${product.discountPrice || product.price} BYN`);
 }
 
 function updateCartUI() {
@@ -740,20 +750,12 @@ async function checkout() {
     const comment = document.getElementById('order-comment')?.value?.trim() || '';
     
     if (!phone) {
-        tg.showPopup({
-            title: '⚠️ Введите телефон',
-            message: 'Пожалуйста, укажите номер телефона для связи',
-            buttons: [{ type: 'ok' }]
-        });
+        showMessage('⚠️ Введите телефон', 'Пожалуйста, укажите номер телефона для связи');
         return;
     }
     
     if (deliveryType === 'delivery' && !address) {
-        tg.showPopup({
-            title: '⚠️ Введите адрес',
-            message: 'Пожалуйста, укажите адрес доставки',
-            buttons: [{ type: 'ok' }]
-        });
+        showMessage('⚠️ Введите адрес', 'Пожалуйста, укажите адрес доставки');
         return;
     }
     
@@ -769,7 +771,7 @@ async function checkout() {
     
     // Формируем заказ
     const orderData = {
-        user_id: user?.id || null,
+        user_id: user?.id || 0,  // ← вместо null отправляем 0
         username: user?.username || user?.first_name || 'Гость',
         total: total,
         status: 'pending',
@@ -795,22 +797,25 @@ async function checkout() {
             body: JSON.stringify(orderData)
         });
         
+        const responseText = await response.text();
+        console.log('📦 Статус ответа:', response.status);
+        console.log('📦 Текст ответа:', responseText);
+        
         if (!response.ok) {
-            const errorText = await response.text();
-            console.error('❌ Ошибка сохранения заказа:', errorText);
-            tg.showPopup({
-                title: '❌ Ошибка',
-                message: 'Не удалось сохранить заказ. Попробуйте еще раз.',
-                buttons: [{ type: 'ok' }]
-            });
+            console.error('❌ Ошибка сохранения заказа:', response.status, responseText);
+            showMessage('❌ Ошибка', `Не удалось сохранить заказ. Код ошибки: ${response.status}`);
             return;
         }
         
-        const result = await response.json();
+        let result;
+        try {
+            result = JSON.parse(responseText);
+        } catch (e) {
+            result = responseText;
+        }
         console.log('✅ Заказ сохранен в Supabase:', result);
         
         // ===== ОТПРАВЛЯЕМ УВЕДОМЛЕНИЕ В БОТ =====
-        // Отправляем данные в бот для уведомления админов
         const botOrderData = {
             action: 'order',
             items: items,
@@ -829,7 +834,6 @@ async function checkout() {
             console.log('📤 Уведомление отправлено в бот');
         } catch (botError) {
             console.warn('⚠️ Ошибка отправки уведомления в бот:', botError);
-            // Не критично - заказ уже сохранен
         }
         
         // ===== ОБНОВЛЯЕМ ОСТАТКИ =====
@@ -872,12 +876,7 @@ async function checkout() {
         if (addressInput) addressInput.value = '';
         if (commentInput) commentInput.value = '';
         
-        // ===== ПОКАЗЫВАЕМ УВЕДОМЛЕНИЕ =====
-        tg.showPopup({
-            title: '✅ Заказ оформлен!',
-            message: 'Спасибо за заказ! Мы свяжемся с вами в ближайшее время.',
-            buttons: [{ type: 'ok' }]
-        });
+        showMessage('✅ Заказ оформлен!', 'Спасибо за заказ! Мы свяжемся с вами в ближайшее время.');
         
         // Обновляем список товаров
         await loadProductsFromSupabase();
@@ -889,11 +888,7 @@ async function checkout() {
         
     } catch (error) {
         console.error('❌ Ошибка оформления заказа:', error);
-        tg.showPopup({
-            title: '❌ Ошибка',
-            message: 'Не удалось оформить заказ. Попробуйте еще раз.',
-            buttons: [{ type: 'ok' }]
-        });
+        showMessage('❌ Ошибка', 'Не удалось оформить заказ. Попробуйте еще раз.');
     }
 }
 
@@ -970,11 +965,7 @@ async function loadStats() {
         
     } catch (error) {
         console.error('❌ Ошибка загрузки статистики:', error);
-        tg.showPopup({
-            title: '❌ Ошибка',
-            message: 'Не удалось загрузить статистику',
-            buttons: [{ type: 'ok' }]
-        });
+        showMessage('❌ Ошибка', 'Не удалось загрузить статистику');
     }
 }
 
@@ -1071,11 +1062,7 @@ async function updateOrderStatus(orderId, status) {
         });
         
         if (response.ok) {
-            tg.showPopup({
-                title: '✅ Статус обновлён',
-                message: `Заказ #${orderId} теперь ${status}`,
-                buttons: [{ type: 'ok' }]
-            });
+            showMessage('✅ Статус обновлён', `Заказ #${orderId} теперь ${status}`);
         }
     } catch (error) {
         console.error('Error updating order status:', error);
@@ -1185,11 +1172,7 @@ async function toggleStock(productId, checked) {
         }
     } catch (error) {
         console.error('Error toggling stock:', error);
-        tg.showPopup({
-            title: '❌ Ошибка',
-            message: 'Не удалось обновить статус',
-            buttons: [{ type: 'ok' }]
-        });
+        showMessage('❌ Ошибка', 'Не удалось обновить статус');
     }
 }
 
@@ -1437,27 +1420,15 @@ ${isHit ? '🔥 Хит' : ''} ${isNew ? '✨ Новинка' : ''}
         if (response.ok) {
             await loadAdminProducts();
             await loadProductsFromSupabase();
-            tg.showPopup({
-                title: '✅ Товар добавлен!',
-                message: `"${name}" успешно добавлен в категорию "${category.name}"`,
-                buttons: [{ type: 'ok' }]
-            });
+            showMessage('✅ Товар добавлен!', `"${name}" успешно добавлен в категорию "${category.name}"`);
         } else {
             const error = await response.json();
             console.error('❌ Ошибка добавления:', error);
-            tg.showPopup({
-                title: '❌ Ошибка',
-                message: error.message || 'Не удалось добавить товар',
-                buttons: [{ type: 'ok' }]
-            });
+            showMessage('❌ Ошибка', error.message || 'Не удалось добавить товар');
         }
     } catch (error) {
         console.error('❌ Ошибка запроса:', error);
-        tg.showPopup({
-            title: '❌ Ошибка',
-            message: 'Ошибка соединения с сервером',
-            buttons: [{ type: 'ok' }]
-        });
+        showMessage('❌ Ошибка', 'Ошибка соединения с сервером');
     }
 }
 
@@ -1550,27 +1521,15 @@ async function addNewBrand() {
             await loadAdminBrands();
             await loadBrands();
             renderCatalog();
-            tg.showPopup({
-                title: '✅ Бренд добавлен!',
-                message: `"${name}" успешно добавлен`,
-                buttons: [{ type: 'ok' }]
-            });
+            showMessage('✅ Бренд добавлен!', `"${name}" успешно добавлен`);
         } else {
             const error = await response.json();
             console.error('❌ Ошибка добавления:', error);
-            tg.showPopup({
-                title: '❌ Ошибка',
-                message: error.message || 'Не удалось добавить бренд',
-                buttons: [{ type: 'ok' }]
-            });
+            showMessage('❌ Ошибка', error.message || 'Не удалось добавить бренд');
         }
     } catch (error) {
         console.error('❌ Ошибка запроса:', error);
-        tg.showPopup({
-            title: '❌ Ошибка',
-            message: 'Ошибка соединения с сервером',
-            buttons: [{ type: 'ok' }]
-        });
+        showMessage('❌ Ошибка', 'Ошибка соединения с сервером');
     }
 }
 
@@ -1590,11 +1549,7 @@ async function deleteBrand(brandId) {
             await loadAdminBrands();
             await loadBrands();
             renderCatalog();
-            tg.showPopup({
-                title: '✅ Бренд удалён',
-                message: 'Бренд успешно удалён',
-                buttons: [{ type: 'ok' }]
-            });
+            showMessage('✅ Бренд удалён', 'Бренд успешно удалён');
         }
     } catch (error) {
         console.error('Error deleting brand:', error);
@@ -1698,27 +1653,15 @@ async function addNewModel() {
             await loadAdminModels();
             await loadProductModels();
             renderCatalog();
-            tg.showPopup({
-                title: '✅ Модель добавлена!',
-                message: `"${name}" успешно добавлена`,
-                buttons: [{ type: 'ok' }]
-            });
+            showMessage('✅ Модель добавлена!', `"${name}" успешно добавлена`);
         } else {
             const error = await response.json();
             console.error('❌ Ошибка добавления:', error);
-            tg.showPopup({
-                title: '❌ Ошибка',
-                message: error.message || 'Не удалось добавить модель',
-                buttons: [{ type: 'ok' }]
-            });
+            showMessage('❌ Ошибка', error.message || 'Не удалось добавить модель');
         }
     } catch (error) {
         console.error('❌ Ошибка запроса:', error);
-        tg.showPopup({
-            title: '❌ Ошибка',
-            message: 'Ошибка соединения с сервером',
-            buttons: [{ type: 'ok' }]
-        });
+        showMessage('❌ Ошибка', 'Ошибка соединения с сервером');
     }
 }
 
@@ -1738,11 +1681,7 @@ async function deleteModel(modelId) {
             await loadAdminModels();
             await loadProductModels();
             renderCatalog();
-            tg.showPopup({
-                title: '✅ Модель удалена',
-                message: 'Модель успешно удалена',
-                buttons: [{ type: 'ok' }]
-            });
+            showMessage('✅ Модель удалена', 'Модель успешно удалена');
         }
     } catch (error) {
         console.error('Error deleting model:', error);
@@ -1855,27 +1794,15 @@ async function addNewAttribute() {
         if (response.ok) {
             await loadAdminAttributes();
             await loadProductAttributes();
-            tg.showPopup({
-                title: '✅ Атрибут добавлен!',
-                message: `"${attrName}: ${attrValue}" добавлен для модели "${modelSlug}"`,
-                buttons: [{ type: 'ok' }]
-            });
+            showMessage('✅ Атрибут добавлен!', `"${attrName}: ${attrValue}" добавлен для модели "${modelSlug}"`);
         } else {
             const error = await response.json();
             console.error('❌ Ошибка добавления:', error);
-            tg.showPopup({
-                title: '❌ Ошибка',
-                message: error.message || 'Не удалось добавить атрибут',
-                buttons: [{ type: 'ok' }]
-            });
+            showMessage('❌ Ошибка', error.message || 'Не удалось добавить атрибут');
         }
     } catch (error) {
         console.error('❌ Ошибка запроса:', error);
-        tg.showPopup({
-            title: '❌ Ошибка',
-            message: 'Ошибка соединения с сервером',
-            buttons: [{ type: 'ok' }]
-        });
+        showMessage('❌ Ошибка', 'Ошибка соединения с сервером');
     }
 }
 
@@ -1894,11 +1821,7 @@ async function deleteAttribute(attributeId) {
         if (response.ok) {
             await loadAdminAttributes();
             await loadProductAttributes();
-            tg.showPopup({
-                title: '✅ Атрибут удалён',
-                message: 'Атрибут успешно удалён',
-                buttons: [{ type: 'ok' }]
-            });
+            showMessage('✅ Атрибут удалён', 'Атрибут успешно удалён');
         }
     } catch (error) {
         console.error('Error deleting attribute:', error);
@@ -2010,27 +1933,15 @@ async function addNewPromotion() {
         if (response.ok) {
             await loadAdminPromotions();
             await loadPromotionsFromSupabase();
-            tg.showPopup({
-                title: '✅ Акция добавлена!',
-                message: `"${title}" успешно добавлена`,
-                buttons: [{ type: 'ok' }]
-            });
+            showMessage('✅ Акция добавлена!', `"${title}" успешно добавлена`);
         } else {
             const error = await response.json();
             console.error('❌ Ошибка добавления:', error);
-            tg.showPopup({
-                title: '❌ Ошибка',
-                message: error.message || 'Не удалось добавить акцию',
-                buttons: [{ type: 'ok' }]
-            });
+            showMessage('❌ Ошибка', error.message || 'Не удалось добавить акцию');
         }
     } catch (error) {
         console.error('❌ Ошибка запроса:', error);
-        tg.showPopup({
-            title: '❌ Ошибка',
-            message: 'Ошибка соединения с сервером',
-            buttons: [{ type: 'ok' }]
-        });
+        showMessage('❌ Ошибка', 'Ошибка соединения с сервером');
     }
 }
 
@@ -2049,11 +1960,7 @@ async function deletePromotion(promotionId) {
         if (response.ok) {
             await loadAdminPromotions();
             await loadPromotionsFromSupabase();
-            tg.showPopup({
-                title: '✅ Акция удалена',
-                message: 'Акция успешно удалена',
-                buttons: [{ type: 'ok' }]
-            });
+            showMessage('✅ Акция удалена', 'Акция успешно удалена');
         }
     } catch (error) {
         console.error('Error deleting promotion:', error);
@@ -2156,27 +2063,15 @@ async function addAdmin() {
             document.getElementById('admin-add-id').value = '';
             document.getElementById('admin-add-username').value = '';
             await loadAdmins();
-            tg.showPopup({
-                title: '✅ Модератор добавлен!',
-                message: `Пользователь ${username} добавлен как модератор`,
-                buttons: [{ type: 'ok' }]
-            });
+            showMessage('✅ Модератор добавлен!', `Пользователь ${username} добавлен как модератор`);
         } else {
             const error = await response.json();
             console.error('❌ Ошибка добавления:', error);
-            tg.showPopup({
-                title: '❌ Ошибка',
-                message: error.message || 'Не удалось добавить модератора',
-                buttons: [{ type: 'ok' }]
-            });
+            showMessage('❌ Ошибка', error.message || 'Не удалось добавить модератора');
         }
     } catch (error) {
         console.error('❌ Ошибка запроса:', error);
-        tg.showPopup({
-            title: '❌ Ошибка',
-            message: 'Ошибка соединения с сервером',
-            buttons: [{ type: 'ok' }]
-        });
+        showMessage('❌ Ошибка', 'Ошибка соединения с сервером');
     }
 }
 
@@ -2194,11 +2089,7 @@ async function removeAdmin(adminId) {
         
         if (response.ok) {
             await loadAdmins();
-            tg.showPopup({
-                title: '✅ Модератор удалён',
-                message: 'Модератор успешно удалён',
-                buttons: [{ type: 'ok' }]
-            });
+            showMessage('✅ Модератор удалён', 'Модератор успешно удалён');
         }
     } catch (error) {
         console.error('Error removing admin:', error);
@@ -2241,11 +2132,7 @@ async function loadAdminCategories() {
 }
 
 async function addNewCategory() {
-    tg.showPopup({
-        title: 'ℹ️ Фиксированные категории',
-        message: 'Основные категории (Pod-системы, Жижи, Комплектующие, Одноразовые, Снюс) зафиксированы в коде.\n\nДля добавления новых категорий обратитесь к разработчику.',
-        buttons: [{ type: 'ok' }]
-    });
+    showMessage('ℹ️ Фиксированные категории', 'Основные категории (Pod-системы, Жижи, Комплектующие, Одноразовые, Снюс) зафиксированы в коде.\n\nДля добавления новых категорий обратитесь к разработчику.');
 }
 
 // ==========================================
