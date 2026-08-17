@@ -1084,7 +1084,7 @@ ${isHit ? '🔥 Хит' : ''} ${isNew ? '✨ Новинка' : ''}
 }
 
 // ==========================================
-// ===== УПРАВЛЕНИЕ БРЕНДАМИ (ИСПРАВЛЕНО) =====
+// ===== УПРАВЛЕНИЕ БРЕНДАМИ =====
 // ==========================================
 
 async function loadAdminBrands() {
@@ -1164,7 +1164,6 @@ async function addNewBrand() {
         if (response.ok) {
             await loadAdminBrands();
             await loadBrands();
-            // ✅ ОБНОВЛЯЕМ КАТАЛОГ
             renderCatalog();
             tg.showPopup({
                 title: '✅ Бренд добавлен!',
@@ -1205,7 +1204,6 @@ async function deleteBrand(brandId) {
         if (response.ok) {
             await loadAdminBrands();
             await loadBrands();
-            // ✅ ОБНОВЛЯЕМ КАТАЛОГ
             renderCatalog();
             tg.showPopup({
                 title: '✅ Бренд удалён',
@@ -1219,7 +1217,7 @@ async function deleteBrand(brandId) {
 }
 
 // ==========================================
-// ===== УПРАВЛЕНИЕ МОДЕЛЯМИ (ИСПРАВЛЕНО) =====
+// ===== УПРАВЛЕНИЕ МОДЕЛЯМИ =====
 // ==========================================
 
 async function loadAdminModels() {
@@ -1307,7 +1305,6 @@ async function addNewModel() {
         if (response.ok) {
             await loadAdminModels();
             await loadProductModels();
-            // ✅ ОБНОВЛЯЕМ КАТАЛОГ
             renderCatalog();
             tg.showPopup({
                 title: '✅ Модель добавлена!',
@@ -1348,7 +1345,6 @@ async function deleteModel(modelId) {
         if (response.ok) {
             await loadAdminModels();
             await loadProductModels();
-            // ✅ ОБНОВЛЯЕМ КАТАЛОГ
             renderCatalog();
             tg.showPopup({
                 title: '✅ Модель удалена',
@@ -1358,6 +1354,385 @@ async function deleteModel(modelId) {
         }
     } catch (error) {
         console.error('Error deleting model:', error);
+    }
+}
+
+// ==========================================
+// ===== АТРИБУТЫ (АДМИНКА) =====
+// ==========================================
+
+async function loadAdminAttributes() {
+    const container = document.getElementById('admin-attributes-list');
+    if (!container) {
+        console.error('❌ Контейнер admin-attributes-list не найден');
+        return;
+    }
+    
+    try {
+        container.innerHTML = '<div class="loading">⏳ Загрузка атрибутов...</div>';
+        
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/product_attributes?select=*&order=sort_order.asc`, {
+            headers: {
+                'apikey': SUPABASE_ANON_KEY,
+                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+            }
+        });
+        
+        if (!response.ok) throw new Error('Failed to fetch attributes');
+        const data = await response.json();
+        console.log('📦 Загружено атрибутов:', data.length);
+        
+        if (data.length === 0) {
+            container.innerHTML = '<div class="empty-message">Атрибутов пока нет</div>';
+            return;
+        }
+        
+        container.innerHTML = data.map(attr => `
+            <div class="admin-attribute-card" data-id="${attr.id}">
+                <div class="admin-attribute-info">
+                    <div class="admin-attribute-name">${attr.attribute_name}</div>
+                    <div class="admin-attribute-slug">${attr.attribute_value}</div>
+                    <div class="admin-attribute-category">Модель: ${attr.product_model_slug || 'Не указана'}</div>
+                </div>
+                <div class="admin-attribute-actions">
+                    <button class="admin-edit-btn" onclick="editAttribute(${attr.id})">✏️</button>
+                    <button class="admin-delete-btn" onclick="deleteAttribute(${attr.id})">🗑️</button>
+                </div>
+            </div>
+        `).join('');
+        
+    } catch (error) {
+        console.error('Error loading attributes:', error);
+        container.innerHTML = `<div class="error-message">❌ Ошибка загрузки: ${error.message}</div>`;
+    }
+}
+
+async function addNewAttribute() {
+    const attrName = prompt('Название атрибута (например, "Цвет", "Сопротивление"):');
+    if (!attrName) return;
+    const attrValue = prompt('Значение атрибута (например, "Чёрный", "0.8 Ом"):');
+    if (!attrValue) return;
+    const modelSlug = prompt('Slug модели (например, "xros-3"):');
+    if (!modelSlug) return;
+    
+    try {
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/product_attributes`, {
+            method: 'POST',
+            headers: {
+                'apikey': SUPABASE_SERVICE_ROLE,
+                'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                attribute_name: attrName,
+                attribute_value: attrValue,
+                product_model_slug: modelSlug,
+                active: true
+            })
+        });
+        
+        if (response.ok) {
+            await loadAdminAttributes();
+            await loadProductAttributes();
+            tg.showPopup({
+                title: '✅ Атрибут добавлен!',
+                message: `"${attrName}: ${attrValue}" добавлен для модели "${modelSlug}"`,
+                buttons: [{ type: 'ok' }]
+            });
+        } else {
+            const error = await response.json();
+            console.error('❌ Ошибка добавления:', error);
+            tg.showPopup({
+                title: '❌ Ошибка',
+                message: error.message || 'Не удалось добавить атрибут',
+                buttons: [{ type: 'ok' }]
+            });
+        }
+    } catch (error) {
+        console.error('❌ Ошибка запроса:', error);
+        tg.showPopup({
+            title: '❌ Ошибка',
+            message: 'Ошибка соединения с сервером',
+            buttons: [{ type: 'ok' }]
+        });
+    }
+}
+
+async function deleteAttribute(attributeId) {
+    if (!confirm('Удалить этот атрибут?')) return;
+    
+    try {
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/product_attributes?id=eq.${attributeId}`, {
+            method: 'DELETE',
+            headers: {
+                'apikey': SUPABASE_SERVICE_ROLE,
+                'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE}`
+            }
+        });
+        
+        if (response.ok) {
+            await loadAdminAttributes();
+            await loadProductAttributes();
+            tg.showPopup({
+                title: '✅ Атрибут удалён',
+                message: 'Атрибут успешно удалён',
+                buttons: [{ type: 'ok' }]
+            });
+        }
+    } catch (error) {
+        console.error('Error deleting attribute:', error);
+    }
+}
+
+// ==========================================
+// ===== АКЦИИ (АДМИНКА) =====
+// ==========================================
+
+async function loadAdminPromotions() {
+    const container = document.getElementById('admin-promotions-list');
+    if (!container) {
+        console.error('❌ Контейнер admin-promotions-list не найден');
+        return;
+    }
+    
+    try {
+        container.innerHTML = '<div class="loading">⏳ Загрузка акций...</div>';
+        
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/promotions?select=*&order=created_at.desc`, {
+            headers: {
+                'apikey': SUPABASE_ANON_KEY,
+                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+            }
+        });
+        
+        if (!response.ok) throw new Error('Failed to fetch promotions');
+        const data = await response.json();
+        console.log('📦 Загружено акций:', data.length);
+        
+        if (data.length === 0) {
+            container.innerHTML = '<div class="empty-message">Акций пока нет</div>';
+            return;
+        }
+        
+        container.innerHTML = data.map(p => `
+            <div class="admin-promotion-card" data-id="${p.id}">
+                <span class="admin-promotion-emoji">${p.image_emoji || '🎉'}</span>
+                <div class="admin-promotion-info">
+                    <div class="admin-promotion-title">${p.title}</div>
+                    <div class="admin-promotion-desc">${p.description || ''}</div>
+                    <span class="admin-promotion-status ${p.active ? 'active' : 'inactive'}">
+                        ${p.active ? '✅ Активна' : '❌ Неактивна'}
+                    </span>
+                </div>
+                <div class="admin-promotion-actions">
+                    <button class="admin-edit-btn" onclick="editPromotion(${p.id})">✏️</button>
+                    <button class="admin-delete-btn" onclick="deletePromotion(${p.id})">🗑️</button>
+                </div>
+            </div>
+        `).join('');
+        
+    } catch (error) {
+        console.error('Error loading promotions:', error);
+        container.innerHTML = `<div class="error-message">❌ Ошибка загрузки: ${error.message}</div>`;
+    }
+}
+
+async function addNewPromotion() {
+    const title = prompt('Название акции:');
+    if (!title) return;
+    const description = prompt('Описание акции:');
+    if (description === null) return;
+    const emoji = prompt('Эмодзи:', '🎉');
+    if (emoji === null) return;
+    
+    try {
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/promotions`, {
+            method: 'POST',
+            headers: {
+                'apikey': SUPABASE_SERVICE_ROLE,
+                'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                title,
+                description,
+                image_emoji: emoji,
+                active: true
+            })
+        });
+        
+        if (response.ok) {
+            await loadAdminPromotions();
+            await loadPromotionsFromSupabase();
+            tg.showPopup({
+                title: '✅ Акция добавлена!',
+                message: `"${title}" успешно добавлена`,
+                buttons: [{ type: 'ok' }]
+            });
+        } else {
+            const error = await response.json();
+            console.error('❌ Ошибка добавления:', error);
+            tg.showPopup({
+                title: '❌ Ошибка',
+                message: error.message || 'Не удалось добавить акцию',
+                buttons: [{ type: 'ok' }]
+            });
+        }
+    } catch (error) {
+        console.error('❌ Ошибка запроса:', error);
+        tg.showPopup({
+            title: '❌ Ошибка',
+            message: 'Ошибка соединения с сервером',
+            buttons: [{ type: 'ok' }]
+        });
+    }
+}
+
+async function deletePromotion(promotionId) {
+    if (!confirm('Удалить эту акцию?')) return;
+    
+    try {
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/promotions?id=eq.${promotionId}`, {
+            method: 'DELETE',
+            headers: {
+                'apikey': SUPABASE_SERVICE_ROLE,
+                'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE}`
+            }
+        });
+        
+        if (response.ok) {
+            await loadAdminPromotions();
+            await loadPromotionsFromSupabase();
+            tg.showPopup({
+                title: '✅ Акция удалена',
+                message: 'Акция успешно удалена',
+                buttons: [{ type: 'ok' }]
+            });
+        }
+    } catch (error) {
+        console.error('Error deleting promotion:', error);
+    }
+}
+
+// ==========================================
+// ===== МОДЕРАТОРЫ (АДМИНКА) =====
+// ==========================================
+
+async function loadAdmins() {
+    const container = document.getElementById('admin-moderators-list');
+    if (!container) {
+        console.error('❌ Контейнер admin-moderators-list не найден');
+        return;
+    }
+    
+    try {
+        container.innerHTML = '<div class="loading">⏳ Загрузка модераторов...</div>';
+        
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/admins?select=*`, {
+            headers: {
+                'apikey': SUPABASE_ANON_KEY,
+                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+            }
+        });
+        
+        if (!response.ok) throw new Error('Failed to fetch admins');
+        const data = await response.json();
+        console.log('📦 Загружено модераторов:', data.length);
+        
+        if (data.length === 0) {
+            container.innerHTML = '<div class="empty-message">Нет модераторов</div>';
+            return;
+        }
+        
+        container.innerHTML = data.map(admin => `
+            <div class="admin-card">
+                <span>👤 ${admin.username || 'Unknown'}</span>
+                <span>ID: ${admin.id}</span>
+                <span class="admin-role">${admin.role || 'admin'}</span>
+                <button class="admin-remove-btn" onclick="removeAdmin(${admin.id})">❌</button>
+            </div>
+        `).join('');
+        
+    } catch (error) {
+        console.error('Error loading admins:', error);
+        container.innerHTML = `<div class="error-message">❌ Ошибка загрузки: ${error.message}</div>`;
+    }
+}
+
+async function addAdmin() {
+    const id = document.getElementById('admin-add-id').value;
+    const username = document.getElementById('admin-add-username').value || 'unknown';
+    
+    if (!id) {
+        alert('Введите Telegram ID');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/admins`, {
+            method: 'POST',
+            headers: {
+                'apikey': SUPABASE_SERVICE_ROLE,
+                'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                id: parseInt(id),
+                username: username,
+                role: 'admin'
+            })
+        });
+        
+        if (response.ok) {
+            document.getElementById('admin-add-id').value = '';
+            document.getElementById('admin-add-username').value = '';
+            await loadAdmins();
+            tg.showPopup({
+                title: '✅ Модератор добавлен!',
+                message: `Пользователь ${username} добавлен как модератор`,
+                buttons: [{ type: 'ok' }]
+            });
+        } else {
+            const error = await response.json();
+            console.error('❌ Ошибка добавления:', error);
+            tg.showPopup({
+                title: '❌ Ошибка',
+                message: error.message || 'Не удалось добавить модератора',
+                buttons: [{ type: 'ok' }]
+            });
+        }
+    } catch (error) {
+        console.error('❌ Ошибка запроса:', error);
+        tg.showPopup({
+            title: '❌ Ошибка',
+            message: 'Ошибка соединения с сервером',
+            buttons: [{ type: 'ok' }]
+        });
+    }
+}
+
+async function removeAdmin(adminId) {
+    if (!confirm('Удалить этого модератора?')) return;
+    
+    try {
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/admins?id=eq.${adminId}`, {
+            method: 'DELETE',
+            headers: {
+                'apikey': SUPABASE_SERVICE_ROLE,
+                'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE}`
+            }
+        });
+        
+        if (response.ok) {
+            await loadAdmins();
+            tg.showPopup({
+                title: '✅ Модератор удалён',
+                message: 'Модератор успешно удалён',
+                buttons: [{ type: 'ok' }]
+            });
+        }
+    } catch (error) {
+        console.error('Error removing admin:', error);
     }
 }
 
@@ -1452,6 +1827,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         document.querySelector('[data-page="page-admin-models"]')?.addEventListener('click', loadAdminModels);
         document.getElementById('admin-add-model-btn')?.addEventListener('click', addNewModel);
+        
+        // Атрибуты
+        document.querySelector('[data-page="page-admin-attributes"]')?.addEventListener('click', loadAdminAttributes);
+        document.getElementById('admin-add-attribute-btn')?.addEventListener('click', addNewAttribute);
+        
+        // Акции
+        document.querySelector('[data-page="page-admin-promotions"]')?.addEventListener('click', loadAdminPromotions);
+        document.getElementById('admin-add-promotion-btn')?.addEventListener('click', addNewPromotion);
+        
+        // Модераторы
+        document.querySelector('[data-page="page-admin-moderators"]')?.addEventListener('click', loadAdmins);
+        document.getElementById('admin-add-btn')?.addEventListener('click', addAdmin);
     }
     
     updateCartUI();
