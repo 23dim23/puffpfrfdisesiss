@@ -88,7 +88,9 @@ async function loadBrands() {
         
         if (!response.ok) throw new Error('Failed to fetch brands');
         const data = await response.json();
-        brands = data.filter(b => b.active !== false);
+        // Убираем фильтрацию по active, так как его может не быть
+        brands = data;
+        console.log('✅ Загружено брендов:', brands.length);
         return brands;
     } catch (error) {
         console.error('❌ Error loading brands:', error);
@@ -107,7 +109,9 @@ async function loadProductModels() {
         
         if (!response.ok) throw new Error('Failed to fetch product models');
         const data = await response.json();
-        productModels = data.filter(m => m.active !== false);
+        // Убираем фильтрацию по active, так как его может не быть
+        productModels = data;
+        console.log('✅ Загружено моделей:', productModels.length);
         return productModels;
     } catch (error) {
         console.error('❌ Error loading product models:', error);
@@ -126,7 +130,9 @@ async function loadProductAttributes() {
         
         if (!response.ok) throw new Error('Failed to fetch product attributes');
         const data = await response.json();
-        productAttributes = data.filter(a => a.active !== false);
+        // Убираем фильтрацию по active, так как его может не быть
+        productAttributes = data;
+        console.log('✅ Загружено атрибутов:', productAttributes.length);
         return productAttributes;
     } catch (error) {
         console.error('❌ Error loading product attributes:', error);
@@ -179,7 +185,8 @@ async function loadProductsFromSupabase() {
 
 async function loadPromotionsFromSupabase() {
     try {
-        const response = await fetch(`${SUPABASE_URL}/rest/v1/promotions?select=*&active=eq.true`, {
+        // Убираем фильтрацию по active, так как его может не быть
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/promotions?select=*`, {
             headers: {
                 'apikey': SUPABASE_ANON_KEY,
                 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
@@ -189,6 +196,7 @@ async function loadPromotionsFromSupabase() {
         if (!response.ok) throw new Error('Failed to fetch promotions');
         const data = await response.json();
         promotions = data;
+        console.log('✅ Загружено акций:', promotions.length);
         renderPromotions();
         return promotions;
     } catch (error) {
@@ -280,7 +288,8 @@ function renderMainCategories(grid) {
 }
 
 function renderBrands(grid) {
-    const categoryBrands = brands.filter(b => b.main_category_slug === currentCategorySlug && b.active !== false);
+    // Убираем фильтрацию по active
+    const categoryBrands = brands.filter(b => b.main_category_slug === currentCategorySlug);
     
     if (categoryBrands.length === 0) {
         grid.innerHTML = `
@@ -303,7 +312,8 @@ function renderBrands(grid) {
 }
 
 function renderModels(grid) {
-    const brandModels = productModels.filter(m => m.brand_slug === currentBrandSlug && m.active !== false);
+    // Убираем фильтрацию по active
+    const brandModels = productModels.filter(m => m.brand_slug === currentBrandSlug);
     
     if (brandModels.length === 0) {
         grid.innerHTML = `
@@ -326,7 +336,8 @@ function renderModels(grid) {
 }
 
 function renderAttributes(grid) {
-    const modelAttributes = productAttributes.filter(a => a.product_model_slug === currentModelSlug && a.active !== false);
+    // Убираем фильтрацию по active
+    const modelAttributes = productAttributes.filter(a => a.product_model_slug === currentModelSlug);
     
     if (modelAttributes.length === 0) {
         currentAttributeValue = 'all';
@@ -889,7 +900,8 @@ async function addNewProduct() {
     let brandSlug = null;
     let brandName = null;
     if (mainCategorySlug !== 'accessories' && mainCategorySlug !== 'disposable') {
-        const categoryBrands = brands.filter(b => b.main_category_slug === mainCategorySlug && b.active !== false);
+        // Убираем фильтрацию по active
+        const categoryBrands = brands.filter(b => b.main_category_slug === mainCategorySlug);
         if (categoryBrands.length === 0) {
             alert(`❌ Нет брендов для категории "${category.name}". Сначала добавьте бренд через админку → Бренды.`);
             return;
@@ -913,7 +925,8 @@ async function addNewProduct() {
 
     if (mainCategorySlug === 'accessories') {
         // Комплектующие
-        const accessoriesModels = productModels.filter(m => m.main_category_slug === 'accessories' && m.active !== false);
+        // Убираем фильтрацию по active
+        const accessoriesModels = productModels.filter(m => m.main_category_slug === 'accessories');
         if (accessoriesModels.length === 0) {
             alert('❌ Нет комплектующих. Сначала добавьте комплектующие через админку → Модели.');
             return;
@@ -930,7 +943,8 @@ async function addNewProduct() {
         modelName = accessoriesModels[modelIndex].name;
     } else if (mainCategorySlug === 'disposable') {
         // Одноразовые pod
-        const disposableModels = productModels.filter(m => m.main_category_slug === 'disposable' && m.active !== false);
+        // Убираем фильтрацию по active
+        const disposableModels = productModels.filter(m => m.main_category_slug === 'disposable');
         if (disposableModels.length === 0) {
             alert('❌ Нет одноразовых pod. Сначала добавьте через админку → Модели.');
             return;
@@ -947,7 +961,8 @@ async function addNewProduct() {
         modelName = disposableModels[modelIndex].name;
     } else {
         // Остальные категории (pod, liquid, snus)
-        const brandModels = productModels.filter(m => m.brand_slug === brandSlug && m.active !== false);
+        // Убираем фильтрацию по active
+        const brandModels = productModels.filter(m => m.brand_slug === brandSlug);
         if (brandModels.length === 0) {
             alert(`❌ Нет моделей для бренда "${brandName}". Сначала добавьте модели через админку → Модели.`);
             return;
@@ -966,7 +981,8 @@ async function addNewProduct() {
 
     // Шаг 4: Атрибуты
     let attributes = [];
-    const modelAttributes = productAttributes.filter(a => a.product_model_slug === modelSlug && a.active !== false);
+    // Убираем фильтрацию по active
+    const modelAttributes = productAttributes.filter(a => a.product_model_slug === modelSlug);
     
     if (modelAttributes.length > 0) {
         const attrGroups = {};
@@ -1270,7 +1286,8 @@ async function addNewModel() {
     const slug = prompt('Slug (уникальный идентификатор, латиница):');
     if (!slug) return;
     
-    const brandOptions = brands.filter(b => b.active !== false).map((b, i) => `${i+1}. ${b.name} (${b.slug})`).join('\n');
+    // Убираем фильтрацию по active
+    const brandOptions = brands.map((b, i) => `${i+1}. ${b.name} (${b.slug})`).join('\n');
     if (brands.length === 0) {
         alert('Сначала добавьте бренд через админку!');
         return;
@@ -1754,8 +1771,8 @@ async function loadAdminCategories() {
                         <div class="admin-category-name">${cat.name}</div>
                         <div class="admin-category-slug">${cat.slug}</div>
                         <div class="admin-category-stats">
-                            Брендов: ${brands.filter(b => b.main_category_slug === cat.slug && b.active !== false).length} | 
-                            Моделей: ${productModels.filter(m => m.main_category_slug === cat.slug && m.active !== false).length}
+                            Брендов: ${brands.filter(b => b.main_category_slug === cat.slug).length} | 
+                            Моделей: ${productModels.filter(m => m.main_category_slug === cat.slug).length}
                         </div>
                     </div>
                     <div class="admin-category-actions">
