@@ -14,7 +14,7 @@ const SUPABASE_URL = 'https://prtwcgqidlivkaanbowl.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_XxBLBacZddir7xEUUYsjdA_RdH1NnZz';
 const SUPABASE_SERVICE_ROLE = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBydHdjZ3FpZGxpdmthYW5ib3dsIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4Njc3MzcwNiwiZXhwIjoyMTAyMzQ5NzA2fQ.dvZAnH78ThbtWUTcn9mwveBXhV4RtyefUeFit4mHEUI';
 
-// Используем SERVICE_ROLE для всех запросов (как ты просил)
+// Используем SERVICE_ROLE для всех запросов
 const SUPABASE_KEY = SUPABASE_SERVICE_ROLE;
 
 // ===== ФИКСИРОВАННЫЕ КАТЕГОРИИ =====
@@ -533,7 +533,7 @@ function setupSortFilters() {
 }
 
 // ==========================================
-// ===== КОРЗИНА =====
+// ===== КОРЗИНА (ОБНОВЛЕННАЯ) =====
 // ==========================================
 function addToCart(productId) {
     const product = products.find(p => p.id === productId);
@@ -558,6 +558,12 @@ function addToCart(productId) {
         setTimeout(() => card.classList.remove('added'), 300);
     }
     
+    // Показываем форму заказа
+    const orderForm = document.getElementById('order-form');
+    if (orderForm) {
+        orderForm.style.display = 'block';
+    }
+    
     tg.showPopup({
         title: '✅ Добавлено!',
         message: `${product.emoji} ${product.name} — ${product.discountPrice || product.price} BYN`,
@@ -569,6 +575,7 @@ function updateCartUI() {
     const cartItems = document.getElementById('cart-items');
     const totalPrice = document.getElementById('total-price');
     const checkoutBtn = document.getElementById('checkout-btn');
+    const orderForm = document.getElementById('order-form');
     
     if (!cartItems) return;
     
@@ -576,18 +583,20 @@ function updateCartUI() {
         cartItems.innerHTML = '<li class="cart-empty">Корзина пуста</li>';
         if (totalPrice) totalPrice.textContent = '0 BYN';
         if (checkoutBtn) checkoutBtn.disabled = true;
+        if (orderForm) orderForm.style.display = 'none';
         return;
     }
     
     let html = '';
     let total = 0;
     
-    cart.forEach(item => {
+    cart.forEach((item, index) => {
         const price = item.discountPrice || item.price;
         html += `
             <li>
                 <span class="item-name">${item.emoji} ${item.name}</span>
                 <span class="item-price">${price} BYN</span>
+                <button class="remove-item-btn" onclick="removeFromCart(${index})">✕</button>
             </li>
         `;
         total += price;
@@ -596,6 +605,17 @@ function updateCartUI() {
     cartItems.innerHTML = html;
     if (totalPrice) totalPrice.textContent = `${total} BYN`;
     if (checkoutBtn) checkoutBtn.disabled = false;
+    if (orderForm) orderForm.style.display = 'block';
+}
+
+function removeFromCart(index) {
+    cart.splice(index, 1);
+    updateCartUI();
+    updateBadge();
+    if (cart.length === 0) {
+        const orderForm = document.getElementById('order-form');
+        if (orderForm) orderForm.style.display = 'none';
+    }
 }
 
 function updateBadge() {
@@ -657,7 +677,6 @@ function navigateTo(pageId) {
         console.log('🔄 ЗАГРУЗКА ДАННЫХ ДЛЯ:', pageId);
         
         setTimeout(() => {
-            // Показываем контейнеры
             const containerMap = {
                 'page-admin-attributes': 'admin-attributes-list',
                 'page-admin-promotions': 'admin-promotions-list',
@@ -666,7 +685,8 @@ function navigateTo(pageId) {
                 'page-admin-products': 'admin-products-list',
                 'page-admin-brands': 'admin-brands-list',
                 'page-admin-models': 'admin-models-list',
-                'page-admin-categories': 'admin-categories-list'
+                'page-admin-categories': 'admin-categories-list',
+                'page-admin-stats': null
             };
             
             const containerId = containerMap[pageId];
@@ -679,7 +699,6 @@ function navigateTo(pageId) {
                 }
             }
             
-            // Загружаем данные
             switch(pageId) {
                 case 'page-admin-attributes':
                     loadAdminAttributes();
@@ -705,39 +724,243 @@ function navigateTo(pageId) {
                 case 'page-admin-categories':
                     loadAdminCategories();
                     break;
+                case 'page-admin-stats':
+                    loadStats();
+                    break;
             }
         }, 300);
     }
 }
 
-// ===== ОФОРМЛЕНИЕ ЗАКАЗА =====
-function checkout() {
+// ==========================================
+// ===== ОФОРМЛЕНИЕ ЗАКАЗА (ОБНОВЛЕННОЕ) =====
+// ==========================================
+async function checkout() {
     if (cart.length === 0) return;
+    
+    // Получаем данные из формы
+    const phone = document.getElementById('order-phone')?.value?.trim() || '';
+    const deliveryType = document.getElementById('order-delivery-type')?.value || 'pickup';
+    const address = document.getElementById('order-address')?.value?.trim() || '';
+    const comment = document.getElementById('order-comment')?.value?.trim() || '';
+    
+    // Проверяем телефон
+    if (!phone) {
+        tg.showPopup({
+            title: '⚠️ Введите телефон',
+            message: 'Пожалуйста, укажите номер телефона для связи',
+            buttons: [{ type: 'ok' }]
+        });
+        return;
+    }
+    
+    // Если доставка - проверяем адрес
+    if (deliveryType === 'delivery' && !address) {
+        tg.showPopup({
+            title: '⚠️ Введите адрес',
+            message: 'Пожалуйста, укажите адрес доставки',
+            buttons: [{ type: 'ok' }]
+        });
+        return;
+    }
     
     const total = cart.reduce((sum, item) => sum + (item.discountPrice || item.price), 0);
     const items = cart.map(item => ({ 
+        id: item.id,
         name: item.name, 
-        price: item.discountPrice || item.price 
+        price: item.discountPrice || item.price,
+        emoji: item.emoji || '📦'
     }));
     
-    tg.sendData(JSON.stringify({
+    const user = tg.initDataUnsafe?.user;
+    const orderData = {
         action: 'order',
         items: items,
         total: total,
-        currency: 'BYN'
-    }));
+        currency: 'BYN',
+        phone: phone,
+        delivery_type: deliveryType,
+        delivery_address: address || null,
+        comment: comment || null,
+        user_id: user?.id || null,
+        username: user?.username || user?.first_name || 'Гость'
+    };
     
-    cart = [];
-    updateCartUI();
-    updateBadge();
-    tg.close();
+    try {
+        // Отправляем заказ в бот
+        tg.sendData(JSON.stringify(orderData));
+        
+        // Сохраняем заказ в Supabase
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/orders`, {
+            method: 'POST',
+            headers: {
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                user_id: user?.id || null,
+                username: user?.username || user?.first_name || 'Гость',
+                total: total,
+                status: 'pending',
+                currency: 'BYN',
+                phone: phone,
+                delivery_type: deliveryType,
+                delivery_address: address || null,
+                comment: comment || null,
+                items_json: items
+            })
+        });
+        
+        if (!response.ok) {
+            console.error('❌ Ошибка сохранения заказа:', await response.text());
+        }
+        
+        // Обновляем остатки товаров
+        for (const item of cart) {
+            const product = products.find(p => p.id === item.id);
+            if (product) {
+                const newStock = Math.max(0, (product.stockQuantity || 0) - 1);
+                await fetch(`${SUPABASE_URL}/rest/v1/products?id=eq.${item.id}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        stock_quantity: newStock,
+                        in_stock: newStock > 0
+                    })
+                });
+            }
+        }
+        
+        // Очищаем корзину
+        cart = [];
+        updateCartUI();
+        updateBadge();
+        const orderForm = document.getElementById('order-form');
+        if (orderForm) orderForm.style.display = 'none';
+        
+        // Очищаем поля формы
+        const phoneInput = document.getElementById('order-phone');
+        const addressInput = document.getElementById('order-address');
+        const commentInput = document.getElementById('order-comment');
+        if (phoneInput) phoneInput.value = '';
+        if (addressInput) addressInput.value = '';
+        if (commentInput) commentInput.value = '';
+        
+        tg.showPopup({
+            title: '✅ Заказ оформлен!',
+            message: 'Спасибо за заказ! Мы свяжемся с вами в ближайшее время.',
+            buttons: [{ type: 'ok' }]
+        });
+        
+        // Обновляем список товаров
+        await loadProductsFromSupabase();
+        
+        tg.close();
+    } catch (error) {
+        console.error('❌ Ошибка оформления заказа:', error);
+        tg.showPopup({
+            title: '❌ Ошибка',
+            message: 'Не удалось оформить заказ. Попробуйте еще раз.',
+            buttons: [{ type: 'ok' }]
+        });
+    }
+}
+
+// ==========================================
+// ===== СТАТИСТИКА =====
+// ==========================================
+async function loadStats() {
+    console.log('🔄 ЗАГРУЗКА СТАТИСТИКИ...');
+    
+    try {
+        // Получаем все завершенные заказы
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/orders?select=*&status=eq.completed`, {
+            headers: {
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`
+            }
+        });
+        
+        if (!response.ok) throw new Error('Failed to fetch orders');
+        const orders = await response.json();
+        
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const weekAgo = new Date(today);
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        const monthAgo = new Date(today);
+        monthAgo.setMonth(monthAgo.getMonth() - 1);
+        
+        let stats = {
+            today: 0,
+            week: 0,
+            month: 0,
+            total: 0,
+            ordersToday: 0,
+            ordersPending: 0
+        };
+        
+        // Считаем завершенные заказы
+        orders.forEach(order => {
+            const orderDate = new Date(order.created_at);
+            const amount = Number(order.total) || 0;
+            
+            stats.total += amount;
+            
+            if (orderDate >= today) {
+                stats.today += amount;
+                stats.ordersToday++;
+            }
+            if (orderDate >= weekAgo) {
+                stats.week += amount;
+            }
+            if (orderDate >= monthAgo) {
+                stats.month += amount;
+            }
+        });
+        
+        // Считаем заказы в обработке
+        const pendingResponse = await fetch(`${SUPABASE_URL}/rest/v1/orders?select=id&status=eq.pending`, {
+            headers: {
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`
+            }
+        });
+        if (pendingResponse.ok) {
+            const pending = await pendingResponse.json();
+            stats.ordersPending = pending.length;
+        }
+        
+        // Обновляем UI
+        document.getElementById('stat-today').textContent = stats.today.toFixed(2) + ' BYN';
+        document.getElementById('stat-week').textContent = stats.week.toFixed(2) + ' BYN';
+        document.getElementById('stat-month').textContent = stats.month.toFixed(2) + ' BYN';
+        document.getElementById('stat-total').textContent = stats.total.toFixed(2) + ' BYN';
+        document.getElementById('stat-orders-today').textContent = stats.ordersToday;
+        document.getElementById('stat-orders-pending').textContent = stats.ordersPending;
+        
+        console.log('✅ Статистика загружена:', stats);
+        
+    } catch (error) {
+        console.error('❌ Ошибка загрузки статистики:', error);
+        tg.showPopup({
+            title: '❌ Ошибка',
+            message: 'Не удалось загрузить статистику',
+            buttons: [{ type: 'ok' }]
+        });
+    }
 }
 
 // ==========================================
 // ===== АДМИН-ПАНЕЛЬ =====
 // ==========================================
 
-// --- Заказы ---
+// --- Заказы (ОБНОВЛЕННЫЕ) ---
 async function loadAdminOrders() {
     console.log('🔄 ЗАГРУЗКА ЗАКАЗОВ...');
     const container = document.getElementById('admin-orders-list');
@@ -768,26 +991,38 @@ async function loadAdminOrders() {
             return;
         }
         
-        container.innerHTML = orders.map(order => `
+        container.innerHTML = orders.map(order => {
+            const deliveryText = order.delivery_type === 'pickup' ? '🏪 Самовывоз' : `🚚 Доставка: ${order.delivery_address || 'Адрес не указан'}`;
+            const itemsList = order.items_json ? order.items_json.map(item => `${item.emoji || '📦'} ${item.name}`).join(', ') : '';
+            const userLink = order.user_id ? `<a href="tg://user?id=${order.user_id}" target="_blank">✉️ Связаться</a>` : '';
+            
+            return `
             <div class="admin-order-card">
                 <div class="order-header">
                     <strong>Заказ #${order.id}</strong>
-                    <span class="order-status ${order.status}">${order.status}</span>
+                    <span class="order-status ${order.status}">${order.status === 'pending' ? '🔄 В обработке' : order.status === 'completed' ? '✅ Выполнен' : '🚚 Отправлен'}</span>
                 </div>
                 <div class="order-details">
-                    <p>👤 ${order.username || 'Не указан'}</p>
+                    <p>👤 ${order.username || 'Не указан'} ${userLink}</p>
+                    <p>📱 ${order.phone || 'Не указан'}</p>
                     <p>💰 ${order.total} BYN</p>
+                    <p>📦 ${deliveryText}</p>
+                    ${itemsList ? `<p>📋 ${itemsList}</p>` : ''}
+                    ${order.comment ? `<p>💬 ${order.comment}</p>` : ''}
                     <p>📅 ${new Date(order.created_at).toLocaleString()}</p>
                 </div>
                 <div class="order-actions">
-                    <button class="order-status-btn" data-id="${order.id}" data-status="pending">🔄 В обработке</button>
-                    <button class="order-status-btn" data-id="${order.id}" data-status="completed">✅ Выполнен</button>
-                    <button class="order-status-btn" data-id="${order.id}" data-status="shipped">🚚 Отправлен</button>
+                    ${order.status === 'pending' ? `
+                        <button class="order-status-btn" data-id="${order.id}" data-status="completed">✅ Выполнен</button>
+                        <button class="order-status-btn" data-id="${order.id}" data-status="shipped">🚚 Отправлен</button>
+                    ` : ''}
+                    ${order.user_id ? `<button class="order-status-btn contact-btn" onclick="window.open('tg://user?id=${order.user_id}', '_blank')">✉️ Связаться</button>` : ''}
                 </div>
             </div>
-        `).join('');
+        `}).join('');
         
-        container.querySelectorAll('.order-status-btn').forEach(btn => {
+        // Обработчики кнопок статуса
+        container.querySelectorAll('.order-status-btn[data-id]').forEach(btn => {
             btn.addEventListener('click', async () => {
                 const id = parseInt(btn.dataset.id);
                 const status = btn.dataset.status;
@@ -795,6 +1030,7 @@ async function loadAdminOrders() {
                 await loadAdminOrders();
             });
         });
+        
     } catch (error) {
         console.error('Error loading orders:', error);
         container.innerHTML = '<div class="error-message">Ошибка загрузки заказов</div>';
@@ -1545,11 +1781,14 @@ async function loadAdminAttributes() {
         data.forEach(attr => {
             html += `
             <div class="admin-attribute-card" data-id="${attr.id}">
+                <span class="admin-attribute-icon">🏷️</span>
                 <div class="admin-attribute-info">
                     <div class="admin-attribute-name">${attr.attribute_name || 'Без названия'}</div>
                     <div class="admin-attribute-value">${attr.attribute_value || 'Без значения'}</div>
                     <div class="admin-attribute-model">Модель: ${attr.product_model_slug || 'Не указана'}</div>
-                    <div class="admin-attribute-status">${attr.active !== false ? '🟢 Активен' : '🔴 Неактивен'}</div>
+                    <div class="admin-attribute-status ${attr.active !== false ? 'active' : 'inactive'}">
+                        ${attr.active !== false ? '✅ Активен' : '❌ Неактивен'}
+                    </div>
                 </div>
                 <div class="admin-attribute-actions">
                     <button class="admin-edit-btn" onclick="editAttribute(${attr.id})">✏️</button>
@@ -2015,6 +2254,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadProductsFromSupabase();
     
     setupSortFilters();
+    
+    // Отслеживаем изменение способа получения
+    const deliveryType = document.getElementById('order-delivery-type');
+    const addressGroup = document.getElementById('delivery-address-group');
+    
+    if (deliveryType) {
+        deliveryType.addEventListener('change', function() {
+            if (this.value === 'delivery') {
+                if (addressGroup) addressGroup.style.display = 'block';
+            } else {
+                if (addressGroup) addressGroup.style.display = 'none';
+            }
+        });
+    }
     
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.addEventListener('click', () => {

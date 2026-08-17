@@ -70,7 +70,7 @@
             </div>
 
             <!-- ========================================= -->
-            <!-- ===== КОРЗИНА ===== -->
+            <!-- ===== КОРЗИНА (ОБНОВЛЕННАЯ) ===== -->
             <!-- ========================================= -->
             <div id="page-cart" class="page">
                 <div class="app-header">
@@ -81,6 +81,32 @@
                     <ul id="cart-items">
                         <li class="cart-empty">Корзина пуста</li>
                     </ul>
+                    
+                    <!-- Форма оформления заказа -->
+                    <div id="order-form" style="display:none; margin-top: 16px;">
+                        <div class="form-group">
+                            <label>📱 Телефон *</label>
+                            <input type="text" id="order-phone" placeholder="+375 (29) 123-45-67" class="order-input">
+                        </div>
+                        <div class="form-group">
+                            <label>📦 Способ получения</label>
+                            <select id="order-delivery-type" class="order-input">
+                                <option value="pickup">🏪 Самовывоз</option>
+                                <option value="delivery">🚚 Доставка</option>
+                            </select>
+                        </div>
+                        <div id="delivery-address-group" style="display:none;">
+                            <div class="form-group">
+                                <label>📍 Адрес доставки *</label>
+                                <input type="text" id="order-address" placeholder="Город, улица, дом, квартира" class="order-input">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>💬 Комментарий к заказу</label>
+                            <textarea id="order-comment" placeholder="Дополнительная информация..." class="order-input" rows="2"></textarea>
+                        </div>
+                    </div>
+                    
                     <div class="cart-total">
                         <span>Итого</span>
                         <span class="total-price" id="total-price">0 BYN</span>
@@ -123,7 +149,7 @@
             </div>
 
             <!-- ========================================= -->
-            <!-- ===== АДМИН-ПАНЕЛЬ ===== -->
+            <!-- ===== АДМИН-ПАНЕЛЬ (ОБНОВЛЕННАЯ) ===== -->
             <!-- ========================================= -->
 
             <!-- АДМИН-МЕНЮ -->
@@ -133,6 +159,10 @@
                     <p>Управление магазином</p>
                 </div>
                 <div class="admin-menu">
+                    <button class="admin-menu-btn" data-page="page-admin-stats">
+                        <span class="admin-menu-icon">📊</span>
+                        <span class="admin-menu-label">Статистика</span>
+                    </button>
                     <button class="admin-menu-btn" data-page="page-admin-orders">
                         <span class="admin-menu-icon">📦</span>
                         <span class="admin-menu-label">Заказы</span>
@@ -165,6 +195,62 @@
                         <span class="admin-menu-icon">👥</span>
                         <span class="admin-menu-label">Модераторы</span>
                     </button>
+                </div>
+            </div>
+
+            <!-- СТАТИСТИКА (админка) -->
+            <div id="page-admin-stats" class="page">
+                <div class="app-header">
+                    <h1>📊 Статистика</h1>
+                    <p>Аналитика продаж</p>
+                </div>
+                <button class="admin-reload-btn" onclick="loadStats()" style="margin-bottom:10px; padding:8px 16px; background:#667eea; color:white; border:none; border-radius:8px; cursor:pointer; width:100%; font-weight:600;">
+                    🔄 Обновить статистику
+                </button>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">💰</div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="stat-today">0 BYN</div>
+                            <div class="stat-label">Сегодня</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📈</div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="stat-week">0 BYN</div>
+                            <div class="stat-label">За неделю</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📊</div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="stat-month">0 BYN</div>
+                            <div class="stat-label">За месяц</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🏆</div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="stat-total">0 BYN</div>
+                            <div class="stat-label">Всего продаж</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📦</div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="stat-orders-today">0</div>
+                            <div class="stat-label">Заказов сегодня</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🔄</div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="stat-orders-pending">0</div>
+                            <div class="stat-label">В обработке</div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
