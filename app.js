@@ -35,13 +35,22 @@ let adminFilterCategory = 'all';
 let adminFilterStock = 'all';
 let selectedAttributes = {};
 
+// ===== РЕЖИМ РАЗРАБОТКИ =====
+// Если ты открываешь сайт не через Telegram, включи тестовый режим
+const isDevelopment = !window.Telegram.WebApp.initDataUnsafe?.user;
+
+if (isDevelopment) {
+    console.log('⚠️ Режим разработки: показываем админку для тестирования');
+}
+
 // ===== ПРОВЕРКА АДМИНА =====
 async function checkAdmin() {
     try {
         const user = tg.initDataUnsafe.user;
         if (!user) {
-            console.log('❌ No user in initData');
-            return false;
+            console.log('⚠️ Режим разработки: пользователь не найден');
+            // В режиме разработки показываем админку для тестирования
+            return true; // Возвращаем true, чтобы показать админку
         }
 
         console.log(`🔍 Проверка админа для ID: ${user.id}`);
