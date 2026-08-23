@@ -36,43 +36,354 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* ===== Сетка товаров (исправлено) ===== */
+/* ===== Сетка товаров ===== */
 .product-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
     gap: 12px;
 }
 
-/* На главной странице делаем карточки шире — по одной в ряд для лучшего отображения */
+/* На главной странице — по одной карточке в ряд */
 #hits-grid.product-grid,
 #new-grid.product-grid {
     grid-template-columns: 1fr;
-    gap: 12px;
 }
 
-/* В каталоге оставляем две колонки */
+/* В каталоге — две колонки с одинаковой высотой */
 #catalog-grid.product-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
+    align-items: stretch;
 }
 
-@media (max-width: 380px) {
-    .product-grid {
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-    }
-    
-    #hits-grid.product-grid,
-    #new-grid.product-grid {
-        grid-template-columns: 1fr;
-        gap: 10px;
-    }
+/* ======================================== */
+/* ===== АНИМАЦИИ ===== */
+/* ======================================== */
+
+/* Анимация для всех кнопок при нажатии */
+button,
+.nav-btn,
+.category-card,
+.admin-menu-btn,
+.admin-add-btn,
+.admin-reload-btn,
+.admin-export-btn,
+.admin-filter-btn,
+.filter-apply-btn,
+.filter-reset-btn,
+.filter-btn,
+.order-status-btn,
+.qty-btn,
+.admin-edit-btn,
+.admin-delete-btn,
+.admin-remove-btn,
+.admin-add-form button,
+#checkout-btn,
+.buy-btn,
+.category-back,
+.section-header a,
+.remove-item-btn {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Эффект "волна" при нажатии */
+button::after,
+.nav-btn::after,
+.category-card::after,
+.admin-menu-btn::after,
+.admin-add-btn::after,
+.admin-reload-btn::after,
+.admin-export-btn::after,
+.admin-filter-btn::after,
+.filter-apply-btn::after,
+.filter-reset-btn::after,
+.filter-btn::after,
+.order-status-btn::after,
+.qty-btn::after,
+.admin-edit-btn::after,
+.admin-delete-btn::after,
+.admin-remove-btn::after,
+.admin-add-form button::after,
+#checkout-btn::after,
+.buy-btn::after,
+.category-back::after,
+.section-header a::after,
+.remove-item-btn::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+    pointer-events: none;
+}
+
+button:active::after,
+.nav-btn:active::after,
+.category-card:active::after,
+.admin-menu-btn:active::after,
+.admin-add-btn:active::after,
+.admin-reload-btn:active::after,
+.admin-export-btn:active::after,
+.admin-filter-btn:active::after,
+.filter-apply-btn:active::after,
+.filter-reset-btn:active::after,
+.filter-btn:active::after,
+.order-status-btn:active::after,
+.qty-btn:active::after,
+.admin-edit-btn:active::after,
+.admin-delete-btn:active::after,
+.admin-remove-btn:active::after,
+.admin-add-form button:active::after,
+#checkout-btn:active::after,
+.buy-btn:active::after,
+.category-back:active::after,
+.section-header a:active::after,
+.remove-item-btn:active::after {
+    width: 300px;
+    height: 300px;
+}
+
+/* Анимация наведения для кнопок */
+button:hover:not(:disabled):not(.active),
+.nav-btn:hover:not(.active),
+.category-card:hover,
+.admin-menu-btn:hover,
+.admin-add-btn:hover,
+.admin-reload-btn:hover,
+.admin-export-btn:hover,
+.admin-filter-btn:hover,
+.filter-apply-btn:hover,
+.filter-reset-btn:hover,
+.filter-btn:hover:not(.active),
+.order-status-btn:hover,
+.qty-btn:hover,
+.admin-edit-btn:hover,
+.admin-delete-btn:hover,
+.admin-remove-btn:hover,
+.admin-add-form button:hover,
+#checkout-btn:hover:not(:disabled),
+.buy-btn:hover,
+.category-back:hover,
+.section-header a:hover,
+.remove-item-btn:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.25);
+}
+
+/* Анимация нажатия для всех кнопок */
+button:active:not(:disabled),
+.nav-btn:active,
+.category-card:active,
+.admin-menu-btn:active,
+.admin-add-btn:active,
+.admin-reload-btn:active,
+.admin-export-btn:active,
+.admin-filter-btn:active,
+.filter-apply-btn:active,
+.filter-reset-btn:active,
+.filter-btn:active,
+.order-status-btn:active,
+.qty-btn:active,
+.admin-edit-btn:active,
+.admin-delete-btn:active,
+.admin-remove-btn:active,
+.admin-add-form button:active,
+#checkout-btn:active:not(:disabled),
+.buy-btn:active,
+.category-back:active,
+.section-header a:active,
+.remove-item-btn:active {
+    transform: scale(0.94) !important;
+    transition-duration: 0.05s;
+}
+
+/* Особые анимации для кнопок покупки */
+.buy-btn {
+    position: relative;
+    overflow: hidden;
+}
+
+.buy-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.buy-btn:hover::before {
+    left: 100%;
+}
+
+/* Анимация для карточек товаров */
+.product-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px rgba(102, 126, 234, 0.15);
+    border-color: #667eea;
+}
+
+.product-card:active {
+    transform: scale(0.97);
+    transition-duration: 0.05s;
+}
+
+/* Анимация для категорий */
+.category-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.category-card:hover {
+    transform: translateX(6px);
+    border-color: #667eea;
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.12);
+}
+
+.category-card:active {
+    transform: translateX(6px) scale(0.97);
+}
+
+/* Анимация для бейджа корзины */
+.cart-badge {
+    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.cart-badge:not(.hidden) {
+    animation: badgePop 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes badgePop {
+    0% { transform: scale(0); }
+    70% { transform: scale(1.4); }
+    100% { transform: scale(1); }
+}
+
+/* Анимация для добавления в корзину */
+@keyframes cartAdd {
+    0% { transform: scale(1); }
+    30% { transform: scale(0.85); }
+    60% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.product-card.added {
+    animation: cartAdd 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Анимация для навигации */
+.nav-btn {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nav-btn.active {
+    transform: translateY(-2px);
+}
+
+.nav-btn.active .nav-icon {
+    animation: iconBounce 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes iconBounce {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.3); }
+    100% { transform: scale(1.05); }
+}
+
+/* Анимация для админ-меню */
+.admin-menu-btn {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.admin-menu-btn:hover {
+    transform: translateX(6px);
+    border-color: #667eea;
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.12);
+}
+
+.admin-menu-btn:active {
+    transform: translateX(6px) scale(0.97);
+}
+
+/* Анимация для переключателя */
+.toggle-slider {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.toggle-slider::before {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.toggle-switch input:checked + .toggle-slider::before {
+    transform: translateX(20px) rotate(360deg);
+}
+
+/* Анимация для статусов заказов */
+.order-status {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.order-status:hover {
+    transform: scale(1.05);
+}
+
+/* Анимация для статистики */
+.stat-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    border-color: #667eea;
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.12);
+}
+
+.stat-card:active {
+    transform: scale(0.97);
+}
+
+/* Анимация для акций */
+.promotion-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.promotion-card:hover {
+    transform: translateX(6px);
+}
+
+.promotion-card:active {
+    transform: translateX(6px) scale(0.98);
+}
+
+/* Анимация для призов */
+.prize-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.prize-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.12);
+    border-color: #667eea;
+}
+
+.prize-card:active {
+    transform: scale(0.97);
 }
 
 /* ===== Страницы ===== */
 .page {
     display: none;
-    animation: fadeIn 0.25s ease;
+    animation: fadeIn 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     padding: 0 0 12px 0;
 }
 
@@ -81,8 +392,14 @@ body {
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { 
+        opacity: 0; 
+        transform: translateY(12px) scale(0.98);
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0) scale(1);
+    }
 }
 
 /* ======================================== */
@@ -92,6 +409,7 @@ body {
 .app-header {
     text-align: center;
     margin-bottom: 24px;
+    animation: fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .app-header h1 {
@@ -127,7 +445,7 @@ body {
     background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
     border-radius: 14px;
     border-left: 4px solid #f59e0b;
-    transition: transform 0.2s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .promotion-card:active {
@@ -170,10 +488,12 @@ body {
     text-decoration: none;
     font-weight: 500;
     cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 8px;
 }
 
 .section-header a:active {
-    opacity: 0.7;
+    background: rgba(102, 126, 234, 0.1);
 }
 
 /* --- Бейджи на карточках --- */
@@ -245,7 +565,7 @@ body {
 }
 
 /* ======================================== */
-/* ===== КАРТОЧКА ТОВАРА (исправлено) ===== */
+/* ===== КАРТОЧКА ТОВАРА ===== */
 /* ======================================== */
 .product-card {
     background: #ffffff;
@@ -253,17 +573,13 @@ body {
     padding: 16px 14px 18px;
     text-align: center;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
-    transition: all 0.25s ease;
     border: 1px solid #f3f4f6;
     cursor: default;
     position: relative;
     display: flex;
     flex-direction: column;
     height: 100%;
-}
-
-.product-card:active {
-    transform: scale(0.98);
+    min-height: 280px;
 }
 
 .product-card .emoji {
@@ -285,7 +601,7 @@ body {
     overflow: hidden;
 }
 
-/* --- Кнопка "Купить" (исправлено) --- */
+/* --- Кнопка "Купить" --- */
 .buy-btn {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: #fff;
@@ -295,14 +611,30 @@ body {
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.25s ease;
     width: 100%;
     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
     margin-top: auto;
+    position: relative;
+    overflow: hidden;
+}
+
+.buy-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.buy-btn:hover::before {
+    left: 100%;
 }
 
 .buy-btn:active {
-    transform: scale(0.94);
+    transform: scale(0.94) !important;
 }
 
 /* Для карточек на главной странице — кнопка чуть крупнее */
@@ -328,14 +660,15 @@ body {
     font-size: 15px;
     background: #fff;
     color: #1f2937;
-    transition: all 0.2s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 0 2px 8px rgba(0,0,0,0.04);
 }
 
 .search-input:focus {
     outline: none;
     border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1), 0 4px 16px rgba(102, 126, 234, 0.08);
+    transform: scale(1.01);
 }
 
 .search-input::placeholder {
@@ -372,11 +705,6 @@ body {
     font-size: 12px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s;
-}
-
-.filter-btn:active {
-    transform: scale(0.95);
 }
 
 .filter-btn.active {
@@ -407,13 +735,8 @@ body {
     border-radius: 14px;
     border: 1px solid #e5e7eb;
     cursor: pointer;
-    transition: all 0.25s ease;
     box-shadow: 0 2px 8px rgba(0,0,0,0.04);
     margin-bottom: 10px;
-}
-
-.category-card:active {
-    transform: scale(0.98);
 }
 
 .category-card .category-icon {
@@ -430,7 +753,12 @@ body {
 .category-card .category-arrow {
     font-size: 18px;
     color: #9ca3af;
-    transition: transform 0.25s ease;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.category-card:hover .category-arrow {
+    transform: translateX(4px);
+    color: #667eea;
 }
 
 /* --- Кнопка "Назад" --- */
@@ -442,13 +770,14 @@ body {
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s;
     border-radius: 10px;
     background: #f0f4ff;
+    border: none;
 }
 
 .category-back:active {
-    transform: scale(0.97);
+    background: #667eea;
+    color: #fff;
 }
 
 /* ======================================== */
@@ -477,6 +806,7 @@ body {
     font-size: 14px;
     color: #1f2937;
     gap: 8px;
+    animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 #cart-items li:last-child {
@@ -513,15 +843,10 @@ body {
     font-size: 16px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s;
     display: flex;
     align-items: center;
     justify-content: center;
     line-height: 1;
-}
-
-.qty-btn:active {
-    transform: scale(0.9);
 }
 
 .qty-value {
@@ -547,13 +872,8 @@ body {
     cursor: pointer;
     font-size: 18px;
     padding: 0 8px;
-    transition: all 0.2s;
     font-weight: 700;
     line-height: 1;
-}
-
-.remove-item-btn:active {
-    transform: scale(1.3);
 }
 
 /* --- Форма заказа --- */
@@ -585,7 +905,7 @@ body {
     font-size: 14px;
     background: #fff;
     color: #1f2937;
-    transition: border-color 0.2s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     box-sizing: border-box;
 }
 
@@ -645,13 +965,8 @@ body {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: #fff;
     cursor: pointer;
-    transition: all 0.25s ease;
     margin-top: 14px;
     box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-}
-
-#checkout-btn:active:not(:disabled) {
-    transform: scale(0.97);
 }
 
 #checkout-btn:disabled {
@@ -670,6 +985,7 @@ body {
     padding: 14px 16px;
     border: 1px solid #e5e7eb;
     margin-bottom: 12px;
+    animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .my-order-card .order-header {
@@ -708,10 +1024,6 @@ body {
     color: #fff !important;
 }
 
-.my-order-card .cancel-btn:active {
-    transform: scale(0.95);
-}
-
 /* ======================================== */
 /* ===== СТАТИСТИКА ===== */
 /* ======================================== */
@@ -730,12 +1042,7 @@ body {
     align-items: center;
     gap: 14px;
     border: 1px solid #e5e7eb;
-    transition: all 0.2s;
     box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-}
-
-.stat-card:active {
-    transform: scale(0.98);
 }
 
 .stat-icon {
@@ -810,46 +1117,65 @@ body {
     display: block !important;
 }
 
-/* --- Кнопка принудительной загрузки --- */
-.admin-reload-btn {
+/* --- Кнопки админки --- */
+.admin-reload-btn,
+.admin-export-btn,
+.admin-add-btn,
+.admin-filter-btn,
+.filter-apply-btn,
+.filter-reset-btn {
     display: block;
     width: 100%;
     padding: 10px 16px;
     margin-bottom: 10px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: #fff;
     border: none;
     border-radius: 10px;
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.admin-reload-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
     box-shadow: 0 2px 8px rgba(102, 126, 234, 0.25);
 }
 
-.admin-reload-btn:active {
-    transform: scale(0.97);
-}
-
-/* --- Кнопка экспорта --- */
 .admin-export-btn {
-    display: block;
-    width: 100%;
-    padding: 10px 16px;
-    margin-bottom: 10px;
     background: #22c55e;
     color: #fff;
-    border: none;
-    border-radius: 10px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
     box-shadow: 0 2px 8px rgba(34, 197, 94, 0.25);
 }
 
-.admin-export-btn:active {
-    transform: scale(0.97);
+.admin-add-btn {
+    border: 2px dashed #667eea;
+    background: transparent;
+    color: #667eea;
+    margin-bottom: 16px;
+}
+
+.admin-add-btn:hover {
+    background: #667eea;
+    color: #fff;
+}
+
+.admin-filter-btn,
+.filter-apply-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    flex: 1;
+}
+
+.filter-reset-btn {
+    background: #fff;
+    color: #6b7280;
+    border: 1px solid #e5e7eb;
+    flex: 1;
+}
+
+.filter-reset-btn:hover {
+    background: #f3f4f6;
 }
 
 /* --- Админ-меню --- */
@@ -869,14 +1195,9 @@ body {
     border: 1px solid #e5e7eb;
     border-radius: 14px;
     cursor: pointer;
-    transition: all 0.2s;
     width: 100%;
     text-align: left;
     box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-}
-
-.admin-menu-btn:active {
-    transform: scale(0.97);
 }
 
 .admin-menu-icon {
@@ -911,25 +1232,6 @@ body {
     font-size: 14px;
 }
 
-/* --- Кнопка "Добавить" --- */
-.admin-add-btn {
-    width: 100%;
-    padding: 12px;
-    border: 2px dashed #667eea;
-    border-radius: 12px;
-    background: transparent;
-    color: #667eea;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    margin-bottom: 16px;
-}
-
-.admin-add-btn:active {
-    transform: scale(0.97);
-}
-
 /* --- Фильтры в админке --- */
 .admin-filters {
     display: flex;
@@ -957,22 +1259,6 @@ body {
 
 .admin-filter-select:focus {
     border-color: #667eea;
-}
-
-.admin-filter-btn {
-    padding: 8px 20px;
-    border: none;
-    border-radius: 8px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: #fff;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.admin-filter-btn:active {
-    transform: scale(0.95);
 }
 
 /* --- Фильтры заказов --- */
@@ -1022,40 +1308,6 @@ body {
     margin-top: 4px;
 }
 
-.filter-apply-btn {
-    flex: 1;
-    padding: 8px 16px;
-    border: none;
-    border-radius: 8px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: #fff;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.filter-apply-btn:active {
-    transform: scale(0.95);
-}
-
-.filter-reset-btn {
-    flex: 1;
-    padding: 8px 16px;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    background: #fff;
-    color: #6b7280;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.filter-reset-btn:active {
-    transform: scale(0.95);
-}
-
 .order-actions-bar {
     display: flex;
     flex-direction: column;
@@ -1075,7 +1327,7 @@ body {
     border-radius: 12px;
     border: 1px solid #e5e7eb;
     margin-bottom: 10px;
-    transition: all 0.2s;
+    animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .admin-product-emoji {
@@ -1163,7 +1415,6 @@ body {
     border-radius: 8px;
     cursor: pointer;
     font-size: 14px;
-    transition: all 0.2s;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1174,17 +1425,9 @@ body {
     color: #4f46e5;
 }
 
-.admin-edit-btn:active {
-    transform: scale(0.9);
-}
-
 .admin-delete-btn {
     background: #fee2e2;
     color: #ef4444;
-}
-
-.admin-delete-btn:active {
-    transform: scale(0.9);
 }
 
 /* --- Переключатель "В наличии" --- */
@@ -1218,7 +1461,7 @@ body {
     bottom: 0;
     background: #d1d5db;
     border-radius: 24px;
-    transition: 0.3s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .toggle-slider::before {
@@ -1230,7 +1473,7 @@ body {
     bottom: 3px;
     background: #fff;
     border-radius: 50%;
-    transition: 0.3s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 0 1px 4px rgba(0,0,0,0.15);
 }
 
@@ -1239,7 +1482,7 @@ body {
 }
 
 .toggle-switch input:checked + .toggle-slider::before {
-    transform: translateX(20px);
+    transform: translateX(20px) rotate(360deg);
 }
 
 .admin-stock-label {
@@ -1257,6 +1500,7 @@ body {
     padding: 14px 16px;
     border: 1px solid #e5e7eb;
     margin-bottom: 12px;
+    animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .order-header {
@@ -1311,10 +1555,6 @@ body {
     color: #fff !important;
 }
 
-.order-status-btn.confirm-btn:active {
-    transform: scale(0.95);
-}
-
 .order-details {
     display: flex;
     flex-direction: column;
@@ -1352,13 +1592,8 @@ body {
     font-size: 12px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s;
     background: #e5e7eb;
     color: #1f2937;
-}
-
-.order-status-btn:active {
-    transform: scale(0.95);
 }
 
 .order-status-btn[data-status="pending"] {
@@ -1398,7 +1633,7 @@ body {
     border-radius: 12px;
     border: 1px solid #e5e7eb;
     margin-bottom: 10px;
-    transition: all 0.2s;
+    animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .admin-pickup-point-info {
@@ -1451,7 +1686,6 @@ body {
     border-radius: 12px;
     border: 1px solid #e5e7eb;
     margin-bottom: 10px;
-    transition: all 0.2s;
 }
 
 .admin-category-icon {
@@ -1552,7 +1786,7 @@ body {
     border-radius: 12px;
     border: 1px solid #e5e7eb;
     margin-bottom: 10px;
-    transition: all 0.2s;
+    animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .admin-brand-info,
@@ -1614,8 +1848,8 @@ body {
     border-radius: 14px;
     border: 1px solid #e5e7eb;
     margin-bottom: 10px;
-    transition: all 0.25s ease;
     box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .admin-attribute-icon {
@@ -1689,7 +1923,6 @@ body {
     border-radius: 8px;
     cursor: pointer;
     font-size: 14px;
-    transition: all 0.2s;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1700,17 +1933,9 @@ body {
     color: #4f46e5;
 }
 
-.admin-attribute-actions .admin-edit-btn:active {
-    transform: scale(0.9);
-}
-
 .admin-attribute-actions .admin-delete-btn {
     background: #fee2e2;
     color: #ef4444;
-}
-
-.admin-attribute-actions .admin-delete-btn:active {
-    transform: scale(0.9);
 }
 
 /* --- Акции в админке --- */
@@ -1723,7 +1948,7 @@ body {
     border-radius: 12px;
     border: 1px solid #e5e7eb;
     margin-bottom: 10px;
-    transition: all 0.2s;
+    animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .admin-promotion-emoji {
@@ -1801,11 +2026,6 @@ body {
     font-size: 15px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s;
-}
-
-.admin-add-form button:active {
-    transform: scale(0.97);
 }
 
 .admin-card {
@@ -1820,6 +2040,7 @@ body {
     font-size: 14px;
     color: #1f2937;
     flex-wrap: wrap;
+    animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .admin-card .admin-role {
@@ -1840,11 +2061,6 @@ body {
     padding: 4px 10px;
     cursor: pointer;
     font-size: 14px;
-    transition: all 0.2s;
-}
-
-.admin-remove-btn:active {
-    transform: scale(0.9);
 }
 
 /* ======================================== */
@@ -1878,15 +2094,10 @@ body {
     gap: 2px;
     padding: 6px 16px;
     cursor: pointer;
-    transition: all 0.2s;
     position: relative;
     flex: 1;
     border-radius: 12px;
     min-width: 0;
-}
-
-.nav-btn:active {
-    transform: scale(0.92);
 }
 
 .nav-btn .nav-icon {
@@ -1928,7 +2139,6 @@ body {
     justify-content: center;
     padding: 0 5px;
     box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
-    transition: all 0.2s;
 }
 
 .cart-badge.hidden {
@@ -1937,15 +2147,16 @@ body {
     pointer-events: none;
 }
 
-/* ===== Анимация добавления ===== */
-@keyframes pop {
+/* ===== Анимация добавления в корзину ===== */
+@keyframes cartAdd {
     0% { transform: scale(1); }
-    50% { transform: scale(0.92); }
+    30% { transform: scale(0.85); }
+    60% { transform: scale(1.1); }
     100% { transform: scale(1); }
 }
 
 .product-card.added {
-    animation: pop 0.3s ease;
+    animation: cartAdd 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* ======================================== */
@@ -2062,12 +2273,6 @@ body {
         color: #f3f4f6;
     }
     
-    .qty-btn:active {
-        background: #818cf8;
-        border-color: #818cf8;
-        color: #fff;
-    }
-    
     .qty-value {
         color: #f3f4f6;
     }
@@ -2123,10 +2328,6 @@ body {
         color: #f3f4f6;
     }
     
-    .admin-filter-select:focus {
-        border-color: #818cf8;
-    }
-    
     .order-filters {
         background: #1f2937;
         border-color: #374151;
@@ -2141,11 +2342,6 @@ body {
         background: #1f2937;
         border-color: #374151;
         color: #f3f4f6;
-    }
-    
-    .order-filter-select:focus,
-    .order-filter-input:focus {
-        border-color: #818cf8;
     }
     
     .filter-reset-btn {
@@ -2206,11 +2402,6 @@ body {
     .order-status.cancelled {
         background: #7f1d1d;
         color: #f87171;
-    }
-    
-    .order-status-btn.confirm-btn {
-        background: #22c55e !important;
-        color: #fff !important;
     }
     
     .admin-pickup-point-card {
@@ -2336,10 +2527,6 @@ body {
         color: #f3f4f6;
     }
     
-    .admin-add-form input:focus {
-        border-color: #818cf8;
-    }
-
     .toggle-slider {
         background: #4b5563;
     }
@@ -2423,17 +2610,6 @@ body {
         padding: 16px 14px 20px;
     }
     
-    .product-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-    }
-    
-    #hits-grid.product-grid,
-    #new-grid.product-grid {
-        grid-template-columns: 1fr;
-        gap: 10px;
-    }
-    
     .app-header h1 {
         font-size: 22px;
     }
@@ -2489,6 +2665,7 @@ body {
     
     .product-card {
         padding: 12px 8px 14px;
+        min-height: 240px;
     }
     
     .product-card .emoji {
@@ -2531,7 +2708,7 @@ body {
 }
 
 @media (max-width: 340px) {
-    .product-grid {
+    #catalog-grid.product-grid {
         grid-template-columns: 1fr 1fr;
         gap: 6px;
     }
@@ -2539,6 +2716,7 @@ body {
     .product-card {
         padding: 10px 6px 12px;
         border-radius: 12px;
+        min-height: 200px;
     }
     
     .product-card .emoji {
