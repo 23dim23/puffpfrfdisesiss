@@ -2,10 +2,29 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Puff Paradise</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- Добавляем защиту от ошибок -->
+    <script>
+        window.onerror = function(msg, url, line, col, error) {
+            console.error('❌ ОШИБКА:', msg, 'в', url, 'на строке', line);
+            try {
+                if (window.Telegram && window.Telegram.WebApp) {
+                    window.Telegram.WebApp.showPopup({
+                        title: '⚠️ Ошибка',
+                        message: 'Произошла ошибка: ' + msg,
+                        buttons: [{ type: 'ok' }]
+                    });
+                }
+            } catch(e) {
+                alert('Ошибка: ' + msg);
+            }
+            return true;
+        };
+        console.log('✅ HTML загружен');
+    </script>
 </head>
 <body>
     <div class="app-wrapper">
@@ -22,7 +41,7 @@
 
                 <!-- Акции -->
                 <div id="promotions-container">
-                    <div class="loading">Загрузка акций...</div>
+                    <div class="loading">⏳ Загрузка акций...</div>
                 </div>
 
                 <!-- Хиты -->
@@ -30,14 +49,18 @@
                     <h2>🔥 Хиты продаж</h2>
                     <a href="#" onclick="navigateTo('page-catalog')">Смотреть все</a>
                 </div>
-                <div class="product-grid" id="hits-grid"></div>
+                <div class="product-grid" id="hits-grid">
+                    <div class="loading">⏳ Загрузка...</div>
+                </div>
 
                 <!-- Новинки -->
                 <div class="section-header">
                     <h2>✨ Новинки</h2>
                     <a href="#" onclick="navigateTo('page-catalog')">Смотреть все</a>
                 </div>
-                <div class="product-grid" id="new-grid"></div>
+                <div class="product-grid" id="new-grid">
+                    <div class="loading">⏳ Загрузка...</div>
+                </div>
             </div>
 
             <!-- ========================================= -->
@@ -70,7 +93,9 @@
                 <!-- Результаты -->
                 <div class="catalog-results">
                     <span id="catalog-count">0 товаров</span>
-                    <div class="product-grid" id="catalog-grid"></div>
+                    <div class="product-grid" id="catalog-grid">
+                        <div class="loading">⏳ Загрузка товаров...</div>
+                    </div>
                 </div>
             </div>
 
@@ -84,7 +109,7 @@
                 </div>
                 <div id="cart-content">
                     <ul id="cart-items">
-                        <li class="cart-empty">Корзина пуста</li>
+                        <li class="cart-empty">🛒 Корзина пуста</li>
                     </ul>
                     
                     <!-- Форма оформления заказа -->
@@ -127,7 +152,7 @@
                         <span>Итого</span>
                         <span class="total-price" id="total-price">0 BYN</span>
                     </div>
-                    <button id="checkout-btn" disabled>📦 Оформить заказ</button>
+                    <button id="checkout-btn" class="checkout-btn" disabled>📦 Оформить заказ</button>
                 </div>
             </div>
 
@@ -176,12 +201,12 @@
                     🔄 Обновить
                 </button>
                 <div id="my-orders-list">
-                    <div class="loading">Загрузка ваших заказов...</div>
+                    <div class="loading">⏳ Загрузка ваших заказов...</div>
                 </div>
             </div>
 
             <!-- ========================================= -->
-            <!-- ===== АДМИН-ПАНЕЛЬ (С ФИЛЬТРАМИ) ===== -->
+            <!-- ===== АДМИН-ПАНЕЛЬ ===== -->
             <!-- ========================================= -->
 
             <!-- АДМИН-МЕНЮ -->
@@ -341,7 +366,7 @@
                 </div>
                 
                 <div id="admin-orders-list">
-                    <div class="loading">Загрузка заказов...</div>
+                    <div class="loading">⏳ Загрузка заказов...</div>
                 </div>
             </div>
 
@@ -370,7 +395,7 @@
                 </button>
                 <button class="admin-add-btn" id="admin-add-product-btn">➕ Добавить товар</button>
                 <div id="admin-products-list">
-                    <div class="loading">Загрузка товаров...</div>
+                    <div class="loading">⏳ Загрузка товаров...</div>
                 </div>
             </div>
 
@@ -385,7 +410,7 @@
                 </button>
                 <button class="admin-add-btn" id="admin-add-category-btn">➕ Добавить категорию</button>
                 <div id="admin-categories-list">
-                    <div class="loading">Загрузка категорий...</div>
+                    <div class="loading">⏳ Загрузка категорий...</div>
                 </div>
             </div>
 
@@ -400,7 +425,7 @@
                 </button>
                 <button class="admin-add-btn" id="admin-add-brand-btn">➕ Добавить бренд</button>
                 <div id="admin-brands-list">
-                    <div class="loading">Загрузка брендов...</div>
+                    <div class="loading">⏳ Загрузка брендов...</div>
                 </div>
             </div>
 
@@ -415,7 +440,7 @@
                 </button>
                 <button class="admin-add-btn" id="admin-add-model-btn">➕ Добавить модель</button>
                 <div id="admin-models-list">
-                    <div class="loading">Загрузка моделей...</div>
+                    <div class="loading">⏳ Загрузка моделей...</div>
                 </div>
             </div>
 
@@ -430,7 +455,7 @@
                 </button>
                 <button class="admin-add-btn" id="admin-add-attribute-btn">➕ Добавить атрибут</button>
                 <div id="admin-attributes-list">
-                    <div class="loading">Загрузка атрибутов...</div>
+                    <div class="loading">⏳ Загрузка атрибутов...</div>
                 </div>
             </div>
 
@@ -445,7 +470,7 @@
                 </button>
                 <button class="admin-add-btn" id="admin-add-promotion-btn">➕ Добавить акцию</button>
                 <div id="admin-promotions-list">
-                    <div class="loading">Загрузка акций...</div>
+                    <div class="loading">⏳ Загрузка акций...</div>
                 </div>
             </div>
 
@@ -464,7 +489,7 @@
                     <button id="admin-add-btn">➕ Добавить</button>
                 </div>
                 <div id="admin-moderators-list">
-                    <div class="loading">Загрузка модераторов...</div>
+                    <div class="loading">⏳ Загрузка модераторов...</div>
                 </div>
             </div>
 
@@ -479,7 +504,7 @@
                 </button>
                 <button class="admin-add-btn" id="admin-add-pickup-point-btn">➕ Добавить точку</button>
                 <div id="admin-pickup-points-list">
-                    <div class="loading">Загрузка точек самовывоза...</div>
+                    <div class="loading">⏳ Загрузка точек самовывоза...</div>
                 </div>
             </div>
 
@@ -515,6 +540,15 @@
                 <span class="nav-label">Админка</span>
             </button>
         </nav>
+    </div>
+
+    <!-- Добавляем защитный блок -->
+    <div id="app-error" style="display:none; padding:20px; text-align:center; background:#ff6b6b; color:white; border-radius:8px; margin:20px; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:9999; max-width:90%;">
+        <h3>⚠️ Ошибка загрузки</h3>
+        <p id="error-message">Произошла ошибка при загрузке приложения</p>
+        <button onclick="location.reload()" style="margin-top:15px; padding:10px 30px; background:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">
+            🔄 Перезагрузить
+        </button>
     </div>
 
     <script src="app.js"></script>
