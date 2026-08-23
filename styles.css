@@ -209,8 +209,34 @@ body {
 }
 
 /* ======================================== */
-/* ===== КАТАЛОГ ===== */
+/* ===== КАТАЛОГ (С ПОИСКОМ) ===== */
 /* ======================================== */
+
+.catalog-search {
+    margin-bottom: 16px;
+}
+
+.search-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    font-size: 15px;
+    background: #fff;
+    color: #1f2937;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.search-input::placeholder {
+    color: #9ca3af;
+}
 
 .catalog-filters {
     margin-bottom: 20px;
@@ -432,6 +458,48 @@ body {
     white-space: nowrap;
 }
 
+/* --- Количество товара --- */
+.item-quantity {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.qty-btn {
+    width: 28px;
+    height: 28px;
+    border: 1px solid #d1d5db;
+    border-radius: 50%;
+    background: #fff;
+    color: #1f2937;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.qty-btn:hover {
+    background: #667eea;
+    color: #fff;
+    border-color: #667eea;
+}
+
+.qty-btn:active {
+    transform: scale(0.9);
+}
+
+.qty-value {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1f2937;
+    min-width: 24px;
+    text-align: center;
+}
+
 .cart-empty {
     color: #9ca3af;
     font-size: 14px;
@@ -510,8 +578,13 @@ body {
     cursor: pointer;
 }
 
+#pickup-point-group,
 #delivery-address-group {
     animation: fadeIn 0.3s ease;
+}
+
+#pickup-point-group select {
+    cursor: pointer;
 }
 
 .cart-total {
@@ -555,6 +628,56 @@ body {
     cursor: not-allowed;
     transform: none !important;
     box-shadow: none !important;
+}
+
+/* ======================================== */
+/* ===== МОИ ЗАКАЗЫ ===== */
+/* ======================================== */
+.my-order-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 14px 16px;
+    border: 1px solid #e5e7eb;
+    margin-bottom: 12px;
+}
+
+.my-order-card .order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.my-order-card .order-header strong {
+    font-size: 15px;
+    color: #1f2937;
+}
+
+.my-order-card .order-details {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 13px;
+    color: #6b7280;
+}
+
+.my-order-card .order-details p {
+    margin: 0;
+}
+
+.my-order-card .order-actions {
+    margin-top: 10px;
+}
+
+.my-order-card .cancel-btn {
+    background: #ef4444 !important;
+    color: #fff !important;
+}
+
+.my-order-card .cancel-btn:hover {
+    background: #dc2626 !important;
 }
 
 /* ======================================== */
@@ -671,6 +794,32 @@ body {
 }
 
 .admin-reload-btn:active {
+    transform: scale(0.98);
+}
+
+/* --- Кнопка экспорта --- */
+.admin-export-btn {
+    display: block;
+    width: 100%;
+    padding: 10px 16px;
+    margin-bottom: 10px;
+    background: #22c55e;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.25);
+}
+
+.admin-export-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(34, 197, 94, 0.35);
+}
+
+.admin-export-btn:active {
     transform: scale(0.98);
 }
 
@@ -799,6 +948,94 @@ body {
 .admin-filter-btn:hover {
     opacity: 0.85;
     transform: scale(1.02);
+}
+
+/* --- Фильтры заказов --- */
+.order-filters {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 16px;
+    padding: 12px 14px;
+    background: #f9fafb;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.filter-group label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280;
+}
+
+.order-filter-select,
+.order-filter-input {
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 13px;
+    background: #fff;
+    color: #1f2937;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.order-filter-select:focus,
+.order-filter-input:focus {
+    border-color: #667eea;
+}
+
+.filter-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.filter-apply-btn {
+    flex: 1;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.filter-apply-btn:hover {
+    opacity: 0.85;
+    transform: scale(1.02);
+}
+
+.filter-reset-btn {
+    flex: 1;
+    padding: 8px 16px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: #fff;
+    color: #6b7280;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.filter-reset-btn:hover {
+    background: #f3f4f6;
+}
+
+.order-actions-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
 /* --- Товары в админке --- */
@@ -985,7 +1222,7 @@ body {
 }
 
 /* ======================================== */
-/* ===== ЗАКАЗЫ В АДМИНКЕ (ОБНОВЛЕННЫЕ) ===== */
+/* ===== ЗАКАЗЫ В АДМИНКЕ ===== */
 /* ======================================== */
 .admin-order-card {
     background: #fff;
@@ -1009,7 +1246,6 @@ body {
     color: #1f2937;
 }
 
-/* --- НОВЫЕ СТАТУСЫ --- */
 .order-status {
     padding: 4px 14px;
     border-radius: 20px;
@@ -1038,7 +1274,11 @@ body {
     color: #059669;
 }
 
-/* --- НОВАЯ КНОПКА ПОДТВЕРЖДЕНИЯ --- */
+.order-status.cancelled {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
 .order-status-btn.confirm-btn {
     background: #22c55e !important;
     color: #fff !important;
@@ -1126,6 +1366,61 @@ body {
 
 .contact-btn:hover {
     background: #5a67d8 !important;
+}
+
+/* ======================================== */
+/* ===== ТОЧКИ САМОВЫВОЗА В АДМИНКЕ ===== */
+/* ======================================== */
+.admin-pickup-point-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    margin-bottom: 10px;
+    transition: all 0.2s;
+}
+
+.admin-pickup-point-card:hover {
+    border-color: #667eea;
+}
+
+.admin-pickup-point-info {
+    flex: 1;
+}
+
+.admin-pickup-point-name {
+    font-weight: 600;
+    color: #1f2937;
+    font-size: 14px;
+}
+
+.admin-pickup-point-address {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.admin-pickup-point-hours {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.admin-pickup-point-phone {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.admin-pickup-point-status {
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 2px;
+}
+
+.admin-pickup-point-actions {
+    display: flex;
+    gap: 8px;
 }
 
 /* --- Категории в админке --- */
@@ -1742,6 +2037,20 @@ body {
         color: #fff;
     }
     
+    .search-input {
+        background: #1f2937;
+        border-color: #374151;
+        color: #f3f4f6;
+    }
+    
+    .search-input:focus {
+        border-color: #818cf8;
+    }
+    
+    .search-input::placeholder {
+        color: #6b7280;
+    }
+    
     #catalog-count {
         color: #6b7280;
     }
@@ -1753,6 +2062,22 @@ body {
     
     #cart-items li {
         border-bottom-color: #374151;
+        color: #f3f4f6;
+    }
+    
+    .qty-btn {
+        background: #374151;
+        border-color: #4b5563;
+        color: #f3f4f6;
+    }
+    
+    .qty-btn:hover {
+        background: #818cf8;
+        border-color: #818cf8;
+        color: #fff;
+    }
+    
+    .qty-value {
         color: #f3f4f6;
     }
     
@@ -1816,6 +2141,37 @@ body {
         border-color: #818cf8;
     }
     
+    .order-filters {
+        background: #1f2937;
+        border-color: #374151;
+    }
+    
+    .filter-group label {
+        color: #9ca3af;
+    }
+    
+    .order-filter-select,
+    .order-filter-input {
+        background: #1f2937;
+        border-color: #374151;
+        color: #f3f4f6;
+    }
+    
+    .order-filter-select:focus,
+    .order-filter-input:focus {
+        border-color: #818cf8;
+    }
+    
+    .filter-reset-btn {
+        background: #374151;
+        border-color: #4b5563;
+        color: #9ca3af;
+    }
+    
+    .filter-reset-btn:hover {
+        background: #4b5563;
+    }
+    
     .admin-product-card {
         background: #1f2937;
         border-color: #374151;
@@ -1832,7 +2188,6 @@ body {
         color: #9ca3af;
     }
     
-    /* Тёмная тема для заказов */
     .admin-order-card {
         background: #1f2937;
         border-color: #374151;
@@ -1866,6 +2221,11 @@ body {
         color: #34d399;
     }
     
+    .order-status.cancelled {
+        background: #7f1d1d;
+        color: #f87171;
+    }
+    
     .order-status-btn.confirm-btn {
         background: #22c55e !important;
         color: #fff !important;
@@ -1873,6 +2233,23 @@ body {
     
     .order-status-btn.confirm-btn:hover {
         background: #16a34a !important;
+    }
+    
+    /* Тёмная тема для точек самовывоза */
+    .admin-pickup-point-card {
+        background: #1f2937;
+        border-color: #374151;
+    }
+    
+    .admin-pickup-point-name {
+        color: #f3f4f6;
+    }
+    
+    .admin-pickup-point-address,
+    .admin-pickup-point-hours,
+    .admin-pickup-point-phone,
+    .admin-pickup-point-status {
+        color: #9ca3af;
     }
     
     .admin-category-card {
@@ -2016,6 +2393,11 @@ body {
         background: linear-gradient(135deg, #818cf8 0%, #a78bfa 100%);
     }
     
+    /* Тёмная тема для кнопки экспорта */
+    .admin-export-btn {
+        background: #16a34a;
+    }
+    
     /* Тёмная тема для статистики */
     .stat-card {
         background: #1f2937;
@@ -2066,6 +2448,24 @@ body {
     
     .remove-item-btn:hover {
         color: #ef4444;
+    }
+
+    /* Тёмная тема для "Мои заказы" */
+    .my-order-card {
+        background: #1f2937;
+        border-color: #374151;
+    }
+    
+    .my-order-card .order-header strong {
+        color: #f3f4f6;
+    }
+    
+    .my-order-card .order-details {
+        color: #9ca3af;
+    }
+    
+    .my-order-card .cancel-btn {
+        background: #dc2626 !important;
     }
 }
 
@@ -2118,5 +2518,13 @@ body {
     
     .stat-value {
         font-size: 15px;
+    }
+    
+    .order-filters {
+        padding: 10px;
+    }
+    
+    .filter-actions {
+        flex-direction: column;
     }
 }
