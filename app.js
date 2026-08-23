@@ -5,27 +5,27 @@ tg.expand();
 // ===== ЗАГЛУШКА ДЛЯ ПОКАЗА В БРАУЗЕРЕ =====
 function showMessage(title, message) {
     console.log(`📢 ${title}: ${message}`);
-    if (window.Telegram.WebApp.platform === 'unknown' || window.Telegram.WebApp.version === '6.0') {
-        alert(`${title}\n\n${message}`);
-    } else {
-        try {
+    try {
+        if (window.Telegram.WebApp.platform === 'unknown' || window.Telegram.WebApp.version === '6.0') {
+            alert(`${title}\n\n${message}`);
+        } else {
             tg.showPopup({
                 title: title,
                 message: message,
                 buttons: [{ type: 'ok' }]
             });
-        } catch (e) {
-            alert(`${title}\n\n${message}`);
         }
+    } catch (e) {
+        alert(`${title}\n\n${message}`);
     }
 }
 
 // ===== ДИАГНОСТИКА =====
 console.log('🔍 ДИАГНОСТИКА:');
-console.log('📱 initData:', window.Telegram.WebApp.initData);
-console.log('👤 initDataUnsafe:', window.Telegram.WebApp.initDataUnsafe);
-console.log('📱 platform:', window.Telegram.WebApp.platform);
-console.log('📱 version:', window.Telegram.WebApp.version);
+console.log('📱 initData:', window.Telegram.WebApp.initData || 'empty');
+console.log('👤 initDataUnsafe:', window.Telegram.WebApp.initDataUnsafe || 'empty');
+console.log('📱 platform:', window.Telegram.WebApp.platform || 'unknown');
+console.log('📱 version:', window.Telegram.WebApp.version || 'unknown');
 
 // ===== ПОДКЛЮЧЕНИЕ К SUPABASE =====
 const SUPABASE_URL = 'https://prtwcgqidlivkaanbowl.supabase.co';
@@ -73,10 +73,10 @@ if (isDevelopment) {
     console.log('⚠️ Режим разработки: показываем админку для тестирования');
 }
 
-// ===== ПРОВЕРКА АДМИНА =====
+// ===== ПРОВЕРКА АДМИНА (С ОБРАБОТКОЙ ОШИБОК) =====
 async function checkAdmin() {
     try {
-        const user = tg.initDataUnsafe.user;
+        const user = tg.initDataUnsafe?.user;
         if (!user) {
             console.log('⚠️ Режим разработки: пользователь не найден');
             return true;
@@ -99,7 +99,7 @@ async function checkAdmin() {
         const data = await response.json();
         console.log('📊 Ответ от Supabase:', data);
         
-        return data.length > 0;
+        return data && data.length > 0;
     } catch (error) {
         console.error('❌ Ошибка проверки админа:', error);
         return false;
@@ -107,7 +107,7 @@ async function checkAdmin() {
 }
 
 // ==========================================
-// ===== ЗАГРУЗКА ДАННЫХ =====
+// ===== ЗАГРУЗКА ДАННЫХ (С ОБРАБОТКОЙ ОШИБОК) =====
 // ==========================================
 
 async function loadMainCategories() {
@@ -126,11 +126,12 @@ async function loadBrands() {
         
         if (!response.ok) throw new Error('Не удалось загрузить бренды');
         const data = await response.json();
-        brands = data;
+        brands = data || [];
         console.log('✅ Загружено брендов:', brands.length);
         return brands;
     } catch (error) {
         console.error('❌ Ошибка загрузки брендов:', error);
+        brands = [];
         return [];
     }
 }
@@ -146,11 +147,12 @@ async function loadProductModels() {
         
         if (!response.ok) throw new Error('Не удалось загрузить модели');
         const data = await response.json();
-        productModels = data;
+        productModels = data || [];
         console.log('✅ Загружено моделей:', productModels.length);
         return productModels;
     } catch (error) {
         console.error('❌ Ошибка загрузки моделей:', error);
+        productModels = [];
         return [];
     }
 }
@@ -166,11 +168,12 @@ async function loadProductAttributes() {
         
         if (!response.ok) throw new Error('Не удалось загрузить атрибуты');
         const data = await response.json();
-        productAttributes = data;
+        productAttributes = data || [];
         console.log('✅ Загружено атрибутов:', productAttributes.length);
         return productAttributes;
     } catch (error) {
         console.error('❌ Ошибка загрузки атрибутов:', error);
+        productAttributes = [];
         return [];
     }
 }
@@ -189,12 +192,12 @@ async function loadProductsFromSupabase() {
         }
         
         const data = await response.json();
-        console.log('📦 Загружено товаров:', data.length);
+        console.log('📦 Загружено товаров:', data ? data.length : 0);
         
-        products = data.map(p => ({
+        products = (data || []).map(p => ({
             id: p.id,
-            name: p.name,
-            price: p.price,
+            name: p.name || 'Без названия',
+            price: p.price || 0,
             emoji: p.emoji || '📦',
             mainCategorySlug: p.main_category_slug,
             brandSlug: p.brand_slug,
@@ -214,6 +217,7 @@ async function loadProductsFromSupabase() {
         return products;
     } catch (error) {
         console.error('❌ Ошибка загрузки товаров:', error);
+        products = [];
         return [];
     }
 }
@@ -229,12 +233,13 @@ async function loadPromotionsFromSupabase() {
         
         if (!response.ok) throw new Error('Не удалось загрузить акции');
         const data = await response.json();
-        promotions = data;
+        promotions = data || [];
         console.log('✅ Загружено акций:', promotions.length);
         renderPromotions();
         return promotions;
     } catch (error) {
         console.error('❌ Ошибка загрузки акций:', error);
+        promotions = [];
         return [];
     }
 }
@@ -251,7 +256,7 @@ async function loadPickupPoints() {
         
         if (!response.ok) throw new Error('Не удалось загрузить точки самовывоза');
         const data = await response.json();
-        pickupPoints = data.filter(p => p.is_active !== false);
+        pickupPoints = (data || []).filter(p => p.is_active !== false);
         console.log('✅ Загружено точек самовывоза:', pickupPoints.length);
         return pickupPoints;
     } catch (error) {
@@ -262,14 +267,17 @@ async function loadPickupPoints() {
 }
 
 // ==========================================
-// ===== ОТОБРАЖЕНИЕ =====
+// ===== ОТОБРАЖЕНИЕ (С ПРОВЕРКОЙ ЭЛЕМЕНТОВ) =====
 // ==========================================
 
 function renderPromotions() {
     const container = document.getElementById('promotions-container');
-    if (!container) return;
+    if (!container) {
+        console.warn('⚠️ Контейнер promotions-container не найден');
+        return;
+    }
     
-    if (promotions.length === 0) {
+    if (!promotions || promotions.length === 0) {
         container.innerHTML = '<div class="empty-message">Нет активных акций</div>';
         return;
     }
@@ -278,7 +286,7 @@ function renderPromotions() {
         <div class="promotion-card">
             <span class="promotion-emoji">${p.image_emoji || '🎉'}</span>
             <div class="promotion-info">
-                <strong>${p.title}</strong>
+                <strong>${p.title || 'Акция'}</strong>
                 <p>${p.description || ''}</p>
             </div>
         </div>
@@ -287,9 +295,12 @@ function renderPromotions() {
 
 function renderHits() {
     const grid = document.getElementById('hits-grid');
-    if (!grid) return;
+    if (!grid) {
+        console.warn('⚠️ hits-grid не найден');
+        return;
+    }
     
-    const hits = products.filter(p => p.isHit && p.inStock);
+    const hits = (products || []).filter(p => p.isHit && p.inStock);
     
     if (hits.length === 0) {
         grid.innerHTML = '<div class="empty-message">Хитов пока нет</div>';
@@ -302,9 +313,12 @@ function renderHits() {
 
 function renderNewItems() {
     const grid = document.getElementById('new-grid');
-    if (!grid) return;
+    if (!grid) {
+        console.warn('⚠️ new-grid не найден');
+        return;
+    }
     
-    const newItems = products.filter(p => p.isNew && p.inStock);
+    const newItems = (products || []).filter(p => p.isNew && p.inStock);
     
     if (newItems.length === 0) {
         grid.innerHTML = '<div class="empty-message">Новинок пока нет</div>';
@@ -320,7 +334,10 @@ function renderNewItems() {
 // ==========================================
 function renderCatalog() {
     const grid = document.getElementById('catalog-grid');
-    if (!grid) return;
+    if (!grid) {
+        console.warn('⚠️ catalog-grid не найден');
+        return;
+    }
     
     if (currentCategorySlug === 'all' && !searchQuery) {
         renderMainCategories(grid);
@@ -336,12 +353,12 @@ function renderCatalog() {
 }
 
 function renderProductsWithSearch(grid) {
-    let filtered = products.filter(p => p.inStock);
+    let filtered = (products || []).filter(p => p.inStock);
     
     if (searchQuery) {
         const q = searchQuery.toLowerCase();
         filtered = filtered.filter(p => 
-            p.name.toLowerCase().includes(q) || 
+            (p.name || '').toLowerCase().includes(q) || 
             (p.emoji && p.emoji.includes(q))
         );
     }
@@ -357,7 +374,7 @@ function renderProductsWithSearch(grid) {
     }
     if (currentAttributeValue !== 'all') {
         filtered = filtered.filter(p => {
-            const productAttrs = productAttributes.filter(a => a.product_model_slug === p.modelSlug);
+            const productAttrs = (productAttributes || []).filter(a => a.product_model_slug === p.modelSlug);
             return productAttrs.some(a => a.attribute_value === currentAttributeValue);
         });
     }
@@ -365,7 +382,7 @@ function renderProductsWithSearch(grid) {
     switch (currentSort) {
         case 'price-asc': filtered.sort((a, b) => a.price - b.price); break;
         case 'price-desc': filtered.sort((a, b) => b.price - a.price); break;
-        case 'name': filtered.sort((a, b) => a.name.localeCompare(b.name)); break;
+        case 'name': filtered.sort((a, b) => (a.name || '').localeCompare(b.name || '')); break;
         default: filtered.sort((a, b) => a.id - b.id);
     }
     
@@ -408,7 +425,8 @@ function renderProductsWithSearch(grid) {
 
 function clearSearch() {
     searchQuery = '';
-    document.getElementById('search-input')?.value = '';
+    const searchInput = document.getElementById('search-input');
+    if (searchInput) searchInput.value = '';
     renderCatalog();
 }
 
@@ -423,7 +441,7 @@ function renderMainCategories(grid) {
 }
 
 function renderBrands(grid) {
-    const categoryBrands = brands.filter(b => b.main_category_slug === currentCategorySlug);
+    const categoryBrands = (brands || []).filter(b => b.main_category_slug === currentCategorySlug);
     
     if (categoryBrands.length === 0) {
         grid.innerHTML = `
@@ -438,7 +456,7 @@ function renderBrands(grid) {
         ${categoryBrands.map(b => `
             <div class="category-card" onclick="selectBrand('${b.slug}')">
                 <span class="category-icon">🏷️</span>
-                <span class="category-name">${b.name}</span>
+                <span class="category-name">${b.name || 'Без названия'}</span>
                 <span class="category-arrow">→</span>
             </div>
         `).join('')}
@@ -446,7 +464,7 @@ function renderBrands(grid) {
 }
 
 function renderModels(grid) {
-    const brandModels = productModels.filter(m => m.brand_slug === currentBrandSlug);
+    const brandModels = (productModels || []).filter(m => m.brand_slug === currentBrandSlug);
     
     if (brandModels.length === 0) {
         grid.innerHTML = `
@@ -461,7 +479,7 @@ function renderModels(grid) {
         ${brandModels.map(m => `
             <div class="category-card" onclick="selectModel('${m.slug}')">
                 <span class="category-icon">📦</span>
-                <span class="category-name">${m.name}</span>
+                <span class="category-name">${m.name || 'Без названия'}</span>
                 <span class="category-arrow">→</span>
             </div>
         `).join('')}
@@ -469,7 +487,7 @@ function renderModels(grid) {
 }
 
 function renderAttributes(grid) {
-    const modelAttributes = productAttributes.filter(a => a.product_model_slug === currentModelSlug);
+    const modelAttributes = (productAttributes || []).filter(a => a.product_model_slug === currentModelSlug);
     
     if (modelAttributes.length === 0) {
         currentAttributeValue = 'all';
@@ -533,11 +551,13 @@ window.resetCatalog = function() {
     currentModelSlug = 'all';
     currentAttributeValue = 'all';
     searchQuery = '';
-    document.getElementById('search-input')?.value = '';
+    const searchInput = document.getElementById('search-input');
+    if (searchInput) searchInput.value = '';
     renderCatalog();
 };
 
 function createProductCard(product) {
+    if (!product) return '';
     const discountBadge = product.discountPrice ? 
         `<span class="discount-badge">-${Math.round((1 - product.discountPrice / product.price) * 100)}%</span>` : '';
     const hitBadge = product.isHit ? `<span class="hit-badge">🔥 Хит</span>` : '';
@@ -557,8 +577,8 @@ function createProductCard(product) {
                 ${discountBadge}
                 ${stockBadge}
             </div>
-            <span class="emoji">${product.emoji}</span>
-            <h3>${product.name}</h3>
+            <span class="emoji">${product.emoji || '📦'}</span>
+            <h3>${product.name || 'Без названия'}</h3>
             <div class="price-row">${priceDisplay}</div>
             <button class="buy-btn" data-id="${product.id}">🔥 Купить</button>
         </div>
@@ -566,6 +586,7 @@ function createProductCard(product) {
 }
 
 function addBuyButtons(grid) {
+    if (!grid) return;
     grid.querySelectorAll('.buy-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const id = parseInt(e.target.dataset.id);
@@ -575,7 +596,9 @@ function addBuyButtons(grid) {
 }
 
 function setupSortFilters() {
-    document.querySelectorAll('#sort-filters .filter-btn').forEach(btn => {
+    const sortFilters = document.querySelectorAll('#sort-filters .filter-btn');
+    if (!sortFilters.length) return;
+    sortFilters.forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('#sort-filters .filter-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
@@ -613,8 +636,11 @@ function saveCart() {
 }
 
 function addToCart(productId) {
-    const product = products.find(p => p.id === productId);
-    if (!product) return;
+    const product = (products || []).find(p => p.id === productId);
+    if (!product) {
+        showMessage('❌ Ошибка', 'Товар не найден');
+        return;
+    }
     
     if (product.stockQuantity <= 0) {
         showMessage('❌ Нет в наличии', 'Товар закончился на складе');
@@ -642,7 +668,7 @@ function addToCart(productId) {
     const orderForm = document.getElementById('order-form');
     if (orderForm) orderForm.style.display = 'block';
     
-    showMessage('✅ Добавлено!', `${product.emoji} ${product.name} — ${product.discountPrice || product.price} BYN`);
+    showMessage('✅ Добавлено!', `${product.emoji || '📦'} ${product.name || 'Товар'} — ${product.discountPrice || product.price} BYN`);
 }
 
 function updateCartUI() {
@@ -653,7 +679,7 @@ function updateCartUI() {
     
     if (!cartItems) return;
     
-    if (cart.length === 0) {
+    if (!cart || cart.length === 0) {
         cartItems.innerHTML = '<li class="cart-empty">Корзина пуста</li>';
         if (totalPrice) totalPrice.textContent = '0 BYN';
         if (checkoutBtn) checkoutBtn.disabled = true;
@@ -665,12 +691,12 @@ function updateCartUI() {
     let total = 0;
     
     cart.forEach((item, index) => {
-        const price = item.discountPrice || item.price;
+        const price = item.discountPrice || item.price || 0;
         const qty = item.quantity || 1;
         total += price * qty;
         html += `
             <li>
-                <span class="item-name">${item.emoji} ${item.name}</span>
+                <span class="item-name">${item.emoji || '📦'} ${item.name || 'Товар'}</span>
                 <div class="item-quantity">
                     <button class="qty-btn" onclick="changeQuantity(${index}, -1)">−</button>
                     <span class="qty-value">${qty}</span>
@@ -696,7 +722,7 @@ function changeQuantity(index, delta) {
         removeFromCart(index);
         return;
     }
-    const product = products.find(p => p.id === item.id);
+    const product = (products || []).find(p => p.id === item.id);
     if (product && newQty > product.stockQuantity) {
         showMessage('⚠️ Лимит', 'Доступно только ' + product.stockQuantity + ' шт.');
         return;
@@ -720,11 +746,10 @@ function removeFromCart(index) {
 
 function updateBadge() {
     const badge = document.getElementById('cart-badge');
-    if (badge) {
-        const count = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
-        badge.textContent = count;
-        badge.classList.toggle('hidden', count === 0);
-    }
+    if (!badge) return;
+    const count = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+    badge.textContent = count;
+    badge.classList.toggle('hidden', count === 0);
 }
 
 // ===== НАВИГАЦИЯ =====
@@ -733,7 +758,7 @@ function navigateTo(pageId) {
     
     document.querySelectorAll('.page').forEach(p => {
         p.classList.remove('active');
-        if (p.id.startsWith('page-admin')) {
+        if (p.id && p.id.startsWith('page-admin')) {
             p.style.display = 'none';
             p.style.visibility = 'hidden';
             p.style.opacity = '0';
@@ -751,7 +776,7 @@ function navigateTo(pageId) {
     }
     
     target.classList.add('active');
-    if (pageId.startsWith('page-admin')) {
+    if (pageId && pageId.startsWith('page-admin')) {
         target.style.display = 'block';
         target.style.visibility = 'visible';
         target.style.opacity = '1';
@@ -764,12 +789,16 @@ function navigateTo(pageId) {
     console.log('✅ СТРАНИЦА ПОКАЗАНА:', pageId);
     
     document.querySelectorAll('.nav-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.page === pageId);
+        if (btn.dataset.page === pageId) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
     });
     
     currentPage = pageId;
     
-    if (pageId.startsWith('page-admin')) {
+    if (pageId && pageId.startsWith('page-admin')) {
         console.log('🔄 ЗАГРУЗКА ДАННЫХ ДЛЯ:', pageId);
         
         setTimeout(() => {
@@ -840,7 +869,7 @@ function navigateTo(pageId) {
 // ===== ОФОРМЛЕНИЕ ЗАКАЗА =====
 // ==========================================
 async function checkout() {
-    if (cart.length === 0) return;
+    if (!cart || cart.length === 0) return;
     
     const phone = document.getElementById('order-phone')?.value?.trim() || '';
     const deliveryType = document.getElementById('order-delivery-type')?.value || 'pickup';
@@ -863,11 +892,11 @@ async function checkout() {
         return;
     }
     
-    const total = cart.reduce((sum, item) => sum + (item.discountPrice || item.price) * (item.quantity || 1), 0);
+    const total = cart.reduce((sum, item) => sum + (item.discountPrice || item.price || 0) * (item.quantity || 1), 0);
     const items = cart.map(item => ({ 
         id: item.id,
-        name: item.name, 
-        price: item.discountPrice || item.price,
+        name: item.name || 'Товар', 
+        price: item.discountPrice || item.price || 0,
         quantity: item.quantity || 1,
         emoji: item.emoji || '📦'
     }));
@@ -877,7 +906,7 @@ async function checkout() {
     let pickupPointName = '';
     let pickupPointAddress = '';
     if (deliveryType === 'pickup') {
-        const selectedPoint = pickupPoints.find(p => p.id == pickupPointId);
+        const selectedPoint = (pickupPoints || []).find(p => p.id == pickupPointId);
         if (selectedPoint) {
             pickupPointName = selectedPoint.name;
             pickupPointAddress = selectedPoint.address;
@@ -952,7 +981,7 @@ async function checkout() {
         }
         
         for (const item of cart) {
-            const product = products.find(p => p.id === item.id);
+            const product = (products || []).find(p => p.id === item.id);
             if (product) {
                 const newStock = Math.max(0, (product.stockQuantity || 0) - (item.quantity || 1));
                 try {
@@ -1025,9 +1054,9 @@ async function loadMyOrders() {
         });
         if (!response.ok) throw new Error('Не удалось загрузить заказы');
         const orders = await response.json();
-        console.log('📦 Загружено ваших заказов:', orders.length);
+        console.log('📦 Загружено ваших заказов:', orders ? orders.length : 0);
         
-        if (orders.length === 0) {
+        if (!orders || orders.length === 0) {
             container.innerHTML = '<div class="empty-message">У вас пока нет заказов</div>';
             return;
         }
@@ -1055,7 +1084,7 @@ async function loadMyOrders() {
                     <span class="order-status ${statusClass}">${statusMap[order.status] || order.status}</span>
                 </div>
                 <div class="order-details">
-                    <p>💰 ${order.total} BYN</p>
+                    <p>💰 ${order.total || 0} BYN</p>
                     <p>📦 ${deliveryText}</p>
                     ${itemsList ? `<p>📋 ${itemsList}</p>` : ''}
                     ${order.comment ? `<p>💬 ${order.comment}</p>` : ''}
@@ -1122,7 +1151,7 @@ async function loadStats() {
             ordersPending: 0
         };
         
-        orders.forEach(order => {
+        (orders || []).forEach(order => {
             const orderDate = new Date(order.created_at);
             const amount = Number(order.total) || 0;
             
@@ -1148,15 +1177,22 @@ async function loadStats() {
         });
         if (pendingResponse.ok) {
             const pending = await pendingResponse.json();
-            stats.ordersPending = pending.length;
+            stats.ordersPending = pending ? pending.length : 0;
         }
         
-        document.getElementById('stat-today').textContent = stats.today.toFixed(2) + ' BYN';
-        document.getElementById('stat-week').textContent = stats.week.toFixed(2) + ' BYN';
-        document.getElementById('stat-month').textContent = stats.month.toFixed(2) + ' BYN';
-        document.getElementById('stat-total').textContent = stats.total.toFixed(2) + ' BYN';
-        document.getElementById('stat-orders-today').textContent = stats.ordersToday;
-        document.getElementById('stat-orders-pending').textContent = stats.ordersPending;
+        const statToday = document.getElementById('stat-today');
+        const statWeek = document.getElementById('stat-week');
+        const statMonth = document.getElementById('stat-month');
+        const statTotal = document.getElementById('stat-total');
+        const statOrdersToday = document.getElementById('stat-orders-today');
+        const statOrdersPending = document.getElementById('stat-orders-pending');
+        
+        if (statToday) statToday.textContent = stats.today.toFixed(2) + ' BYN';
+        if (statWeek) statWeek.textContent = stats.week.toFixed(2) + ' BYN';
+        if (statMonth) statMonth.textContent = stats.month.toFixed(2) + ' BYN';
+        if (statTotal) statTotal.textContent = stats.total.toFixed(2) + ' BYN';
+        if (statOrdersToday) statOrdersToday.textContent = stats.ordersToday;
+        if (statOrdersPending) statOrdersPending.textContent = stats.ordersPending;
         
         console.log('✅ Статистика загружена:', stats);
         
@@ -1234,9 +1270,9 @@ async function loadAdminOrders() {
         });
         if (!response.ok) throw new Error('Не удалось загрузить заказы');
         const orders = await response.json();
-        console.log('📦 Загружено заказов:', orders.length);
+        console.log('📦 Загружено заказов:', orders ? orders.length : 0);
         
-        if (orders.length === 0) {
+        if (!orders || orders.length === 0) {
             container.innerHTML = '<div class="empty-message">Заказов пока нет</div>';
             return;
         }
@@ -1289,7 +1325,7 @@ async function loadAdminOrders() {
                 <div class="order-details">
                     <p>👤 ${order.username || 'Не указан'} ${userLink}</p>
                     <p>📱 ${order.phone || 'Не указан'}</p>
-                    <p>💰 ${order.total} BYN</p>
+                    <p>💰 ${order.total || 0} BYN</p>
                     <p>📦 ${deliveryText}</p>
                     ${itemsList ? `<p>📋 ${itemsList}</p>` : ''}
                     ${order.comment ? `<p>💬 ${order.comment}</p>` : ''}
@@ -1320,7 +1356,7 @@ async function updateOrderStatus(orderId, status) {
             headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
         });
         const orderData = await orderResponse.json();
-        const order = orderData[0];
+        const order = orderData ? orderData[0] : null;
         
         const response = await fetch(`${SUPABASE_URL}/rest/v1/orders?id=eq.${orderId}`, {
             method: 'PATCH',
@@ -1333,7 +1369,7 @@ async function updateOrderStatus(orderId, status) {
                 try {
                     let message = '';
                     switch(status) {
-                        case 'confirmed': message = `✅ Ваш заказ #${orderId} ПОДТВЕРЖДЕН!\n\n📦 Товары: ${order.items_json ? order.items_json.map(item => `${item.name} (${item.price} BYN) × ${item.quantity || 1}`).join(', ') : ''}\n💰 Итого: ${order.total} BYN\n\nСпасибо за заказ! Мы приступили к его обработке.`; break;
+                        case 'confirmed': message = `✅ Ваш заказ #${orderId} ПОДТВЕРЖДЕН!\n\n📦 Товары: ${order.items_json ? order.items_json.map(item => `${item.name} (${item.price} BYN) × ${item.quantity || 1}`).join(', ') : ''}\n💰 Итого: ${order.total || 0} BYN\n\nСпасибо за заказ! Мы приступили к его обработке.`; break;
                         case 'shipped': message = `📦 Ваш заказ #${orderId} ОТПРАВЛЕН!\n\nСпасибо за покупку! ❤️`; break;
                         case 'completed': message = `✅ Ваш заказ #${orderId} ВЫПОЛНЕН!\n\nБлагодарим за покупку! Ждем вас снова! 🙏`; break;
                         default: message = `Статус заказа #${orderId} изменен на: ${status}`;
@@ -1367,9 +1403,9 @@ function openChatWithUser(userId, orderId) {
     })
     .then(r => r.json())
     .then(orders => {
-        const order = orders[0];
+        const order = orders ? orders[0] : null;
         if (!order) { showMessage('❌ Ошибка', 'Заказ не найден'); return; }
-        const fullMessage = `📩 Сообщение от администратора по заказу #${orderId}:\n\n${message}\n\n---\n📦 Заказ: ${order.items_json ? order.items_json.map(i => `${i.name} × ${i.quantity || 1}`).join(', ') : ''}\n💰 Сумма: ${order.total} BYN`;
+        const fullMessage = `📩 Сообщение от администратора по заказу #${orderId}:\n\n${message}\n\n---\n📦 Заказ: ${order.items_json ? order.items_json.map(i => `${i.name} × ${i.quantity || 1}`).join(', ') : ''}\n💰 Сумма: ${order.total || 0} BYN`;
         
         fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
             method: 'POST',
@@ -1394,7 +1430,7 @@ function exportOrdersCSV() {
         orders.forEach(o => {
             const items = o.items_json ? o.items_json.map(i => `${i.name} × ${i.quantity || 1}`).join('; ') : '';
             const delivery = o.delivery_type === 'pickup' ? `Самовывоз: ${o.pickup_point_name || ''}` : `Доставка: ${o.delivery_address || ''}`;
-            csv += `${o.id},"${o.username || ''}","${o.phone || ''}",${o.total},"${delivery}","${o.status || ''}","${new Date(o.created_at).toLocaleString()}","${items}"\n`;
+            csv += `${o.id},"${o.username || ''}","${o.phone || ''}",${o.total || 0},"${delivery}","${o.status || ''}","${new Date(o.created_at).toLocaleString()}","${items}"\n`;
         });
         const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
@@ -1475,9 +1511,9 @@ async function loadAdminPickupPoints() {
         
         if (!response.ok) throw new Error('Не удалось загрузить точки самовывоза');
         const data = await response.json();
-        console.log('📦 Загружено точек самовывоза:', data.length);
+        console.log('📦 Загружено точек самовывоза:', data ? data.length : 0);
         
-        if (data.length === 0) {
+        if (!data || data.length === 0) {
             container.innerHTML = '<div class="empty-message">Точек самовывоза пока нет</div>';
             return;
         }
@@ -1485,8 +1521,8 @@ async function loadAdminPickupPoints() {
         container.innerHTML = data.map(point => `
             <div class="admin-pickup-point-card" data-id="${point.id}">
                 <div class="admin-pickup-point-info">
-                    <div class="admin-pickup-point-name">📍 ${point.name}</div>
-                    <div class="admin-pickup-point-address">${point.address}</div>
+                    <div class="admin-pickup-point-name">📍 ${point.name || 'Без названия'}</div>
+                    <div class="admin-pickup-point-address">${point.address || ''}</div>
                     ${point.working_hours ? `<div class="admin-pickup-point-hours">🕐 ${point.working_hours}</div>` : ''}
                     ${point.phone ? `<div class="admin-pickup-point-phone">📱 ${point.phone}</div>` : ''}
                     <div class="admin-pickup-point-status">${point.is_active !== false ? '🟢 Активна' : '🔴 Неактивна'}</div>
@@ -1591,24 +1627,24 @@ async function loadAdminProducts() {
         
         if (!response.ok) throw new Error('Не удалось загрузить товары');
         const data = await response.json();
-        console.log('📦 Загружено товаров в админке:', data.length);
+        console.log('📦 Загружено товаров в админке:', data ? data.length : 0);
         
-        if (data.length === 0) {
+        if (!data || data.length === 0) {
             container.innerHTML = '<div class="empty-message">Товаров не найдено</div>';
             return;
         }
         
         container.innerHTML = data.map(p => {
             const category = FIXED_CATEGORIES.find(c => c.slug === p.main_category_slug);
-            const brand = brands.find(b => b.slug === p.brand_slug);
-            const model = productModels.find(m => m.slug === p.product_model_slug);
+            const brand = (brands || []).find(b => b.slug === p.brand_slug);
+            const model = (productModels || []).find(m => m.slug === p.product_model_slug);
             
             return `
             <div class="admin-product-card" data-id="${p.id}">
                 <span class="admin-product-emoji">${p.emoji || '📦'}</span>
                 <div class="admin-product-info">
-                    <div class="admin-product-name">${p.name}</div>
-                    <div class="admin-product-price">${p.price} BYN</div>
+                    <div class="admin-product-name">${p.name || 'Без названия'}</div>
+                    <div class="admin-product-price">${p.price || 0} BYN</div>
                     <div class="admin-product-category">${category ? category.name : p.main_category_slug}</div>
                     <div class="admin-product-brand">${brand ? brand.name : p.brand_slug}</div>
                     <div class="admin-product-model">${model ? model.name : p.product_model_slug}</div>
@@ -1695,14 +1731,14 @@ async function deleteProduct(productId) {
 }
 
 function showEditProductForm(productId) {
-    const product = products.find(p => p.id === productId);
+    const product = (products || []).find(p => p.id === productId);
     if (!product) return;
     
-    const name = prompt('Название товара:', product.name);
+    const name = prompt('Название товара:', product.name || '');
     if (name === null) return;
-    const price = prompt('Цена (BYN):', product.price);
+    const price = prompt('Цена (BYN):', product.price || 0);
     if (price === null) return;
-    const emoji = prompt('Эмодзи:', product.emoji);
+    const emoji = prompt('Эмодзи:', product.emoji || '📦');
     if (emoji === null) return;
     const stock = prompt('Количество на складе:', product.stockQuantity || 0);
     if (stock === null) return;
@@ -1711,9 +1747,9 @@ function showEditProductForm(productId) {
     
     updateProduct(productId, { 
         name, 
-        price: parseFloat(price), 
+        price: parseFloat(price) || 0, 
         emoji, 
-        stock_quantity: parseInt(stock),
+        stock_quantity: parseInt(stock) || 0,
         is_hit: isHit,
         is_new: isNew
     });
@@ -1761,7 +1797,7 @@ async function addNewProduct() {
     let brandSlug = null;
     let brandName = null;
     if (mainCategorySlug !== 'accessories' && mainCategorySlug !== 'disposable') {
-        const categoryBrands = brands.filter(b => b.main_category_slug === mainCategorySlug);
+        const categoryBrands = (brands || []).filter(b => b.main_category_slug === mainCategorySlug);
         if (categoryBrands.length === 0) {
             alert(`❌ Нет брендов для категории "${category.name}". Сначала добавьте бренд через админку → Бренды.`);
             return;
@@ -1787,7 +1823,7 @@ async function addNewProduct() {
     let modelOptions = [];
 
     if (mainCategorySlug === 'accessories') {
-        const accessoriesModels = productModels.filter(m => m.main_category_slug === 'accessories');
+        const accessoriesModels = (productModels || []).filter(m => m.main_category_slug === 'accessories');
         if (accessoriesModels.length === 0) {
             alert('❌ Нет комплектующих. Сначала добавьте комплектующие через админку → Модели.');
             return;
@@ -1807,7 +1843,7 @@ async function addNewProduct() {
         modelSlug = accessoriesModels[modelIndex].slug;
         modelName = accessoriesModels[modelIndex].name;
     } else if (mainCategorySlug === 'disposable') {
-        const disposableModels = productModels.filter(m => m.main_category_slug === 'disposable');
+        const disposableModels = (productModels || []).filter(m => m.main_category_slug === 'disposable');
         if (disposableModels.length === 0) {
             alert('❌ Нет одноразовых pod. Сначала добавьте через админку → Модели.');
             return;
@@ -1827,7 +1863,7 @@ async function addNewProduct() {
         modelSlug = disposableModels[modelIndex].slug;
         modelName = disposableModels[modelIndex].name;
     } else {
-        const brandModels = productModels.filter(m => m.brand_slug === brandSlug);
+        const brandModels = (productModels || []).filter(m => m.brand_slug === brandSlug);
         if (brandModels.length === 0) {
             alert(`❌ Нет моделей для бренда "${brandName}". Сначала добавьте модели через админку → Модели.`);
             return;
@@ -1849,7 +1885,7 @@ async function addNewProduct() {
     }
 
     let attributes = [];
-    const modelAttributes = productAttributes.filter(a => a.product_model_slug === modelSlug);
+    const modelAttributes = (productAttributes || []).filter(a => a.product_model_slug === modelSlug);
     
     if (modelAttributes.length > 0) {
         const attrGroups = {};
@@ -1929,7 +1965,7 @@ ${isHit ? '🔥 Хит' : ''} ${isNew ? '✨ Новинка' : ''}
             },
             body: JSON.stringify({
                 name,
-                price: parseFloat(price),
+                price: parseFloat(price) || 0,
                 emoji,
                 main_category_slug: mainCategorySlug,
                 brand_slug: brandSlug,
@@ -1981,9 +2017,9 @@ async function loadAdminBrands() {
         
         if (!response.ok) throw new Error('Не удалось загрузить бренды');
         const data = await response.json();
-        console.log('📦 Загружено брендов в админке:', data.length);
+        console.log('📦 Загружено брендов в админке:', data ? data.length : 0);
         
-        if (data.length === 0) {
+        if (!data || data.length === 0) {
             container.innerHTML = '<div class="empty-message">Брендов пока нет</div>';
             return;
         }
@@ -1993,8 +2029,8 @@ async function loadAdminBrands() {
             return `
             <div class="admin-brand-card" data-id="${b.id}">
                 <div class="admin-brand-info">
-                    <div class="admin-brand-name">${b.name}</div>
-                    <div class="admin-brand-slug">${b.slug}</div>
+                    <div class="admin-brand-name">${b.name || 'Без названия'}</div>
+                    <div class="admin-brand-slug">${b.slug || ''}</div>
                     <div class="admin-brand-category">${category ? category.name : b.main_category_slug}</div>
                     <div class="admin-brand-status">${b.active !== false ? '🟢 Активен' : '🔴 Неактивен'}</div>
                 </div>
@@ -2003,7 +2039,7 @@ async function loadAdminBrands() {
                     <button class="admin-delete-btn" onclick="deleteBrand(${b.id})">🗑️</button>
                 </div>
             </div>
-        `).join('');
+        `}).join('');
     } catch (error) {
         console.error('❌ Ошибка загрузки брендов:', error);
         container.innerHTML = '<div class="error-message">Ошибка загрузки брендов</div>';
@@ -2109,21 +2145,21 @@ async function loadAdminModels() {
         
         if (!response.ok) throw new Error('Не удалось загрузить модели');
         const data = await response.json();
-        console.log('📦 Загружено моделей в админке:', data.length);
+        console.log('📦 Загружено моделей в админке:', data ? data.length : 0);
         
-        if (data.length === 0) {
+        if (!data || data.length === 0) {
             container.innerHTML = '<div class="empty-message">Моделей пока нет</div>';
             return;
         }
         
         container.innerHTML = data.map(m => {
-            const brand = brands.find(b => b.slug === m.brand_slug);
+            const brand = (brands || []).find(b => b.slug === m.brand_slug);
             const category = FIXED_CATEGORIES.find(c => c.slug === m.main_category_slug);
             return `
             <div class="admin-model-card" data-id="${m.id}">
                 <div class="admin-model-info">
-                    <div class="admin-model-name">${m.name}</div>
-                    <div class="admin-model-slug">${m.slug}</div>
+                    <div class="admin-model-name">${m.name || 'Без названия'}</div>
+                    <div class="admin-model-slug">${m.slug || ''}</div>
                     <div class="admin-model-brand">${brand ? brand.name : m.brand_slug}</div>
                     <div class="admin-model-category">${category ? category.name : m.main_category_slug}</div>
                     <div class="admin-model-status">${m.active !== false ? '🟢 Активна' : '🔴 Неактивна'}</div>
@@ -2133,7 +2169,7 @@ async function loadAdminModels() {
                     <button class="admin-delete-btn" onclick="deleteModel(${m.id})">🗑️</button>
                 </div>
             </div>
-        `).join('');
+        `}).join('');
     } catch (error) {
         console.error('❌ Ошибка загрузки моделей:', error);
         container.innerHTML = '<div class="error-message">Ошибка загрузки моделей</div>';
@@ -2146,8 +2182,8 @@ async function addNewModel() {
     const slug = prompt('🔑 Введите slug (уникальный идентификатор на латинице, например: "xros-3"):');
     if (!slug) return;
     
-    const brandOptions = brands.map((b, i) => `${i+1}. ${b.name} (${b.slug})`).join('\n');
-    if (brands.length === 0) {
+    const brandOptions = (brands || []).map((b, i) => `${i+1}. ${b.name} (${b.slug})`).join('\n');
+    if (!brands || brands.length === 0) {
         alert('⚠️ Сначала добавьте бренд через админку → Бренды.');
         return;
     }
@@ -2260,12 +2296,12 @@ async function loadAdminAttributes() {
         
         if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         const data = await response.json();
-        console.log('📦 Загружено атрибутов:', data.length);
+        console.log('📦 Загружено атрибутов:', data ? data.length : 0);
         console.log('📦 Данные атрибутов:', data);
         
-        productAttributes = data;
+        productAttributes = data || [];
         
-        if (data.length === 0) {
+        if (!data || data.length === 0) {
             container.innerHTML = '<div class="empty-message">Атрибутов пока нет</div>';
             return;
         }
@@ -2400,12 +2436,12 @@ async function loadAdminPromotions() {
         
         if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         const data = await response.json();
-        console.log('📦 Загружено акций:', data.length);
+        console.log('📦 Загружено акций:', data ? data.length : 0);
         console.log('📦 Данные акций:', data);
         
-        promotions = data;
+        promotions = data || [];
         
-        if (data.length === 0) {
+        if (!data || data.length === 0) {
             container.innerHTML = '<div class="empty-message">Акций пока нет</div>';
             return;
         }
@@ -2539,10 +2575,10 @@ async function loadAdmins() {
         
         if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         const data = await response.json();
-        console.log('📦 Загружено модераторов:', data.length);
+        console.log('📦 Загружено модераторов:', data ? data.length : 0);
         console.log('📦 Данные модераторов:', data);
         
-        if (data.length === 0) {
+        if (!data || data.length === 0) {
             container.innerHTML = '<div class="empty-message">Нет модераторов</div>';
             return;
         }
@@ -2569,8 +2605,16 @@ async function loadAdmins() {
 }
 
 async function addAdmin() {
-    const id = document.getElementById('admin-add-id').value;
-    const username = document.getElementById('admin-add-username').value || 'unknown';
+    const idInput = document.getElementById('admin-add-id');
+    const usernameInput = document.getElementById('admin-add-username');
+    
+    if (!idInput) {
+        alert('⚠️ Поле для ID не найдено');
+        return;
+    }
+    
+    const id = idInput.value;
+    const username = usernameInput ? usernameInput.value || 'unknown' : 'unknown';
     
     if (!id) {
         alert('⚠️ Введите Telegram ID пользователя');
@@ -2593,8 +2637,8 @@ async function addAdmin() {
         });
         
         if (response.ok) {
-            document.getElementById('admin-add-id').value = '';
-            document.getElementById('admin-add-username').value = '';
+            if (idInput) idInput.value = '';
+            if (usernameInput) usernameInput.value = '';
             await loadAdmins();
             showMessage('✅ Модератор добавлен!', `Пользователь ${username} добавлен как модератор`);
         } else {
@@ -2651,8 +2695,8 @@ async function loadAdminCategories() {
                         <div class="admin-category-name">${cat.name}</div>
                         <div class="admin-category-slug">${cat.slug}</div>
                         <div class="admin-category-stats">
-                            Брендов: ${brands.filter(b => b.main_category_slug === cat.slug).length} | 
-                            Моделей: ${productModels.filter(m => m.main_category_slug === cat.slug).length}
+                            Брендов: ${(brands || []).filter(b => b.main_category_slug === cat.slug).length} | 
+                            Моделей: ${(productModels || []).filter(m => m.main_category_slug === cat.slug).length}
                         </div>
                     </div>
                     <div class="admin-category-actions">
@@ -2673,111 +2717,137 @@ async function addNewCategory() {
 // ==========================================
 
 document.addEventListener('DOMContentLoaded', async () => {
-    console.log('🚀 ИНИЦИАЛИЗАЦИЯ ПРИЛОЖЕНИЯ...');
-    console.log('📱 initData:', window.Telegram.WebApp.initData);
-    console.log('👤 initDataUnsafe:', window.Telegram.WebApp.initDataUnsafe);
-    console.log('📱 platform:', window.Telegram.WebApp.platform);
-    
-    cart = JSON.parse(localStorage.getItem('puff_cart') || '[]');
-    updateCartUI();
-    updateBadge();
-    
-    isAdmin = await checkAdmin();
-    console.log('👑 isAdmin:', isAdmin);
-    
-    const adminNavBtn = document.getElementById('nav-admin');
-    if (adminNavBtn && isAdmin) {
-        adminNavBtn.style.display = 'flex';
-        console.log('✅ Кнопка админки показана');
-    }
-    
-    await loadMainCategories();
-    await loadBrands();
-    await loadProductModels();
-    await loadProductAttributes();
-    await loadPickupPoints();
-    await loadPromotionsFromSupabase();
-    await loadProductsFromSupabase();
-    
-    setupSortFilters();
-    setupSearch();
-    setupOrderFilters();
-    initNotificationSound();
-    
-    if (isAdmin) {
-        setInterval(checkNewOrders, 15000);
-        setTimeout(checkNewOrders, 3000);
-    }
-    
-    const deliveryType = document.getElementById('order-delivery-type');
-    const addressGroup = document.getElementById('delivery-address-group');
-    const pickupGroup = document.getElementById('pickup-point-group');
-    
-    if (deliveryType) {
-        deliveryType.addEventListener('change', function() {
-            if (this.value === 'delivery') {
-                if (addressGroup) addressGroup.style.display = 'block';
-                if (pickupGroup) pickupGroup.style.display = 'none';
-            } else if (this.value === 'pickup') {
-                if (addressGroup) addressGroup.style.display = 'none';
-                if (pickupGroup) pickupGroup.style.display = 'block';
-            } else {
-                if (addressGroup) addressGroup.style.display = 'none';
-                if (pickupGroup) pickupGroup.style.display = 'none';
-            }
-        });
-        if (pickupGroup) {
-            const pickupSelect = document.getElementById('order-pickup-point');
-            if (pickupSelect) {
-                pickupSelect.innerHTML = '<option value="">-- Выберите точку --</option>';
-                pickupPoints.forEach(p => {
-                    pickupSelect.innerHTML += `<option value="${p.id}">${p.name} — ${p.address}</option>`;
-                });
+    try {
+        console.log('🚀 ИНИЦИАЛИЗАЦИЯ ПРИЛОЖЕНИЯ...');
+        console.log('📱 initData:', window.Telegram.WebApp.initData || 'empty');
+        console.log('👤 initDataUnsafe:', window.Telegram.WebApp.initDataUnsafe || 'empty');
+        console.log('📱 platform:', window.Telegram.WebApp.platform || 'unknown');
+        
+        // Проверяем наличие основных страниц
+        const pages = document.querySelectorAll('.page');
+        if (pages.length === 0) {
+            console.error('❌ КРИТИЧЕСКАЯ ОШИБКА: Страницы не найдены! Проверьте HTML.');
+            return;
+        }
+        
+        cart = JSON.parse(localStorage.getItem('puff_cart') || '[]');
+        updateCartUI();
+        updateBadge();
+        
+        try {
+            isAdmin = await checkAdmin();
+            console.log('👑 isAdmin:', isAdmin);
+        } catch (adminError) {
+            console.error('❌ Ошибка проверки админа:', adminError);
+            isAdmin = false;
+        }
+        
+        const adminNavBtn = document.getElementById('nav-admin');
+        if (adminNavBtn && isAdmin) {
+            adminNavBtn.style.display = 'flex';
+            console.log('✅ Кнопка админки показана');
+        }
+        
+        try {
+            await loadMainCategories();
+            await loadBrands();
+            await loadProductModels();
+            await loadProductAttributes();
+            await loadPickupPoints();
+            await loadPromotionsFromSupabase();
+            await loadProductsFromSupabase();
+        } catch (loadError) {
+            console.error('❌ Ошибка загрузки данных:', loadError);
+            showMessage('⚠️ Внимание', 'Некоторые данные не загрузились. Проверьте подключение к интернету.');
+        }
+        
+        setupSortFilters();
+        setupSearch();
+        setupOrderFilters();
+        initNotificationSound();
+        
+        if (isAdmin) {
+            setInterval(checkNewOrders, 15000);
+            setTimeout(checkNewOrders, 3000);
+        }
+        
+        const deliveryType = document.getElementById('order-delivery-type');
+        const addressGroup = document.getElementById('delivery-address-group');
+        const pickupGroup = document.getElementById('pickup-point-group');
+        
+        if (deliveryType) {
+            deliveryType.addEventListener('change', function() {
+                if (this.value === 'delivery') {
+                    if (addressGroup) addressGroup.style.display = 'block';
+                    if (pickupGroup) pickupGroup.style.display = 'none';
+                } else if (this.value === 'pickup') {
+                    if (addressGroup) addressGroup.style.display = 'none';
+                    if (pickupGroup) pickupGroup.style.display = 'block';
+                } else {
+                    if (addressGroup) addressGroup.style.display = 'none';
+                    if (pickupGroup) pickupGroup.style.display = 'none';
+                }
+            });
+            if (pickupGroup) {
+                const pickupSelect = document.getElementById('order-pickup-point');
+                if (pickupSelect) {
+                    pickupSelect.innerHTML = '<option value="">-- Выберите точку --</option>';
+                    (pickupPoints || []).forEach(p => {
+                        pickupSelect.innerHTML += `<option value="${p.id}">${p.name} — ${p.address}</option>`;
+                    });
+                }
             }
         }
-    }
-    
-    document.querySelectorAll('.nav-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const page = btn.dataset.page;
-            if (page) {
-                console.log('🔽 Клик по навигации:', page);
-                navigateTo(page);
-            }
+        
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const page = btn.dataset.page;
+                if (page) {
+                    console.log('🔽 Клик по навигации:', page);
+                    navigateTo(page);
+                }
+            });
         });
-    });
-    
-    document.querySelectorAll('.admin-menu-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const page = btn.dataset.page;
-            if (page) {
-                console.log('⚙️ Клик по админ-меню:', page);
-                navigateTo(page);
-            }
+        
+        document.querySelectorAll('.admin-menu-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const page = btn.dataset.page;
+                if (page) {
+                    console.log('⚙️ Клик по админ-меню:', page);
+                    navigateTo(page);
+                }
+            });
         });
-    });
-    
-    const checkoutBtn = document.getElementById('checkout-btn');
-    if (checkoutBtn) {
-        checkoutBtn.addEventListener('click', checkout);
+        
+        const checkoutBtn = document.getElementById('checkout-btn');
+        if (checkoutBtn) {
+            checkoutBtn.addEventListener('click', checkout);
+        }
+        
+        if (isAdmin) {
+            document.getElementById('admin-add-category-btn')?.addEventListener('click', addNewCategory);
+            document.getElementById('admin-add-product-btn')?.addEventListener('click', addNewProduct);
+            document.getElementById('admin-add-brand-btn')?.addEventListener('click', addNewBrand);
+            document.getElementById('admin-add-model-btn')?.addEventListener('click', addNewModel);
+            document.getElementById('admin-add-attribute-btn')?.addEventListener('click', addNewAttribute);
+            document.getElementById('admin-add-promotion-btn')?.addEventListener('click', addNewPromotion);
+            document.getElementById('admin-add-btn')?.addEventListener('click', addAdmin);
+            document.getElementById('admin-add-pickup-point-btn')?.addEventListener('click', addNewPickupPoint);
+            document.getElementById('admin-export-orders-btn')?.addEventListener('click', exportOrdersCSV);
+        }
+        
+        updateCartUI();
+        updateBadge();
+        
+        console.log('✅ ИНИЦИАЛИЗАЦИЯ ЗАВЕРШЕНА');
+    } catch (error) {
+        console.error('❌ КРИТИЧЕСКАЯ ОШИБКА ИНИЦИАЛИЗАЦИИ:', error);
+        try {
+            showMessage('❌ Ошибка', 'Произошла ошибка при загрузке приложения. Попробуйте перезапустить.');
+        } catch (e) {
+            alert('Ошибка загрузки приложения. Попробуйте перезапустить.');
+        }
     }
-    
-    if (isAdmin) {
-        document.getElementById('admin-add-category-btn')?.addEventListener('click', addNewCategory);
-        document.getElementById('admin-add-product-btn')?.addEventListener('click', addNewProduct);
-        document.getElementById('admin-add-brand-btn')?.addEventListener('click', addNewBrand);
-        document.getElementById('admin-add-model-btn')?.addEventListener('click', addNewModel);
-        document.getElementById('admin-add-attribute-btn')?.addEventListener('click', addNewAttribute);
-        document.getElementById('admin-add-promotion-btn')?.addEventListener('click', addNewPromotion);
-        document.getElementById('admin-add-btn')?.addEventListener('click', addAdmin);
-        document.getElementById('admin-add-pickup-point-btn')?.addEventListener('click', addNewPickupPoint);
-        document.getElementById('admin-export-orders-btn')?.addEventListener('click', exportOrdersCSV);
-    }
-    
-    updateCartUI();
-    updateBadge();
-    
-    console.log('✅ ИНИЦИАЛИЗАЦИЯ ЗАВЕРШЕНА');
 });
 
 tg.onEvent('mainButtonClicked', checkout);
