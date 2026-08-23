@@ -70,7 +70,7 @@
             </div>
 
             <!-- ========================================= -->
-            <!-- ===== КОРЗИНА (ОБНОВЛЕННАЯ) ===== -->
+            <!-- ===== КОРЗИНА (С ТОЧКАМИ САМОВЫВОЗА) ===== -->
             <!-- ========================================= -->
             <div id="page-cart" class="page">
                 <div class="app-header">
@@ -95,6 +95,17 @@
                                 <option value="delivery">🚚 Доставка</option>
                             </select>
                         </div>
+                        
+                        <!-- Выбор точки самовывоза -->
+                        <div id="pickup-point-group" style="display:block;">
+                            <div class="form-group">
+                                <label>📍 Выберите точку самовывоза *</label>
+                                <select id="order-pickup-point" class="order-input">
+                                    <option value="">-- Выберите точку --</option>
+                                </select>
+                            </div>
+                        </div>
+                        
                         <div id="delivery-address-group" style="display:none;">
                             <div class="form-group">
                                 <label>📍 Адрес доставки *</label>
@@ -149,7 +160,7 @@
             </div>
 
             <!-- ========================================= -->
-            <!-- ===== АДМИН-ПАНЕЛЬ (ОБНОВЛЕННАЯ) ===== -->
+            <!-- ===== АДМИН-ПАНЕЛЬ (С ТОЧКАМИ САМОВЫВОЗА) ===== -->
             <!-- ========================================= -->
 
             <!-- АДМИН-МЕНЮ -->
@@ -194,6 +205,10 @@
                     <button class="admin-menu-btn" data-page="page-admin-moderators">
                         <span class="admin-menu-icon">👥</span>
                         <span class="admin-menu-label">Модераторы</span>
+                    </button>
+                    <button class="admin-menu-btn" data-page="page-admin-pickup-points">
+                        <span class="admin-menu-icon">📍</span>
+                        <span class="admin-menu-label">Точки самовывоза</span>
                     </button>
                 </div>
             </div>
@@ -388,6 +403,21 @@
                 </div>
                 <div id="admin-moderators-list">
                     <div class="loading">Загрузка модераторов...</div>
+                </div>
+            </div>
+
+            <!-- ТОЧКИ САМОВЫВОЗА (админка) -->
+            <div id="page-admin-pickup-points" class="page">
+                <div class="app-header">
+                    <h1>📍 Точки самовывоза</h1>
+                    <p>Управление точками самовывоза</p>
+                </div>
+                <button class="admin-reload-btn" onclick="loadAdminPickupPoints()" style="margin-bottom:10px; padding:8px 16px; background:#667eea; color:white; border:none; border-radius:8px; cursor:pointer; width:100%; font-weight:600;">
+                    🔄 Принудительно загрузить точки
+                </button>
+                <button class="admin-add-btn" id="admin-add-pickup-point-btn">➕ Добавить точку</button>
+                <div id="admin-pickup-points-list">
+                    <div class="loading">Загрузка точек самовывоза...</div>
                 </div>
             </div>
 

@@ -54,6 +54,7 @@ let brands = [];
 let productModels = [];
 let productAttributes = [];
 let promotions = [];
+let pickupPoints = [];
 let currentCategorySlug = 'all';
 let currentBrandSlug = 'all';
 let currentModelSlug = 'all';
@@ -232,6 +233,27 @@ async function loadPromotionsFromSupabase() {
         return promotions;
     } catch (error) {
         console.error('❌ Ошибка загрузки акций:', error);
+        return [];
+    }
+}
+
+// ===== ЗАГРУЗКА ТОЧЕК САМОВЫВОЗА =====
+async function loadPickupPoints() {
+    try {
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/pickup_points?select=*&order=sort_order.asc`, {
+            headers: {
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`
+            }
+        });
+        
+        if (!response.ok) throw new Error('Не удалось загрузить точки самовывоза');
+        const data = await response.json();
+        pickupPoints = data.filter(p => p.is_active !== false);
+        console.log('✅ Загружено точек самовывоза:', pickupPoints.length);
+        return pickupPoints;
+    } catch (error) {
+        console.error('❌ Ошибка загрузки точек самовывоза:', error);
         return [];
     }
 }
@@ -692,7 +714,8 @@ function navigateTo(pageId) {
                 'page-admin-brands': 'admin-brands-list',
                 'page-admin-models': 'admin-models-list',
                 'page-admin-categories': 'admin-categories-list',
-                'page-admin-stats': null
+                'page-admin-stats': null,
+                'page-admin-pickup-points': 'admin-pickup-points-list'
             };
             
             const containerId = containerMap[pageId];
@@ -733,6 +756,9 @@ function navigateTo(pageId) {
                 case 'page-admin-stats':
                     loadStats();
                     break;
+                case 'page-admin-pickup-points':
+                    loadAdminPickupPoints();
+                    break;
             }
         }, 300);
     }
@@ -746,11 +772,18 @@ async function checkout() {
     
     const phone = document.getElementById('order-phone')?.value?.trim() || '';
     const deliveryType = document.getElementById('order-delivery-type')?.value || 'pickup';
+    const pickupPointId = document.getElementById('order-pickup-point')?.value || '';
     const address = document.getElementById('order-address')?.value?.trim() || '';
     const comment = document.getElementById('order-comment')?.value?.trim() || '';
     
     if (!phone) {
         showMessage('⚠️ Введите телефон', 'Пожалуйста, укажите номер телефона для связи');
+        return;
+    }
+    
+    // Проверяем выбор точки самовывоза
+    if (deliveryType === 'pickup' && !pickupPointId) {
+        showMessage('⚠️ Выберите точку', 'Пожалуйста, выберите точку самовывоза');
         return;
     }
     
@@ -769,6 +802,17 @@ async function checkout() {
     
     const user = tg.initDataUnsafe?.user;
     
+    // Находим выбранную точку для отображения в заказе
+    let pickupPointName = '';
+    let pickupPointAddress = '';
+    if (deliveryType === 'pickup') {
+        const selectedPoint = pickupPoints.find(p => p.id == pickupPointId);
+        if (selectedPoint) {
+            pickupPointName = selectedPoint.name;
+            pickupPointAddress = selectedPoint.address;
+        }
+    }
+    
     const orderData = {
         user_id: user?.id || 0,
         username: user?.username || user?.first_name || 'Гость',
@@ -777,7 +821,9 @@ async function checkout() {
         currency: 'BYN',
         phone: phone,
         delivery_type: deliveryType,
-        delivery_address: address || null,
+        delivery_address: deliveryType === 'pickup' ? pickupPointAddress : (address || null),
+        pickup_point_id: deliveryType === 'pickup' ? pickupPointId : null,
+        pickup_point_name: pickupPointName,
         comment: comment || null,
         items_json: items
     };
@@ -821,7 +867,8 @@ async function checkout() {
             currency: 'BYN',
             phone: phone,
             delivery_type: deliveryType,
-            delivery_address: address || null,
+            delivery_address: deliveryType === 'pickup' ? pickupPointAddress : (address || null),
+            pickup_point_name: pickupPointName,
             comment: comment || null,
             user_id: user?.id || null,
             username: user?.username || user?.first_name || 'Гость'
@@ -969,7 +1016,7 @@ async function loadStats() {
 // ===== АДМИН-ПАНЕЛЬ =====
 // ==========================================
 
-// --- Заказы (ОБНОВЛЕННЫЕ) ---
+// --- Заказы ---
 async function loadAdminOrders() {
     console.log('🔄 ЗАГРУЗКА ЗАКАЗОВ...');
     const container = document.getElementById('admin-orders-list');
@@ -1001,7 +1048,12 @@ async function loadAdminOrders() {
         }
         
         container.innerHTML = orders.map(order => {
-            const deliveryText = order.delivery_type === 'pickup' ? '🏪 Самовывоз' : `🚚 Доставка: ${order.delivery_address || 'Адрес не указан'}`;
+            let deliveryText = '';
+            if (order.delivery_type === 'pickup') {
+                deliveryText = `🏪 Самовывоз: ${order.pickup_point_name || 'Точка не указана'}`;
+            } else {
+                deliveryText = `🚚 Доставка: ${order.delivery_address || 'Адрес не указан'}`;
+            }
             const itemsList = order.items_json ? order.items_json.map(item => `${item.emoji || '📦'} ${item.name}`).join(', ') : '';
             const userLink = order.user_id ? `<a href="tg://user?id=${order.user_id}" target="_blank">✉️ Связаться</a>` : '';
             
@@ -1150,6 +1202,125 @@ async function updateOrderStatus(orderId, status) {
     } catch (error) {
         console.error('❌ Ошибка обновления статуса:', error);
         showMessage('❌ Ошибка', 'Не удалось обновить статус заказа');
+    }
+}
+
+// ==========================================
+// ===== УПРАВЛЕНИЕ ТОЧКАМИ САМОВЫВОЗА =====
+// ==========================================
+
+async function loadAdminPickupPoints() {
+    console.log('🔄 ЗАГРУЗКА ТОЧЕК САМОВЫВОЗА...');
+    const container = document.getElementById('admin-pickup-points-list');
+    if (!container) {
+        console.error('❌ Контейнер admin-pickup-points-list не найден');
+        return;
+    }
+    
+    container.style.display = 'block';
+    container.style.visibility = 'visible';
+    
+    try {
+        container.innerHTML = '<div class="loading">⏳ Загрузка точек самовывоза...</div>';
+        
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/pickup_points?select=*&order=sort_order.asc`, {
+            headers: {
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`
+            }
+        });
+        
+        if (!response.ok) throw new Error('Не удалось загрузить точки самовывоза');
+        const data = await response.json();
+        console.log('📦 Загружено точек самовывоза:', data.length);
+        
+        if (data.length === 0) {
+            container.innerHTML = '<div class="empty-message">Точек самовывоза пока нет</div>';
+            return;
+        }
+        
+        container.innerHTML = data.map(point => `
+            <div class="admin-pickup-point-card" data-id="${point.id}">
+                <div class="admin-pickup-point-info">
+                    <div class="admin-pickup-point-name">📍 ${point.name}</div>
+                    <div class="admin-pickup-point-address">${point.address}</div>
+                    ${point.working_hours ? `<div class="admin-pickup-point-hours">🕐 ${point.working_hours}</div>` : ''}
+                    ${point.phone ? `<div class="admin-pickup-point-phone">📱 ${point.phone}</div>` : ''}
+                    <div class="admin-pickup-point-status">${point.is_active !== false ? '🟢 Активна' : '🔴 Неактивна'}</div>
+                </div>
+                <div class="admin-pickup-point-actions">
+                    <button class="admin-edit-btn" onclick="editPickupPoint(${point.id})">✏️</button>
+                    <button class="admin-delete-btn" onclick="deletePickupPoint(${point.id})">🗑️</button>
+                </div>
+            </div>
+        `).join('');
+        
+    } catch (error) {
+        console.error('❌ Ошибка загрузки точек самовывоза:', error);
+        container.innerHTML = '<div class="error-message">Ошибка загрузки точек самовывоза</div>';
+    }
+}
+
+async function addNewPickupPoint() {
+    const name = prompt('📍 Введите название точки самовывоза:');
+    if (!name) return;
+    const address = prompt('🏠 Введите адрес:');
+    if (!address) return;
+    const workingHours = prompt('🕐 Введите часы работы (например, "Пн-Пт: 10:00-20:00"):') || '';
+    const phone = prompt('📱 Введите телефон:') || '';
+    
+    try {
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/pickup_points`, {
+            method: 'POST',
+            headers: {
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                name,
+                address,
+                working_hours: workingHours,
+                phone,
+                is_active: true,
+                sort_order: 0
+            })
+        });
+        
+        if (response.ok) {
+            await loadAdminPickupPoints();
+            await loadPickupPoints();
+            showMessage('✅ Точка добавлена!', `"${name}" успешно добавлена`);
+        } else {
+            const error = await response.json();
+            console.error('❌ Ошибка добавления:', error);
+            showMessage('❌ Ошибка', error.message || 'Не удалось добавить точку');
+        }
+    } catch (error) {
+        console.error('❌ Ошибка запроса:', error);
+        showMessage('❌ Ошибка', 'Ошибка соединения с сервером');
+    }
+}
+
+async function deletePickupPoint(pointId) {
+    if (!confirm('Удалить эту точку самовывоза?')) return;
+    
+    try {
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/pickup_points?id=eq.${pointId}`, {
+            method: 'DELETE',
+            headers: {
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`
+            }
+        });
+        
+        if (response.ok) {
+            await loadAdminPickupPoints();
+            await loadPickupPoints();
+            showMessage('✅ Точка удалена', 'Точка самовывоза успешно удалена');
+        }
+    } catch (error) {
+        console.error('❌ Ошибка удаления:', error);
     }
 }
 
@@ -2277,6 +2448,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadBrands();
     await loadProductModels();
     await loadProductAttributes();
+    await loadPickupPoints();
     await loadPromotionsFromSupabase();
     await loadProductsFromSupabase();
     
@@ -2285,13 +2457,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Отслеживаем изменение способа получения
     const deliveryType = document.getElementById('order-delivery-type');
     const addressGroup = document.getElementById('delivery-address-group');
+    const pickupGroup = document.getElementById('pickup-point-group');
     
     if (deliveryType) {
         deliveryType.addEventListener('change', function() {
             if (this.value === 'delivery') {
                 if (addressGroup) addressGroup.style.display = 'block';
+                if (pickupGroup) pickupGroup.style.display = 'none';
+            } else if (this.value === 'pickup') {
+                if (addressGroup) addressGroup.style.display = 'none';
+                if (pickupGroup) pickupGroup.style.display = 'block';
             } else {
                 if (addressGroup) addressGroup.style.display = 'none';
+                if (pickupGroup) pickupGroup.style.display = 'none';
             }
         });
     }
@@ -2329,6 +2507,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('admin-add-attribute-btn')?.addEventListener('click', addNewAttribute);
         document.getElementById('admin-add-promotion-btn')?.addEventListener('click', addNewPromotion);
         document.getElementById('admin-add-btn')?.addEventListener('click', addAdmin);
+        document.getElementById('admin-add-pickup-point-btn')?.addEventListener('click', addNewPickupPoint);
     }
     
     updateCartUI();
