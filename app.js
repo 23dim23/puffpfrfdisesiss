@@ -63,6 +63,10 @@ let currentSort = 'default';
 let adminFilterCategory = 'all';
 let adminFilterStock = 'all';
 let selectedAttributes = {};
+let searchQuery = '';
+let ordersFilter = { status: 'all', dateFrom: '', dateTo: '', deliveryType: 'all' };
+let notificationSound = null;
+let lastOrderCheck = 0;
 
 // ===== РЕЖИМ РАЗРАБОТКИ =====
 const isDevelopment = !window.Telegram.WebApp.initDataUnsafe?.user;
@@ -312,22 +316,102 @@ function renderNewItems() {
     addBuyButtons(grid);
 }
 
-// ===== ОСНОВНАЯ ЛОГИКА КАТАЛОГА =====
+// ==========================================
+// ===== КАТАЛОГ (С ПОИСКОМ) =====
+// ==========================================
 function renderCatalog() {
     const grid = document.getElementById('catalog-grid');
     if (!grid) return;
     
-    if (currentCategorySlug === 'all') {
+    if (currentCategorySlug === 'all' && !searchQuery) {
         renderMainCategories(grid);
-    } else if (currentBrandSlug === 'all') {
+    } else if (currentBrandSlug === 'all' && !searchQuery) {
         renderBrands(grid);
-    } else if (currentModelSlug === 'all') {
+    } else if (currentModelSlug === 'all' && !searchQuery) {
         renderModels(grid);
-    } else if (currentAttributeValue === 'all') {
+    } else if (currentAttributeValue === 'all' && !searchQuery) {
         renderAttributes(grid);
     } else {
-        renderProducts(grid);
+        renderProductsWithSearch(grid);
     }
+}
+
+function renderProductsWithSearch(grid) {
+    let filtered = products.filter(p => p.inStock);
+    
+    // Поиск
+    if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        filtered = filtered.filter(p => 
+            p.name.toLowerCase().includes(q) || 
+            (p.emoji && p.emoji.includes(q))
+        );
+    }
+    
+    if (currentCategorySlug !== 'all') {
+        filtered = filtered.filter(p => p.mainCategorySlug === currentCategorySlug);
+    }
+    if (currentBrandSlug !== 'all') {
+        filtered = filtered.filter(p => p.brandSlug === currentBrandSlug);
+    }
+    if (currentModelSlug !== 'all') {
+        filtered = filtered.filter(p => p.modelSlug === currentModelSlug);
+    }
+    if (currentAttributeValue !== 'all') {
+        filtered = filtered.filter(p => {
+            const productAttrs = productAttributes.filter(a => a.product_model_slug === p.modelSlug);
+            return productAttrs.some(a => a.attribute_value === currentAttributeValue);
+        });
+    }
+    
+    switch (currentSort) {
+        case 'price-asc': filtered.sort((a, b) => a.price - b.price); break;
+        case 'price-desc': filtered.sort((a, b) => b.price - a.price); break;
+        case 'name': filtered.sort((a, b) => a.name.localeCompare(b.name)); break;
+        default: filtered.sort((a, b) => a.id - b.id);
+    }
+    
+    const countEl = document.getElementById('catalog-count');
+    if (countEl) countEl.textContent = `${filtered.length} товаров`;
+    
+    if (filtered.length === 0) {
+        let backHtml = '';
+        if (searchQuery) {
+            backHtml = `<div class="category-back" onclick="clearSearch()">← Очистить поиск</div>`;
+        } else if (currentAttributeValue !== 'all') {
+            backHtml = `<div class="category-back" onclick="selectAttributeValue('all')">← Назад к характеристикам</div>`;
+        } else if (currentModelSlug !== 'all') {
+            backHtml = `<div class="category-back" onclick="selectModel('all')">← Назад к моделям</div>`;
+        } else if (currentBrandSlug !== 'all') {
+            backHtml = `<div class="category-back" onclick="selectBrand('all')">← Назад к брендам</div>`;
+        } else {
+            backHtml = `<div class="category-back" onclick="resetCatalog()">← Назад к категориям</div>`;
+        }
+        grid.innerHTML = `${backHtml}<div class="empty-message">Товары не найдены</div>`;
+        return;
+    }
+    
+    let backHtml = '';
+    if (searchQuery) {
+        backHtml = `<div class="category-back" onclick="clearSearch()">← Очистить поиск</div>`;
+    } else if (currentAttributeValue !== 'all') {
+        backHtml = `<div class="category-back" onclick="selectAttributeValue('all')">← Назад к характеристикам</div>`;
+    } else if (currentModelSlug !== 'all') {
+        backHtml = `<div class="category-back" onclick="selectModel('all')">← Назад к моделям</div>`;
+    } else if (currentBrandSlug !== 'all') {
+        backHtml = `<div class="category-back" onclick="selectBrand('all')">← Назад к брендам</div>`;
+    } else {
+        backHtml = `<div class="category-back" onclick="resetCatalog()">← Назад к категориям</div>`;
+    }
+    
+    grid.innerHTML = `${backHtml}${filtered.map(p => createProductCard(p)).join('')}`;
+    addBuyButtons(grid);
+}
+
+function clearSearch() {
+    searchQuery = '';
+    document.getElementById('search-input')?.value = '';
+    renderCatalog();
 }
 
 function renderMainCategories(grid) {
@@ -391,7 +475,7 @@ function renderAttributes(grid) {
     
     if (modelAttributes.length === 0) {
         currentAttributeValue = 'all';
-        renderProducts(grid);
+        renderProductsWithSearch(grid);
         return;
     }
     
@@ -417,84 +501,13 @@ function renderAttributes(grid) {
     grid.innerHTML = html;
 }
 
-function renderProducts(grid) {
-    let filtered = products.filter(p => p.inStock);
-    
-    if (currentCategorySlug !== 'all') {
-        filtered = filtered.filter(p => p.mainCategorySlug === currentCategorySlug);
-    }
-    
-    if (currentBrandSlug !== 'all') {
-        filtered = filtered.filter(p => p.brandSlug === currentBrandSlug);
-    }
-    
-    if (currentModelSlug !== 'all') {
-        filtered = filtered.filter(p => p.modelSlug === currentModelSlug);
-    }
-    
-    if (currentAttributeValue !== 'all') {
-        filtered = filtered.filter(p => {
-            const productAttrs = productAttributes.filter(a => a.product_model_slug === p.modelSlug);
-            return productAttrs.some(a => a.attribute_value === currentAttributeValue);
-        });
-    }
-    
-    switch (currentSort) {
-        case 'price-asc':
-            filtered.sort((a, b) => a.price - b.price);
-            break;
-        case 'price-desc':
-            filtered.sort((a, b) => b.price - a.price);
-            break;
-        case 'name':
-            filtered.sort((a, b) => a.name.localeCompare(b.name));
-            break;
-        default:
-            filtered.sort((a, b) => a.id - b.id);
-    }
-    
-    const countEl = document.getElementById('catalog-count');
-    if (countEl) {
-        countEl.textContent = `${filtered.length} товаров`;
-    }
-    
-    if (filtered.length === 0) {
-        let backHtml = '';
-        if (currentAttributeValue !== 'all') {
-            backHtml = `<div class="category-back" onclick="selectAttributeValue('all')">← Назад к характеристикам</div>`;
-        } else if (currentModelSlug !== 'all') {
-            backHtml = `<div class="category-back" onclick="selectModel('all')">← Назад к моделям</div>`;
-        } else if (currentBrandSlug !== 'all') {
-            backHtml = `<div class="category-back" onclick="selectBrand('all')">← Назад к брендам</div>`;
-        } else {
-            backHtml = `<div class="category-back" onclick="resetCatalog()">← Назад к категориям</div>`;
-        }
-        
-        grid.innerHTML = `${backHtml}<div class="empty-message">Товары не найдены</div>`;
-        return;
-    }
-    
-    let backHtml = '';
-    if (currentAttributeValue !== 'all') {
-        backHtml = `<div class="category-back" onclick="selectAttributeValue('all')">← Назад к характеристикам</div>`;
-    } else if (currentModelSlug !== 'all') {
-        backHtml = `<div class="category-back" onclick="selectModel('all')">← Назад к моделям</div>`;
-    } else if (currentBrandSlug !== 'all') {
-        backHtml = `<div class="category-back" onclick="selectBrand('all')">← Назад к брендам</div>`;
-    } else {
-        backHtml = `<div class="category-back" onclick="resetCatalog()">← Назад к категориям</div>`;
-    }
-    
-    grid.innerHTML = `${backHtml}${filtered.map(p => createProductCard(p)).join('')}`;
-    addBuyButtons(grid);
-}
-
 // ===== ФУНКЦИИ НАВИГАЦИИ ПО КАТАЛОГУ =====
 window.selectMainCategory = function(slug) {
     currentCategorySlug = slug;
     currentBrandSlug = 'all';
     currentModelSlug = 'all';
     currentAttributeValue = 'all';
+    searchQuery = '';
     renderCatalog();
 };
 
@@ -521,6 +534,8 @@ window.resetCatalog = function() {
     currentBrandSlug = 'all';
     currentModelSlug = 'all';
     currentAttributeValue = 'all';
+    searchQuery = '';
+    document.getElementById('search-input')?.value = '';
     renderCatalog();
 };
 
@@ -573,8 +588,32 @@ function setupSortFilters() {
 }
 
 // ==========================================
-// ===== КОРЗИНА =====
+// ===== ПОИСК =====
 // ==========================================
+function setupSearch() {
+    const searchInput = document.getElementById('search-input');
+    if (!searchInput) return;
+    searchInput.addEventListener('input', function() {
+        searchQuery = this.value.trim();
+        if (searchQuery) {
+            currentCategorySlug = 'all';
+            currentBrandSlug = 'all';
+            currentModelSlug = 'all';
+            currentAttributeValue = 'all';
+            renderCatalog();
+        } else {
+            resetCatalog();
+        }
+    });
+}
+
+// ==========================================
+// ===== КОРЗИНА (С КОЛИЧЕСТВОМ И СОХРАНЕНИЕМ) =====
+// ==========================================
+function saveCart() {
+    localStorage.setItem('puff_cart', JSON.stringify(cart));
+}
+
 function addToCart(productId) {
     const product = products.find(p => p.id === productId);
     if (!product) return;
@@ -584,21 +623,27 @@ function addToCart(productId) {
         return;
     }
     
-    cart.push({ ...product });
+    // Проверяем, есть ли уже товар в корзине
+    const existing = cart.find(item => item.id === productId);
+    if (existing) {
+        if (existing.quantity >= product.stockQuantity) {
+            showMessage('⚠️ Лимит', 'Доступно только ' + product.stockQuantity + ' шт.');
+            return;
+        }
+        existing.quantity = (existing.quantity || 1) + 1;
+    } else {
+        cart.push({ ...product, quantity: 1 });
+    }
+    
+    saveCart();
     updateCartUI();
     updateBadge();
     
     const card = document.querySelector(`.product-card[data-id="${productId}"]`);
-    if (card) {
-        card.classList.add('added');
-        setTimeout(() => card.classList.remove('added'), 300);
-    }
+    if (card) { card.classList.add('added'); setTimeout(() => card.classList.remove('added'), 300); }
     
-    // Показываем форму заказа
     const orderForm = document.getElementById('order-form');
-    if (orderForm) {
-        orderForm.style.display = 'block';
-    }
+    if (orderForm) orderForm.style.display = 'block';
     
     showMessage('✅ Добавлено!', `${product.emoji} ${product.name} — ${product.discountPrice || product.price} BYN`);
 }
@@ -624,24 +669,50 @@ function updateCartUI() {
     
     cart.forEach((item, index) => {
         const price = item.discountPrice || item.price;
+        const qty = item.quantity || 1;
+        total += price * qty;
         html += `
             <li>
                 <span class="item-name">${item.emoji} ${item.name}</span>
-                <span class="item-price">${price} BYN</span>
+                <div class="item-quantity">
+                    <button class="qty-btn" onclick="changeQuantity(${index}, -1)">−</button>
+                    <span class="qty-value">${qty}</span>
+                    <button class="qty-btn" onclick="changeQuantity(${index}, 1)">+</button>
+                </div>
+                <span class="item-price">${(price * qty).toFixed(2)} BYN</span>
                 <button class="remove-item-btn" onclick="removeFromCart(${index})">✕</button>
             </li>
         `;
-        total += price;
     });
     
     cartItems.innerHTML = html;
-    if (totalPrice) totalPrice.textContent = `${total} BYN`;
+    if (totalPrice) totalPrice.textContent = total.toFixed(2) + ' BYN';
     if (checkoutBtn) checkoutBtn.disabled = false;
     if (orderForm) orderForm.style.display = 'block';
 }
 
+function changeQuantity(index, delta) {
+    if (index < 0 || index >= cart.length) return;
+    const item = cart[index];
+    const newQty = (item.quantity || 1) + delta;
+    if (newQty < 1) {
+        removeFromCart(index);
+        return;
+    }
+    const product = products.find(p => p.id === item.id);
+    if (product && newQty > product.stockQuantity) {
+        showMessage('⚠️ Лимит', 'Доступно только ' + product.stockQuantity + ' шт.');
+        return;
+    }
+    item.quantity = newQty;
+    saveCart();
+    updateCartUI();
+    updateBadge();
+}
+
 function removeFromCart(index) {
     cart.splice(index, 1);
+    saveCart();
     updateCartUI();
     updateBadge();
     if (cart.length === 0) {
@@ -653,7 +724,7 @@ function removeFromCart(index) {
 function updateBadge() {
     const badge = document.getElementById('cart-badge');
     if (badge) {
-        const count = cart.length;
+        const count = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
         badge.textContent = count;
         badge.classList.toggle('hidden', count === 0);
     }
@@ -715,7 +786,8 @@ function navigateTo(pageId) {
                 'page-admin-models': 'admin-models-list',
                 'page-admin-categories': 'admin-categories-list',
                 'page-admin-stats': null,
-                'page-admin-pickup-points': 'admin-pickup-points-list'
+                'page-admin-pickup-points': 'admin-pickup-points-list',
+                'page-my-orders': 'my-orders-list'
             };
             
             const containerId = containerMap[pageId];
@@ -759,6 +831,9 @@ function navigateTo(pageId) {
                 case 'page-admin-pickup-points':
                     loadAdminPickupPoints();
                     break;
+                case 'page-my-orders':
+                    loadMyOrders();
+                    break;
             }
         }, 300);
     }
@@ -781,7 +856,6 @@ async function checkout() {
         return;
     }
     
-    // Проверяем выбор точки самовывоза
     if (deliveryType === 'pickup' && !pickupPointId) {
         showMessage('⚠️ Выберите точку', 'Пожалуйста, выберите точку самовывоза');
         return;
@@ -792,17 +866,17 @@ async function checkout() {
         return;
     }
     
-    const total = cart.reduce((sum, item) => sum + (item.discountPrice || item.price), 0);
+    const total = cart.reduce((sum, item) => sum + (item.discountPrice || item.price) * (item.quantity || 1), 0);
     const items = cart.map(item => ({ 
         id: item.id,
         name: item.name, 
         price: item.discountPrice || item.price,
+        quantity: item.quantity || 1,
         emoji: item.emoji || '📦'
     }));
     
     const user = tg.initDataUnsafe?.user;
     
-    // Находим выбранную точку для отображения в заказе
     let pickupPointName = '';
     let pickupPointAddress = '';
     if (deliveryType === 'pickup') {
@@ -885,7 +959,7 @@ async function checkout() {
         for (const item of cart) {
             const product = products.find(p => p.id === item.id);
             if (product) {
-                const newStock = Math.max(0, (product.stockQuantity || 0) - 1);
+                const newStock = Math.max(0, (product.stockQuantity || 0) - (item.quantity || 1));
                 try {
                     await fetch(`${SUPABASE_URL}/rest/v1/products?id=eq.${item.id}`, {
                         method: 'PATCH',
@@ -908,6 +982,7 @@ async function checkout() {
         
         // Очищаем корзину
         cart = [];
+        saveCart();
         updateCartUI();
         updateBadge();
         
@@ -932,6 +1007,91 @@ async function checkout() {
     } catch (error) {
         console.error('❌ Ошибка оформления заказа:', error);
         showMessage('❌ Ошибка', 'Не удалось оформить заказ. Попробуйте еще раз.');
+    }
+}
+
+// ==========================================
+// ===== МОИ ЗАКАЗЫ =====
+// ==========================================
+async function loadMyOrders() {
+    console.log('🔄 ЗАГРУЗКА МОИХ ЗАКАЗОВ...');
+    const container = document.getElementById('my-orders-list');
+    if (!container) return;
+    
+    const user = tg.initDataUnsafe?.user;
+    if (!user) {
+        container.innerHTML = '<div class="empty-message">Войдите в Telegram, чтобы увидеть заказы</div>';
+        return;
+    }
+    
+    try {
+        container.innerHTML = '<div class="loading">⏳ Загрузка ваших заказов...</div>';
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/orders?select=*&user_id=eq.${user.id}&order=created_at.desc`, {
+            headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+        });
+        if (!response.ok) throw new Error('Не удалось загрузить заказы');
+        const orders = await response.json();
+        console.log('📦 Загружено ваших заказов:', orders.length);
+        
+        if (orders.length === 0) {
+            container.innerHTML = '<div class="empty-message">У вас пока нет заказов</div>';
+            return;
+        }
+        
+        container.innerHTML = orders.map(order => {
+            const statusMap = {
+                'pending': '🔄 В обработке',
+                'confirmed': '✅ Подтвержден',
+                'shipped': '📦 Отправлен',
+                'completed': '✅ Выполнен'
+            };
+            const statusClass = order.status || 'pending';
+            const itemsList = order.items_json ? order.items_json.map(item => `${item.emoji || '📦'} ${item.name} × ${item.quantity || 1}`).join(', ') : '';
+            let deliveryText = order.delivery_type === 'pickup' ? `🏪 Самовывоз: ${order.pickup_point_name || 'Точка не указана'}` : `🚚 Доставка: ${order.delivery_address || 'Адрес не указан'}`;
+            
+            let cancelButton = '';
+            if (order.status === 'pending') {
+                cancelButton = `<button class="order-status-btn cancel-btn" onclick="cancelOrder(${order.id})">❌ Отменить заказ</button>`;
+            }
+            
+            return `
+            <div class="my-order-card">
+                <div class="order-header">
+                    <strong>Заказ #${order.id}</strong>
+                    <span class="order-status ${statusClass}">${statusMap[order.status] || order.status}</span>
+                </div>
+                <div class="order-details">
+                    <p>💰 ${order.total} BYN</p>
+                    <p>📦 ${deliveryText}</p>
+                    ${itemsList ? `<p>📋 ${itemsList}</p>` : ''}
+                    ${order.comment ? `<p>💬 ${order.comment}</p>` : ''}
+                    <p>📅 ${new Date(order.created_at).toLocaleString()}</p>
+                </div>
+                <div class="order-actions">${cancelButton}</div>
+            </div>
+        `}).join('');
+        
+    } catch (error) {
+        console.error('❌ Ошибка загрузки заказов:', error);
+        container.innerHTML = '<div class="error-message">Ошибка загрузки заказов</div>';
+    }
+}
+
+async function cancelOrder(orderId) {
+    if (!confirm('Отменить заказ #' + orderId + '?')) return;
+    try {
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/orders?id=eq.${orderId}`, {
+            method: 'PATCH',
+            headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'cancelled' })
+        });
+        if (response.ok) {
+            showMessage('✅ Отменено', 'Заказ #' + orderId + ' отменен');
+            await loadMyOrders();
+        }
+    } catch (error) {
+        console.error('❌ Ошибка отмены заказа:', error);
+        showMessage('❌ Ошибка', 'Не удалось отменить заказ');
     }
 }
 
@@ -1016,7 +1176,37 @@ async function loadStats() {
 // ===== АДМИН-ПАНЕЛЬ =====
 // ==========================================
 
-// --- Заказы ---
+// --- Фильтры заказов ---
+function setupOrderFilters() {
+    const statusFilter = document.getElementById('order-filter-status');
+    const dateFrom = document.getElementById('order-filter-date-from');
+    const dateTo = document.getElementById('order-filter-date-to');
+    const deliveryFilter = document.getElementById('order-filter-delivery');
+    const applyBtn = document.getElementById('order-filter-apply');
+    const resetBtn = document.getElementById('order-filter-reset');
+    
+    if (applyBtn) {
+        applyBtn.addEventListener('click', function() {
+            ordersFilter.status = statusFilter ? statusFilter.value : 'all';
+            ordersFilter.dateFrom = dateFrom ? dateFrom.value : '';
+            ordersFilter.dateTo = dateTo ? dateTo.value : '';
+            ordersFilter.deliveryType = deliveryFilter ? deliveryFilter.value : 'all';
+            loadAdminOrders();
+        });
+    }
+    if (resetBtn) {
+        resetBtn.addEventListener('click', function() {
+            if (statusFilter) statusFilter.value = 'all';
+            if (dateFrom) dateFrom.value = '';
+            if (dateTo) dateTo.value = '';
+            if (deliveryFilter) deliveryFilter.value = 'all';
+            ordersFilter = { status: 'all', dateFrom: '', dateTo: '', deliveryType: 'all' };
+            loadAdminOrders();
+        });
+    }
+}
+
+// --- Заказы (с фильтрами) ---
 async function loadAdminOrders() {
     console.log('🔄 ЗАГРУЗКА ЗАКАЗОВ...');
     const container = document.getElementById('admin-orders-list');
@@ -1031,13 +1221,23 @@ async function loadAdminOrders() {
     try {
         container.innerHTML = '<div class="loading">⏳ Загрузка заказов...</div>';
         
-        const response = await fetch(`${SUPABASE_URL}/rest/v1/orders?select=*&order=created_at.desc`, {
-            headers: {
-                'apikey': SUPABASE_KEY,
-                'Authorization': `Bearer ${SUPABASE_KEY}`
-            }
-        });
+        let url = `${SUPABASE_URL}/rest/v1/orders?select=*&order=created_at.desc`;
+        if (ordersFilter.status !== 'all') url += `&status=eq.${ordersFilter.status}`;
+        if (ordersFilter.dateFrom) {
+            const fromDate = new Date(ordersFilter.dateFrom);
+            fromDate.setHours(0,0,0,0);
+            url += `&created_at=gte.${fromDate.toISOString()}`;
+        }
+        if (ordersFilter.dateTo) {
+            const toDate = new Date(ordersFilter.dateTo);
+            toDate.setHours(23,59,59,999);
+            url += `&created_at=lte.${toDate.toISOString()}`;
+        }
+        if (ordersFilter.deliveryType !== 'all') url += `&delivery_type=eq.${ordersFilter.deliveryType}`;
         
+        const response = await fetch(url, {
+            headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+        });
         if (!response.ok) throw new Error('Не удалось загрузить заказы');
         const orders = await response.json();
         console.log('📦 Загружено заказов:', orders.length);
@@ -1048,57 +1248,42 @@ async function loadAdminOrders() {
         }
         
         container.innerHTML = orders.map(order => {
-            let deliveryText = '';
-            if (order.delivery_type === 'pickup') {
-                deliveryText = `🏪 Самовывоз: ${order.pickup_point_name || 'Точка не указана'}`;
-            } else {
-                deliveryText = `🚚 Доставка: ${order.delivery_address || 'Адрес не указан'}`;
-            }
-            const itemsList = order.items_json ? order.items_json.map(item => `${item.emoji || '📦'} ${item.name}`).join(', ') : '';
+            let deliveryText = order.delivery_type === 'pickup' ? `🏪 Самовывоз: ${order.pickup_point_name || 'Точка не указана'}` : `🚚 Доставка: ${order.delivery_address || 'Адрес не указан'}`;
+            const itemsList = order.items_json ? order.items_json.map(item => `${item.emoji || '📦'} ${item.name} × ${item.quantity || 1}`).join(', ') : '';
             const userLink = order.user_id ? `<a href="tg://user?id=${order.user_id}" target="_blank">✉️ Связаться</a>` : '';
             
-            // Определяем статус и кнопки
-            let statusText = '';
-            let statusClass = '';
-            let actionButtons = '';
-            
+            let statusText = '', statusClass = '', actionButtons = '';
             switch(order.status) {
                 case 'pending':
-                    statusText = '🔄 В обработке';
-                    statusClass = 'pending';
+                    statusText = '🔄 В обработке'; statusClass = 'pending';
                     actionButtons = `
                         <button class="order-status-btn confirm-btn" data-id="${order.id}" data-status="confirmed">✅ Подтвердить заказ</button>
-                        <button class="order-status-btn contact-btn" onclick="window.open('tg://user?id=${order.user_id}', '_blank')">✉️ Связаться</button>
+                        <button class="order-status-btn contact-btn" onclick="openChatWithUser(${order.user_id}, ${order.id})">💬 Написать</button>
                     `;
                     break;
                 case 'confirmed':
-                    statusText = '✅ Подтвержден';
-                    statusClass = 'confirmed';
+                    statusText = '✅ Подтвержден'; statusClass = 'confirmed';
                     actionButtons = `
                         <button class="order-status-btn" data-id="${order.id}" data-status="shipped">📦 Отправлен</button>
                         <button class="order-status-btn" data-id="${order.id}" data-status="completed">✅ Выполнен</button>
-                        <button class="order-status-btn contact-btn" onclick="window.open('tg://user?id=${order.user_id}', '_blank')">✉️ Связаться</button>
+                        <button class="order-status-btn contact-btn" onclick="openChatWithUser(${order.user_id}, ${order.id})">💬 Написать</button>
                     `;
                     break;
                 case 'shipped':
-                    statusText = '📦 Отправлен';
-                    statusClass = 'shipped';
+                    statusText = '📦 Отправлен'; statusClass = 'shipped';
                     actionButtons = `
                         <button class="order-status-btn" data-id="${order.id}" data-status="completed">✅ Выполнен</button>
-                        <button class="order-status-btn contact-btn" onclick="window.open('tg://user?id=${order.user_id}', '_blank')">✉️ Связаться</button>
+                        <button class="order-status-btn contact-btn" onclick="openChatWithUser(${order.user_id}, ${order.id})">💬 Написать</button>
                     `;
                     break;
                 case 'completed':
-                    statusText = '✅ Выполнен';
-                    statusClass = 'completed';
+                    statusText = '✅ Выполнен'; statusClass = 'completed';
                     actionButtons = `
-                        <button class="order-status-btn contact-btn" onclick="window.open('tg://user?id=${order.user_id}', '_blank')">✉️ Связаться</button>
+                        <button class="order-status-btn contact-btn" onclick="openChatWithUser(${order.user_id}, ${order.id})">💬 Написать</button>
                     `;
                     break;
                 default:
-                    statusText = order.status || 'Неизвестно';
-                    statusClass = 'pending';
-                    actionButtons = '';
+                    statusText = order.status || 'Неизвестно'; statusClass = 'pending'; actionButtons = '';
             }
             
             return `
@@ -1116,13 +1301,10 @@ async function loadAdminOrders() {
                     ${order.comment ? `<p>💬 ${order.comment}</p>` : ''}
                     <p>📅 ${new Date(order.created_at).toLocaleString()}</p>
                 </div>
-                <div class="order-actions">
-                    ${actionButtons}
-                </div>
+                <div class="order-actions">${actionButtons}</div>
             </div>
         `}).join('');
         
-        // Обработчики кнопок статуса
         container.querySelectorAll('.order-status-btn[data-id]').forEach(btn => {
             btn.addEventListener('click', async () => {
                 const id = parseInt(btn.dataset.id);
@@ -1140,69 +1322,136 @@ async function loadAdminOrders() {
 
 async function updateOrderStatus(orderId, status) {
     try {
-        // Сначала получаем заказ, чтобы отправить уведомление покупателю
         const orderResponse = await fetch(`${SUPABASE_URL}/rest/v1/orders?id=eq.${orderId}`, {
-            headers: {
-                'apikey': SUPABASE_KEY,
-                'Authorization': `Bearer ${SUPABASE_KEY}`
-            }
+            headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
         });
         const orderData = await orderResponse.json();
         const order = orderData[0];
         
-        // Обновляем статус
         const response = await fetch(`${SUPABASE_URL}/rest/v1/orders?id=eq.${orderId}`, {
             method: 'PATCH',
-            headers: {
-                'apikey': SUPABASE_KEY,
-                'Authorization': `Bearer ${SUPABASE_KEY}`,
-                'Content-Type': 'application/json'
-            },
+            headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({ status })
         });
         
         if (response.ok) {
-            // Отправляем уведомление покупателю
             if (order && order.user_id) {
                 try {
                     let message = '';
                     switch(status) {
-                        case 'confirmed':
-                            message = `✅ Ваш заказ #${orderId} ПОДТВЕРЖДЕН!\n\n📦 Товары: ${order.items_json ? order.items_json.map(item => `${item.name} (${item.price} BYN)`).join(', ') : ''}\n💰 Итого: ${order.total} BYN\n\nСпасибо за заказ! Мы приступили к его обработке.`;
-                            break;
-                        case 'shipped':
-                            message = `📦 Ваш заказ #${orderId} ОТПРАВЛЕН!\n\nСпасибо за покупку! ❤️`;
-                            break;
-                        case 'completed':
-                            message = `✅ Ваш заказ #${orderId} ВЫПОЛНЕН!\n\nБлагодарим за покупку! Ждем вас снова! 🙏`;
-                            break;
-                        default:
-                            message = `Статус заказа #${orderId} изменен на: ${status}`;
+                        case 'confirmed': message = `✅ Ваш заказ #${orderId} ПОДТВЕРЖДЕН!\n\n📦 Товары: ${order.items_json ? order.items_json.map(item => `${item.name} (${item.price} BYN) × ${item.quantity || 1}`).join(', ') : ''}\n💰 Итого: ${order.total} BYN\n\nСпасибо за заказ! Мы приступили к его обработке.`; break;
+                        case 'shipped': message = `📦 Ваш заказ #${orderId} ОТПРАВЛЕН!\n\nСпасибо за покупку! ❤️`; break;
+                        case 'completed': message = `✅ Ваш заказ #${orderId} ВЫПОЛНЕН!\n\nБлагодарим за покупку! Ждем вас снова! 🙏`; break;
+                        default: message = `Статус заказа #${orderId} изменен на: ${status}`;
                     }
-                    
-                    await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
+                    fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            chat_id: order.user_id,
-                            text: message,
-                            parse_mode: 'HTML'
-                        })
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ chat_id: order.user_id, text: message, parse_mode: 'HTML' })
                     });
-                    console.log(`📤 Уведомление отправлено пользователю ${order.user_id}`);
-                } catch (notifyError) {
-                    console.error('❌ Ошибка отправки уведомления:', notifyError);
-                }
+                } catch (notifyError) { console.error('❌ Ошибка отправки уведомления:', notifyError); }
             }
-            
             showMessage('✅ Статус обновлён', `Заказ #${orderId} успешно обновлен`);
         }
     } catch (error) {
         console.error('❌ Ошибка обновления статуса:', error);
         showMessage('❌ Ошибка', 'Не удалось обновить статус заказа');
     }
+}
+
+// ===== ОТПРАВКА СООБЩЕНИЯ ПОКУПАТЕЛЮ =====
+function openChatWithUser(userId, orderId) {
+    if (!userId) {
+        showMessage('⚠️ Ошибка', 'У пользователя нет ID для связи');
+        return;
+    }
+    const message = prompt('💬 Введите сообщение для покупателя (заказ #' + orderId + '):');
+    if (!message) return;
+    
+    fetch(`${SUPABASE_URL}/rest/v1/orders?id=eq.${orderId}`, {
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+    })
+    .then(r => r.json())
+    .then(orders => {
+        const order = orders[0];
+        if (!order) { showMessage('❌ Ошибка', 'Заказ не найден'); return; }
+        const fullMessage = `📩 Сообщение от администратора по заказу #${orderId}:\n\n${message}\n\n---\n📦 Заказ: ${order.items_json ? order.items_json.map(i => `${i.name} × ${i.quantity || 1}`).join(', ') : ''}\n💰 Сумма: ${order.total} BYN`;
+        
+        fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_id: userId, text: fullMessage, parse_mode: 'HTML' })
+        })
+        .then(() => showMessage('✅ Отправлено', 'Сообщение отправлено покупателю'))
+        .catch(err => showMessage('❌ Ошибка', 'Не удалось отправить сообщение: ' + err.message));
+    })
+    .catch(err => console.error('❌ Ошибка:', err));
+}
+
+// ===== ЭКСПОРТ ЗАКАЗОВ =====
+function exportOrdersCSV() {
+    fetch(`${SUPABASE_URL}/rest/v1/orders?select=*&order=created_at.desc`, {
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+    })
+    .then(r => r.json())
+    .then(orders => {
+        if (!orders || orders.length === 0) { showMessage('⚠️ Нет данных', 'Нет заказов для экспорта'); return; }
+        let csv = 'ID,Покупатель,Телефон,Сумма,Способ получения,Статус,Дата,Товары\n';
+        orders.forEach(o => {
+            const items = o.items_json ? o.items_json.map(i => `${i.name} × ${i.quantity || 1}`).join('; ') : '';
+            const delivery = o.delivery_type === 'pickup' ? `Самовывоз: ${o.pickup_point_name || ''}` : `Доставка: ${o.delivery_address || ''}`;
+            csv += `${o.id},"${o.username || ''}","${o.phone || ''}",${o.total},"${delivery}","${o.status || ''}","${new Date(o.created_at).toLocaleString()}","${items}"\n`;
+        });
+        const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `заказы_${new Date().toISOString().slice(0,10)}.csv`;
+        link.click();
+        URL.revokeObjectURL(link.href);
+        showMessage('✅ Экспорт выполнен', 'Файл CSV скачан');
+    })
+    .catch(err => { console.error('❌ Ошибка экспорта:', err); showMessage('❌ Ошибка', 'Не удалось экспортировать заказы'); });
+}
+
+// ==========================================
+// ===== УВЕДОМЛЕНИЯ В АДМИНКЕ =====
+// ==========================================
+function initNotificationSound() {
+    try {
+        notificationSound = new Audio('data:audio/wav;base64,UklGRlQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoAAACBhYqFhYWJhYaFhIuDg4SEg4OEhIKCg4ODg4ODg4ODhIKEhoSGhISEg4ODg4ODg4ODg4ODg4ODhA==');
+    } catch (e) {}
+}
+
+function playNotificationSound() {
+    try {
+        if (notificationSound) {
+            notificationSound.currentTime = 0;
+            notificationSound.play().catch(() => {});
+        }
+    } catch (e) {}
+}
+
+function checkNewOrders() {
+    if (!isAdmin) return;
+    const now = Date.now();
+    if (now - lastOrderCheck < 10000) return;
+    lastOrderCheck = now;
+    
+    fetch(`${SUPABASE_URL}/rest/v1/orders?select=id,created_at,status&status=eq.pending&order=created_at.desc&limit=5`, {
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+    })
+    .then(r => r.json())
+    .then(orders => {
+        if (orders && orders.length > 0) {
+            const pendingOrders = orders.filter(o => o.status === 'pending');
+            if (pendingOrders.length > 0) {
+                playNotificationSound();
+                const count = pendingOrders.length;
+                showMessage('🆕 Новые заказы!', `У вас ${count} ${count === 1 ? 'новый заказ' : 'новых заказа'} в обработке.`);
+            }
+        }
+    })
+    .catch(() => {});
 }
 
 // ==========================================
@@ -1760,7 +2009,7 @@ async function loadAdminBrands() {
                     <button class="admin-delete-btn" onclick="deleteBrand(${b.id})">🗑️</button>
                 </div>
             </div>
-        `}).join('');
+        `).join('');
     } catch (error) {
         console.error('❌ Ошибка загрузки брендов:', error);
         container.innerHTML = '<div class="error-message">Ошибка загрузки брендов</div>';
@@ -1890,7 +2139,7 @@ async function loadAdminModels() {
                     <button class="admin-delete-btn" onclick="deleteModel(${m.id})">🗑️</button>
                 </div>
             </div>
-        `}).join('');
+        `).join('');
     } catch (error) {
         console.error('❌ Ошибка загрузки моделей:', error);
         container.innerHTML = '<div class="error-message">Ошибка загрузки моделей</div>';
@@ -2435,6 +2684,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.log('👤 initDataUnsafe:', window.Telegram.WebApp.initDataUnsafe);
     console.log('📱 platform:', window.Telegram.WebApp.platform);
     
+    // Загружаем корзину из localStorage
+    cart = JSON.parse(localStorage.getItem('puff_cart') || '[]');
+    updateCartUI();
+    updateBadge();
+    
     isAdmin = await checkAdmin();
     console.log('👑 isAdmin:', isAdmin);
     
@@ -2453,6 +2707,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadProductsFromSupabase();
     
     setupSortFilters();
+    setupSearch();
+    setupOrderFilters();
+    initNotificationSound();
+    
+    // Проверка новых заказов
+    if (isAdmin) {
+        setInterval(checkNewOrders, 15000);
+        setTimeout(checkNewOrders, 3000);
+    }
     
     // Отслеживаем изменение способа получения
     const deliveryType = document.getElementById('order-delivery-type');
@@ -2472,6 +2735,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (pickupGroup) pickupGroup.style.display = 'none';
             }
         });
+        // Обновляем выбор точек при загрузке
+        if (pickupGroup) {
+            const pickupSelect = document.getElementById('order-pickup-point');
+            if (pickupSelect) {
+                pickupSelect.innerHTML = '<option value="">-- Выберите точку --</option>';
+                pickupPoints.forEach(p => {
+                    pickupSelect.innerHTML += `<option value="${p.id}">${p.name} — ${p.address}</option>`;
+                });
+            }
+        }
     }
     
     document.querySelectorAll('.nav-btn').forEach(btn => {
@@ -2508,6 +2781,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('admin-add-promotion-btn')?.addEventListener('click', addNewPromotion);
         document.getElementById('admin-add-btn')?.addEventListener('click', addAdmin);
         document.getElementById('admin-add-pickup-point-btn')?.addEventListener('click', addNewPickupPoint);
+        document.getElementById('admin-export-orders-btn')?.addEventListener('click', exportOrdersCSV);
     }
     
     updateCartUI();

@@ -41,12 +41,17 @@
             </div>
 
             <!-- ========================================= -->
-            <!-- ===== КАТАЛОГ ===== -->
+            <!-- ===== КАТАЛОГ (С ПОИСКОМ) ===== -->
             <!-- ========================================= -->
             <div id="page-catalog" class="page">
                 <div class="app-header">
                     <h1>📋 Каталог</h1>
                     <p>Все товары в одном месте</p>
+                </div>
+
+                <!-- Поиск -->
+                <div class="catalog-search">
+                    <input type="text" id="search-input" placeholder="🔍 Поиск товаров..." class="search-input">
                 </div>
 
                 <!-- Сортировка -->
@@ -160,7 +165,23 @@
             </div>
 
             <!-- ========================================= -->
-            <!-- ===== АДМИН-ПАНЕЛЬ (С ТОЧКАМИ САМОВЫВОЗА) ===== -->
+            <!-- ===== МОИ ЗАКАЗЫ ===== -->
+            <!-- ========================================= -->
+            <div id="page-my-orders" class="page">
+                <div class="app-header">
+                    <h1>📦 Мои заказы</h1>
+                    <p>История ваших заказов</p>
+                </div>
+                <button class="admin-reload-btn" onclick="loadMyOrders()" style="margin-bottom:10px; padding:8px 16px; background:#667eea; color:white; border:none; border-radius:8px; cursor:pointer; width:100%; font-weight:600;">
+                    🔄 Обновить
+                </button>
+                <div id="my-orders-list">
+                    <div class="loading">Загрузка ваших заказов...</div>
+                </div>
+            </div>
+
+            <!-- ========================================= -->
+            <!-- ===== АДМИН-ПАНЕЛЬ (С ФИЛЬТРАМИ) ===== -->
             <!-- ========================================= -->
 
             <!-- АДМИН-МЕНЮ -->
@@ -269,15 +290,56 @@
                 </div>
             </div>
 
-            <!-- ЗАКАЗЫ (админка) -->
+            <!-- ЗАКАЗЫ (админка) с фильтрами -->
             <div id="page-admin-orders" class="page">
                 <div class="app-header">
                     <h1>📦 Заказы</h1>
                     <p>Управление заказами</p>
                 </div>
-                <button class="admin-reload-btn" onclick="loadAdminOrders()" style="margin-bottom:10px; padding:8px 16px; background:#667eea; color:white; border:none; border-radius:8px; cursor:pointer; width:100%; font-weight:600;">
-                    🔄 Принудительно загрузить заказы
-                </button>
+                
+                <!-- Фильтры заказов -->
+                <div class="order-filters">
+                    <div class="filter-group">
+                        <label>Статус</label>
+                        <select id="order-filter-status" class="order-filter-select">
+                            <option value="all">Все</option>
+                            <option value="pending">В обработке</option>
+                            <option value="confirmed">Подтвержден</option>
+                            <option value="shipped">Отправлен</option>
+                            <option value="completed">Выполнен</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Способ получения</label>
+                        <select id="order-filter-delivery" class="order-filter-select">
+                            <option value="all">Все</option>
+                            <option value="pickup">Самовывоз</option>
+                            <option value="delivery">Доставка</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Дата от</label>
+                        <input type="date" id="order-filter-date-from" class="order-filter-input">
+                    </div>
+                    <div class="filter-group">
+                        <label>Дата до</label>
+                        <input type="date" id="order-filter-date-to" class="order-filter-input">
+                    </div>
+                    <div class="filter-actions">
+                        <button class="filter-apply-btn" id="order-filter-apply">🔍 Применить</button>
+                        <button class="filter-reset-btn" id="order-filter-reset">↺ Сбросить</button>
+                    </div>
+                </div>
+                
+                <div class="order-actions-bar">
+                    <button class="admin-reload-btn" onclick="loadAdminOrders()" style="margin-bottom:10px; padding:8px 16px; background:#667eea; color:white; border:none; border-radius:8px; cursor:pointer; width:100%; font-weight:600;">
+                        🔄 Принудительно загрузить заказы
+                    </button>
+                    <button class="admin-export-btn" id="admin-export-orders-btn" style="margin-bottom:10px; padding:8px 16px; background:#22c55e; color:white; border:none; border-radius:8px; cursor:pointer; width:100%; font-weight:600;">
+                        📥 Экспорт в CSV
+                    </button>
+                </div>
+                
                 <div id="admin-orders-list">
                     <div class="loading">Загрузка заказов...</div>
                 </div>
@@ -439,6 +501,10 @@
                 <span class="nav-icon">🛒</span>
                 <span class="nav-label">Корзина</span>
                 <span class="cart-badge hidden" id="cart-badge">0</span>
+            </button>
+            <button class="nav-btn" data-page="page-my-orders" id="nav-my-orders">
+                <span class="nav-icon">📦</span>
+                <span class="nav-label">Мои заказы</span>
             </button>
             <button class="nav-btn" data-page="page-prizes">
                 <span class="nav-icon">🎁</span>
