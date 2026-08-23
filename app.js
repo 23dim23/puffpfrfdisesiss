@@ -1,3 +1,5 @@
+// ===== ТОКЕН БОТА (для отправки сообщений) =====
+const TOKEN = '8870349321:AAEXFersNinRpHnPETbR_vGFn_TnGWOCums';
 // Инициализация Telegram Web App
 const tg = window.Telegram.WebApp;
 tg.expand();
