@@ -390,7 +390,7 @@ body {
 }
 
 /* ======================================== */
-/* ===== КОРЗИНА (ОБНОВЛЕННАЯ) ===== */
+/* ===== КОРЗИНА ===== */
 /* ======================================== */
 #cart-content {
     background: #f9fafb;
@@ -984,7 +984,9 @@ body {
     color: #6b7280;
 }
 
-/* --- Заказы в админке (ОБНОВЛЕННЫЕ) --- */
+/* ======================================== */
+/* ===== ЗАКАЗЫ В АДМИНКЕ (ОБНОВЛЕННЫЕ) ===== */
+/* ======================================== */
 .admin-order-card {
     background: #fff;
     border-radius: 12px;
@@ -1007,9 +1009,10 @@ body {
     color: #1f2937;
 }
 
+/* --- НОВЫЕ СТАТУСЫ --- */
 .order-status {
-    padding: 2px 12px;
-    border-radius: 12px;
+    padding: 4px 14px;
+    border-radius: 20px;
     font-size: 12px;
     font-weight: 600;
     text-transform: capitalize;
@@ -1020,14 +1023,30 @@ body {
     color: #d97706;
 }
 
-.order-status.completed {
-    background: #d1fae5;
-    color: #059669;
+.order-status.confirmed {
+    background: #dbeafe;
+    color: #2563eb;
 }
 
 .order-status.shipped {
     background: #dbeafe;
     color: #2563eb;
+}
+
+.order-status.completed {
+    background: #d1fae5;
+    color: #059669;
+}
+
+/* --- НОВАЯ КНОПКА ПОДТВЕРЖДЕНИЯ --- */
+.order-status-btn.confirm-btn {
+    background: #22c55e !important;
+    color: #fff !important;
+}
+
+.order-status-btn.confirm-btn:hover {
+    background: #16a34a !important;
+    transform: scale(1.05);
 }
 
 .order-details {
@@ -1085,13 +1104,18 @@ body {
     color: #fff;
 }
 
-.order-status-btn[data-status="completed"] {
-    background: #10b981;
+.order-status-btn[data-status="confirmed"] {
+    background: #22c55e;
     color: #fff;
 }
 
 .order-status-btn[data-status="shipped"] {
     background: #3b82f6;
+    color: #fff;
+}
+
+.order-status-btn[data-status="completed"] {
+    background: #10b981;
     color: #fff;
 }
 
@@ -1808,6 +1832,7 @@ body {
         color: #9ca3af;
     }
     
+    /* Тёмная тема для заказов */
     .admin-order-card {
         background: #1f2937;
         border-color: #374151;
@@ -1819,6 +1844,35 @@ body {
     
     .order-details {
         color: #9ca3af;
+    }
+    
+    .order-status.pending {
+        background: #78350f;
+        color: #fbbf24;
+    }
+    
+    .order-status.confirmed {
+        background: #1e3a5f;
+        color: #60a5fa;
+    }
+    
+    .order-status.shipped {
+        background: #1e3a5f;
+        color: #60a5fa;
+    }
+    
+    .order-status.completed {
+        background: #065f46;
+        color: #34d399;
+    }
+    
+    .order-status-btn.confirm-btn {
+        background: #22c55e !important;
+        color: #fff !important;
+    }
+    
+    .order-status-btn.confirm-btn:hover {
+        background: #16a34a !important;
     }
     
     .admin-category-card {

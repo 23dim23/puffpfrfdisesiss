@@ -969,7 +969,7 @@ async function loadStats() {
 // ===== АДМИН-ПАНЕЛЬ =====
 // ==========================================
 
-// --- Заказы ---
+// --- Заказы (ОБНОВЛЕННЫЕ) ---
 async function loadAdminOrders() {
     console.log('🔄 ЗАГРУЗКА ЗАКАЗОВ...');
     const container = document.getElementById('admin-orders-list');
@@ -1005,11 +1005,55 @@ async function loadAdminOrders() {
             const itemsList = order.items_json ? order.items_json.map(item => `${item.emoji || '📦'} ${item.name}`).join(', ') : '';
             const userLink = order.user_id ? `<a href="tg://user?id=${order.user_id}" target="_blank">✉️ Связаться</a>` : '';
             
+            // Определяем статус и кнопки
+            let statusText = '';
+            let statusClass = '';
+            let actionButtons = '';
+            
+            switch(order.status) {
+                case 'pending':
+                    statusText = '🔄 В обработке';
+                    statusClass = 'pending';
+                    actionButtons = `
+                        <button class="order-status-btn confirm-btn" data-id="${order.id}" data-status="confirmed">✅ Подтвердить заказ</button>
+                        <button class="order-status-btn contact-btn" onclick="window.open('tg://user?id=${order.user_id}', '_blank')">✉️ Связаться</button>
+                    `;
+                    break;
+                case 'confirmed':
+                    statusText = '✅ Подтвержден';
+                    statusClass = 'confirmed';
+                    actionButtons = `
+                        <button class="order-status-btn" data-id="${order.id}" data-status="shipped">📦 Отправлен</button>
+                        <button class="order-status-btn" data-id="${order.id}" data-status="completed">✅ Выполнен</button>
+                        <button class="order-status-btn contact-btn" onclick="window.open('tg://user?id=${order.user_id}', '_blank')">✉️ Связаться</button>
+                    `;
+                    break;
+                case 'shipped':
+                    statusText = '📦 Отправлен';
+                    statusClass = 'shipped';
+                    actionButtons = `
+                        <button class="order-status-btn" data-id="${order.id}" data-status="completed">✅ Выполнен</button>
+                        <button class="order-status-btn contact-btn" onclick="window.open('tg://user?id=${order.user_id}', '_blank')">✉️ Связаться</button>
+                    `;
+                    break;
+                case 'completed':
+                    statusText = '✅ Выполнен';
+                    statusClass = 'completed';
+                    actionButtons = `
+                        <button class="order-status-btn contact-btn" onclick="window.open('tg://user?id=${order.user_id}', '_blank')">✉️ Связаться</button>
+                    `;
+                    break;
+                default:
+                    statusText = order.status || 'Неизвестно';
+                    statusClass = 'pending';
+                    actionButtons = '';
+            }
+            
             return `
             <div class="admin-order-card">
                 <div class="order-header">
                     <strong>Заказ #${order.id}</strong>
-                    <span class="order-status ${order.status}">${order.status === 'pending' ? '🔄 В обработке' : order.status === 'completed' ? '✅ Выполнен' : '🚚 Отправлен'}</span>
+                    <span class="order-status ${statusClass}">${statusText}</span>
                 </div>
                 <div class="order-details">
                     <p>👤 ${order.username || 'Не указан'} ${userLink}</p>
@@ -1021,15 +1065,12 @@ async function loadAdminOrders() {
                     <p>📅 ${new Date(order.created_at).toLocaleString()}</p>
                 </div>
                 <div class="order-actions">
-                    ${order.status === 'pending' ? `
-                        <button class="order-status-btn" data-id="${order.id}" data-status="completed">✅ Выполнен</button>
-                        <button class="order-status-btn" data-id="${order.id}" data-status="shipped">🚚 Отправлен</button>
-                    ` : ''}
-                    ${order.user_id ? `<button class="order-status-btn contact-btn" onclick="window.open('tg://user?id=${order.user_id}', '_blank')">✉️ Связаться</button>` : ''}
+                    ${actionButtons}
                 </div>
             </div>
         `}).join('');
         
+        // Обработчики кнопок статуса
         container.querySelectorAll('.order-status-btn[data-id]').forEach(btn => {
             btn.addEventListener('click', async () => {
                 const id = parseInt(btn.dataset.id);
@@ -1047,6 +1088,17 @@ async function loadAdminOrders() {
 
 async function updateOrderStatus(orderId, status) {
     try {
+        // Сначала получаем заказ, чтобы отправить уведомление покупателю
+        const orderResponse = await fetch(`${SUPABASE_URL}/rest/v1/orders?id=eq.${orderId}`, {
+            headers: {
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`
+            }
+        });
+        const orderData = await orderResponse.json();
+        const order = orderData[0];
+        
+        // Обновляем статус
         const response = await fetch(`${SUPABASE_URL}/rest/v1/orders?id=eq.${orderId}`, {
             method: 'PATCH',
             headers: {
@@ -1058,10 +1110,46 @@ async function updateOrderStatus(orderId, status) {
         });
         
         if (response.ok) {
-            showMessage('✅ Статус обновлён', `Заказ #${orderId} теперь ${status === 'completed' ? 'выполнен' : 'отправлен'}`);
+            // Отправляем уведомление покупателю
+            if (order && order.user_id) {
+                try {
+                    let message = '';
+                    switch(status) {
+                        case 'confirmed':
+                            message = `✅ Ваш заказ #${orderId} ПОДТВЕРЖДЕН!\n\n📦 Товары: ${order.items_json ? order.items_json.map(item => `${item.name} (${item.price} BYN)`).join(', ') : ''}\n💰 Итого: ${order.total} BYN\n\nСпасибо за заказ! Мы приступили к его обработке.`;
+                            break;
+                        case 'shipped':
+                            message = `📦 Ваш заказ #${orderId} ОТПРАВЛЕН!\n\nСпасибо за покупку! ❤️`;
+                            break;
+                        case 'completed':
+                            message = `✅ Ваш заказ #${orderId} ВЫПОЛНЕН!\n\nБлагодарим за покупку! Ждем вас снова! 🙏`;
+                            break;
+                        default:
+                            message = `Статус заказа #${orderId} изменен на: ${status}`;
+                    }
+                    
+                    await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            chat_id: order.user_id,
+                            text: message,
+                            parse_mode: 'HTML'
+                        })
+                    });
+                    console.log(`📤 Уведомление отправлено пользователю ${order.user_id}`);
+                } catch (notifyError) {
+                    console.error('❌ Ошибка отправки уведомления:', notifyError);
+                }
+            }
+            
+            showMessage('✅ Статус обновлён', `Заказ #${orderId} успешно обновлен`);
         }
     } catch (error) {
         console.error('❌ Ошибка обновления статуса:', error);
+        showMessage('❌ Ошибка', 'Не удалось обновить статус заказа');
     }
 }
 
@@ -1239,7 +1327,7 @@ async function updateProduct(productId, data) {
     }
 }
 
-// ===== ДОБАВЛЕНИЕ ТОВАРА (С ПОДСКАЗКАМИ) =====
+// ===== ДОБАВЛЕНИЕ ТОВАРА =====
 async function addNewProduct() {
     const categoryOptions = FIXED_CATEGORIES.map((c, i) => `${i+1}. ${c.icon} ${c.name}`).join('\n');
     const categoryChoice = prompt(
