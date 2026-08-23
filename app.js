@@ -31,8 +31,6 @@ console.log('📱 version:', window.Telegram.WebApp.version);
 const SUPABASE_URL = 'https://prtwcgqidlivkaanbowl.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_XxBLBacZddir7xEUUYsjdA_RdH1NnZz';
 const SUPABASE_SERVICE_ROLE = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBydHdjZ3FpZGxpdmthYW5ib3dsIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4Njc3MzcwNiwiZXhwIjoyMTAyMzQ5NzA2fQ.dvZAnH78ThbtWUTcn9mwveBXhV4RtyefUeFit4mHEUI';
-
-// Используем SERVICE_ROLE для всех запросов
 const SUPABASE_KEY = SUPABASE_SERVICE_ROLE;
 
 // ===== ФИКСИРОВАННЫЕ КАТЕГОРИИ =====
@@ -258,7 +256,8 @@ async function loadPickupPoints() {
         return pickupPoints;
     } catch (error) {
         console.error('❌ Ошибка загрузки точек самовывоза:', error);
-        return [];
+        pickupPoints = [];
+        return pickupPoints;
     }
 }
 
@@ -339,7 +338,6 @@ function renderCatalog() {
 function renderProductsWithSearch(grid) {
     let filtered = products.filter(p => p.inStock);
     
-    // Поиск
     if (searchQuery) {
         const q = searchQuery.toLowerCase();
         filtered = filtered.filter(p => 
@@ -623,7 +621,6 @@ function addToCart(productId) {
         return;
     }
     
-    // Проверяем, есть ли уже товар в корзине
     const existing = cart.find(item => item.id === productId);
     if (existing) {
         if (existing.quantity >= product.stockQuantity) {
@@ -933,7 +930,6 @@ async function checkout() {
         }
         console.log('✅ Заказ сохранен в Supabase:', result);
         
-        // Отправляем уведомление в бот
         const botOrderData = {
             action: 'order',
             items: items,
@@ -955,7 +951,6 @@ async function checkout() {
             console.warn('⚠️ Ошибка отправки уведомления в бот:', botError);
         }
         
-        // Обновляем остатки
         for (const item of cart) {
             const product = products.find(p => p.id === item.id);
             if (product) {
@@ -980,7 +975,6 @@ async function checkout() {
             }
         }
         
-        // Очищаем корзину
         cart = [];
         saveCart();
         updateCartUI();
@@ -2684,7 +2678,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.log('👤 initDataUnsafe:', window.Telegram.WebApp.initDataUnsafe);
     console.log('📱 platform:', window.Telegram.WebApp.platform);
     
-    // Загружаем корзину из localStorage
     cart = JSON.parse(localStorage.getItem('puff_cart') || '[]');
     updateCartUI();
     updateBadge();
@@ -2711,13 +2704,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupOrderFilters();
     initNotificationSound();
     
-    // Проверка новых заказов
     if (isAdmin) {
         setInterval(checkNewOrders, 15000);
         setTimeout(checkNewOrders, 3000);
     }
     
-    // Отслеживаем изменение способа получения
     const deliveryType = document.getElementById('order-delivery-type');
     const addressGroup = document.getElementById('delivery-address-group');
     const pickupGroup = document.getElementById('pickup-point-group');
@@ -2735,7 +2726,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (pickupGroup) pickupGroup.style.display = 'none';
             }
         });
-        // Обновляем выбор точек при загрузке
         if (pickupGroup) {
             const pickupSelect = document.getElementById('order-pickup-point');
             if (pickupSelect) {
