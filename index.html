@@ -7,8 +7,7 @@
     <link rel="stylesheet" href="styles.css" />
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script>
-        // Защита от ошибок
-        window.onerror = function (msg, url, line, col, error) {
+        window.onerror = function(msg, url, line, col, error) {
             console.error('❌ Ошибка:', msg, 'в', url, 'на строке', line);
             try {
                 if (window.Telegram && window.Telegram.WebApp) {
@@ -28,22 +27,18 @@
 </head>
 <body>
     <div class="app-wrapper">
-        <!-- ========================================= -->
-        <!-- ===== КОНТЕЙНЕР ===== -->
-        <!-- ========================================= -->
         <div class="container" id="app-content">
 
             <!-- ========================================= -->
-            <!-- ===== ГЛАВНАЯ СТРАНИЦА ===== -->
+            <!-- ===== ГЛАВНАЯ ===== -->
             <!-- ========================================= -->
             <div id="page-home" class="page active">
-                <!-- Шапка с приветствием -->
                 <div class="app-header">
                     <div class="logo-row">
                         <span class="logo-icon">💨</span>
                         <h1>Puff Paradise Shop</h1>
                     </div>
-                    <p class="greeting" id="greeting-text">👋 Привет, <span id="user-name">Гость</span>!</p>
+                    <p class="greeting">👋 Привет, <span id="user-name">Гость</span>!</p>
                 </div>
 
                 <!-- Приветственная карточка -->
@@ -55,58 +50,38 @@
                         Множество акций и промокодов. Удобные способы оплаты.
                     </p>
                     <div class="welcome-buttons">
-                        <button class="welcome-btn primary" onclick="navigateTo('page-catalog')">
-                            📋 Каталог
-                        </button>
-                        <button class="welcome-btn secondary" onclick="navigateTo('page-prizes')">
-                            🎯 Скидки
-                        </button>
-                        <button class="welcome-btn tertiary" onclick="openManagerChat()">
-                            📩 Связь с менеджером
-                        </button>
+                        <button class="welcome-btn primary" onclick="navigateTo('page-catalog')">📋 Каталог</button>
+                        <button class="welcome-btn secondary" onclick="navigateTo('page-prizes')">🎯 Скидки</button>
+                        <button class="welcome-btn tertiary" onclick="openManagerChat()">📩 Связь с менеджером</button>
                     </div>
                 </div>
 
-                <!-- ===== АКЦИИ (заглушка) ===== -->
+                <!-- Акции -->
                 <div class="section-header">
                     <h2>🎉 Акции</h2>
                     <a href="#" onclick="navigateTo('page-prizes')">Все акции →</a>
                 </div>
-                <div class="horizontal-scroll" id="promotions-scroll">
-                    <div class="promotion-card placeholder">
-                        <div class="promotion-placeholder">
-                            <span class="promo-emoji">🎁</span>
-                            <h4>Скоро здесь будут акции!</h4>
-                            <p>Следите за обновлениями</p>
-                        </div>
-                    </div>
-                </div>
+                <div class="horizontal-scroll" id="promotions-scroll"></div>
 
-                <!-- ===== КАТЕГОРИИ ===== -->
+                <!-- Категории -->
                 <div class="section-header">
                     <h2>📂 Категории</h2>
                 </div>
-                <div class="horizontal-scroll" id="categories-scroll">
-                    <!-- Категории будут загружены из JS -->
-                </div>
+                <div class="horizontal-scroll" id="categories-scroll"></div>
 
-                <!-- ===== СКИДКИ ===== -->
+                <!-- Скидки -->
                 <div class="section-header">
                     <h2>🔥 Сейчас со скидкой</h2>
                     <a href="#" onclick="navigateTo('page-catalog')">Все товары →</a>
                 </div>
-                <div class="horizontal-scroll" id="discounts-scroll">
-                    <!-- Товары со скидкой будут загружены из JS -->
-                </div>
+                <div class="horizontal-scroll" id="discounts-scroll"></div>
 
-                <!-- ===== ПОПУЛЯРНОЕ ===== -->
+                <!-- Популярное -->
                 <div class="section-header">
                     <h2>⭐ Популярное</h2>
                     <a href="#" onclick="navigateTo('page-catalog')">Все товары →</a>
                 </div>
-                <div class="horizontal-scroll" id="popular-scroll">
-                    <!-- Популярные товары будут загружены из JS -->
-                </div>
+                <div class="horizontal-scroll" id="popular-scroll"></div>
             </div>
 
             <!-- ========================================= -->
@@ -121,27 +96,17 @@
                     <p class="greeting">📋 Каталог</p>
                 </div>
 
-                <!-- Поиск -->
                 <div class="search-container">
                     <input type="text" id="search-input" class="search-input" placeholder="🔍 Поиск товаров..." />
                 </div>
 
-                <!-- Фильтры категорий (горизонтальный скролл) -->
-                <div class="filter-tabs" id="category-filters">
-                    <button class="filter-tab active" data-category="all">Все товары</button>
-                    <button class="filter-tab" data-category="liquid">Жидкости</button>
-                    <button class="filter-tab" data-category="accessories">Комплектующие</button>
-                    <button class="filter-tab" data-category="pod">Pod-системы</button>
-                    <button class="filter-tab" data-category="disposable">Одноразки</button>
-                    <button class="filter-tab" data-category="snus">Снюс</button>
-                </div>
+                <!-- Фильтры категорий -->
+                <div class="filter-tabs" id="category-filters"></div>
 
-                <!-- Дополнительные фильтры (динамические) -->
-                <div id="sub-filters-container">
-                    <!-- Сюда будут подгружаться дополнительные фильтры -->
-                </div>
+                <!-- Дополнительные фильтры -->
+                <div id="sub-filters-container"></div>
 
-                <!-- Список товаров (бесконечный скролл) -->
+                <!-- Список товаров -->
                 <div class="product-list" id="catalog-products">
                     <div class="loading">⏳ Загрузка товаров...</div>
                 </div>
@@ -158,13 +123,11 @@
                     </div>
                     <p class="greeting">🛒 Корзина</p>
                 </div>
-                <div id="cart-content">
-                    <!-- Корзина будет загружена из JS -->
-                </div>
+                <div id="cart-content"></div>
             </div>
 
             <!-- ========================================= -->
-            <!-- ===== ПРИЗЫ / АКЦИИ ===== -->
+            <!-- ===== АКЦИИ ===== -->
             <!-- ========================================= -->
             <div id="page-prizes" class="page">
                 <div class="app-header">
@@ -174,9 +137,7 @@
                     </div>
                     <p class="greeting">🎁 Акции и призы</p>
                 </div>
-                <div id="prizes-list">
-                    <div class="loading">⏳ Загрузка акций...</div>
-                </div>
+                <div id="prizes-list"><div class="loading">⏳ Загрузка акций...</div></div>
             </div>
 
             <!-- ========================================= -->
@@ -190,13 +151,11 @@
                     </div>
                     <p class="greeting">📦 Мои заказы</p>
                 </div>
-                <div id="orders-list">
-                    <div class="loading">⏳ Загрузка заказов...</div>
-                </div>
+                <div id="orders-list"><div class="loading">⏳ Загрузка заказов...</div></div>
             </div>
 
             <!-- ========================================= -->
-            <!-- ===== АДМИНКА (показывается только админам) ===== -->
+            <!-- ===== АДМИНКА ===== -->
             <!-- ========================================= -->
             <div id="page-admin" class="page">
                 <div class="app-header">
@@ -206,13 +165,109 @@
                     </div>
                     <p class="greeting">Управление магазином</p>
                 </div>
-                <!-- Админ-меню -->
-                <div class="admin-menu" id="admin-menu">
-                    <!-- Будет загружено из JS -->
-                </div>
+                <div class="admin-menu" id="admin-menu"></div>
             </div>
 
-        </div> <!-- /container -->
+            <!-- ===== АДМИН: СТАТИСТИКА ===== -->
+            <div id="page-admin-stats" class="page admin-subpage">
+                <div class="admin-header">
+                    <button class="admin-back-btn" onclick="navigateTo('page-admin')">← Назад</button>
+                    <h2>📊 Статистика</h2>
+                </div>
+                <div id="admin-stats-content"><div class="loading">⏳ Загрузка...</div></div>
+            </div>
+
+            <!-- ===== АДМИН: ЗАКАЗЫ ===== -->
+            <div id="page-admin-orders" class="page admin-subpage">
+                <div class="admin-header">
+                    <button class="admin-back-btn" onclick="navigateTo('page-admin')">← Назад</button>
+                    <h2>📦 Заказы</h2>
+                </div>
+                <div id="admin-orders-content"><div class="loading">⏳ Загрузка...</div></div>
+            </div>
+
+            <!-- ===== АДМИН: ТОВАРЫ ===== -->
+            <div id="page-admin-products" class="page admin-subpage">
+                <div class="admin-header">
+                    <button class="admin-back-btn" onclick="navigateTo('page-admin')">← Назад</button>
+                    <h2>🛍️ Товары</h2>
+                </div>
+                <div id="admin-products-content"><div class="loading">⏳ Загрузка...</div></div>
+            </div>
+
+            <!-- ===== АДМИН: КАТЕГОРИИ ===== -->
+            <div id="page-admin-categories" class="page admin-subpage">
+                <div class="admin-header">
+                    <button class="admin-back-btn" onclick="navigateTo('page-admin')">← Назад</button>
+                    <h2>📂 Категории</h2>
+                </div>
+                <div id="admin-categories-content"><div class="loading">⏳ Загрузка...</div></div>
+            </div>
+
+            <!-- ===== АДМИН: БРЕНДЫ ===== -->
+            <div id="page-admin-brands" class="page admin-subpage">
+                <div class="admin-header">
+                    <button class="admin-back-btn" onclick="navigateTo('page-admin')">← Назад</button>
+                    <h2>🏷️ Бренды</h2>
+                </div>
+                <div id="admin-brands-content"><div class="loading">⏳ Загрузка...</div></div>
+            </div>
+
+            <!-- ===== АДМИН: МОДЕЛИ ===== -->
+            <div id="page-admin-models" class="page admin-subpage">
+                <div class="admin-header">
+                    <button class="admin-back-btn" onclick="navigateTo('page-admin')">← Назад</button>
+                    <h2>📦 Модели</h2>
+                </div>
+                <div id="admin-models-content"><div class="loading">⏳ Загрузка...</div></div>
+            </div>
+
+            <!-- ===== АДМИН: АТРИБУТЫ ===== -->
+            <div id="page-admin-attributes" class="page admin-subpage">
+                <div class="admin-header">
+                    <button class="admin-back-btn" onclick="navigateTo('page-admin')">← Назад</button>
+                    <h2>🏷️ Атрибуты</h2>
+                </div>
+                <div id="admin-attributes-content"><div class="loading">⏳ Загрузка...</div></div>
+            </div>
+
+            <!-- ===== АДМИН: АКЦИИ ===== -->
+            <div id="page-admin-promotions" class="page admin-subpage">
+                <div class="admin-header">
+                    <button class="admin-back-btn" onclick="navigateTo('page-admin')">← Назад</button>
+                    <h2>🎉 Акции</h2>
+                </div>
+                <div id="admin-promotions-content"><div class="loading">⏳ Загрузка...</div></div>
+            </div>
+
+            <!-- ===== АДМИН: ПРОМОКОДЫ ===== -->
+            <div id="page-admin-promocodes" class="page admin-subpage">
+                <div class="admin-header">
+                    <button class="admin-back-btn" onclick="navigateTo('page-admin')">← Назад</button>
+                    <h2>🎫 Промокоды</h2>
+                </div>
+                <div id="admin-promocodes-content"><div class="loading">⏳ Загрузка...</div></div>
+            </div>
+
+            <!-- ===== АДМИН: ТОЧКИ САМОВЫВОЗА ===== -->
+            <div id="page-admin-pickup" class="page admin-subpage">
+                <div class="admin-header">
+                    <button class="admin-back-btn" onclick="navigateTo('page-admin')">← Назад</button>
+                    <h2>📍 Точки самовывоза</h2>
+                </div>
+                <div id="admin-pickup-content"><div class="loading">⏳ Загрузка...</div></div>
+            </div>
+
+            <!-- ===== АДМИН: МОДЕРАТОРЫ ===== -->
+            <div id="page-admin-moderators" class="page admin-subpage">
+                <div class="admin-header">
+                    <button class="admin-back-btn" onclick="navigateTo('page-admin')">← Назад</button>
+                    <h2>👥 Модераторы</h2>
+                </div>
+                <div id="admin-moderators-content"><div class="loading">⏳ Загрузка...</div></div>
+            </div>
+
+        </div>
 
         <!-- ========================================= -->
         <!-- ===== НИЖНЯЯ НАВИГАЦИЯ ===== -->
@@ -246,12 +301,26 @@
         </nav>
     </div>
 
-    <!-- ===== Модальное окно для деталей товара ===== -->
+    <!-- ========================================= -->
+    <!-- ===== МОДАЛЬНЫЕ ОКНА ===== -->
+    <!-- ========================================= -->
+
+    <!-- Модалка деталей товара -->
     <div id="product-modal" class="modal" style="display:none;">
-        <div class="modal-overlay" onclick="closeProductModal()"></div>
-        <div class="modal-content" id="product-modal-content">
-            <!-- Загружается из JS -->
-        </div>
+        <div class="modal-overlay" onclick="closeModal('product-modal')"></div>
+        <div class="modal-content" id="product-modal-content"></div>
+    </div>
+
+    <!-- Модалка деталей акции -->
+    <div id="promotion-modal" class="modal" style="display:none;">
+        <div class="modal-overlay" onclick="closeModal('promotion-modal')"></div>
+        <div class="modal-content" id="promotion-modal-content"></div>
+    </div>
+
+    <!-- Модалка успешного заказа -->
+    <div id="order-success-modal" class="modal" style="display:none;">
+        <div class="modal-overlay" onclick="closeModal('order-success-modal')"></div>
+        <div class="modal-content" id="order-success-content"></div>
     </div>
 
     <script src="app.js"></script>
