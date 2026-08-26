@@ -4,7 +4,7 @@
 
 // ===== ПАГИНАЦИЯ (Показать ещё) =====
 const ITEMS_PER_PAGE = 10;
-let currentPage = 1;
+let catalogCurrentPage = 1;  // ← переименовал, чтобы не конфликтовать с currentPage из app.js
 let totalFilteredItems = [];
 let isLoading = false;
 
@@ -71,7 +71,7 @@ function renderBreadcrumbs() {
 // ===== ПАГИНАЦИЯ =====
 function renderProductsWithPagination(grid, filteredProducts) {
     totalFilteredItems = filteredProducts;
-    currentPage = 1;
+    catalogCurrentPage = 1;
     renderPage(grid);
 }
 
@@ -79,7 +79,7 @@ function renderPage(grid) {
     if (!grid) return;
     
     const start = 0;
-    const end = currentPage * ITEMS_PER_PAGE;
+    const end = catalogCurrentPage * ITEMS_PER_PAGE;
     const pageItems = totalFilteredItems.slice(start, end);
     const hasMore = end < totalFilteredItems.length;
     const remaining = totalFilteredItems.length - end;
@@ -130,7 +130,7 @@ function loadMoreProducts() {
     }
     
     setTimeout(() => {
-        currentPage++;
+        catalogCurrentPage++;
         renderPage(grid);
         isLoading = false;
     }, 300);
