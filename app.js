@@ -2976,17 +2976,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         
         if (isAdmin) {
-            // Эти функции пока не используются или удалены — закомментированы
+            // НЕ РАБОТАЮТ / УДАЛЕНЫ — закомментированы
             // document.getElementById('admin-add-category-btn')?.addEventListener('click', addNewCategory);
             // document.getElementById('admin-add-promotion-btn')?.addEventListener('click', addNewPromotion);
+            // document.getElementById('admin-add-btn')?.addEventListener('click', addAdmin);
+            // document.getElementById('admin-add-pickup-point-btn')?.addEventListener('click', addNewPickupPoint);
             
-            // Рабочие функции
+            // РАБОТАЮТ
             document.getElementById('admin-add-product-btn')?.addEventListener('click', addNewProduct);
             document.getElementById('admin-add-brand-btn')?.addEventListener('click', addNewBrand);
             document.getElementById('admin-add-model-btn')?.addEventListener('click', addNewModel);
             document.getElementById('admin-add-attribute-btn')?.addEventListener('click', addNewAttribute);
-            document.getElementById('admin-add-btn')?.addEventListener('click', addAdmin);
-            document.getElementById('admin-add-pickup-point-btn')?.addEventListener('click', addNewPickupPoint);
             document.getElementById('admin-export-orders-btn')?.addEventListener('click', exportOrdersCSV);
             document.getElementById('admin-import-btn')?.addEventListener('click', importProducts);
         }
