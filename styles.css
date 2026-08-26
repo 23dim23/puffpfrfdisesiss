@@ -4031,6 +4031,7 @@ button:active:not(:disabled),
         padding: 6px 8px;
         min-height: 56px;
         gap: 6px;
+        border-radius: 10px;
     }
     
     .product-card.compact .emoji {
