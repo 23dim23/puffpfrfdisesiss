@@ -64,7 +64,7 @@
             </div>
 
             <!-- ========================================= -->
-            <!-- ===== КАТАЛОГ (С ПОИСКОМ) ===== -->
+            <!-- ===== КАТАЛОГ (С ПОИСКОМ И ФИЛЬТРАМИ-ТЕГАМИ) ===== -->
             <!-- ========================================= -->
             <div id="page-catalog" class="page">
                 <div class="app-header">
@@ -77,6 +77,9 @@
                     <input type="text" id="search-input" placeholder="🔍 Поиск товаров..." class="search-input">
                 </div>
 
+                <!-- Фильтры-теги категорий (НОВЫЙ ЭЛЕМЕНТ) -->
+                <div id="category-tabs" class="category-tabs"></div>
+
                 <!-- Сортировка -->
                 <div class="catalog-filters">
                     <div class="filter-section">
@@ -86,6 +89,7 @@
                             <button class="filter-btn" data-sort="price-asc">Сначала дешёвые</button>
                             <button class="filter-btn" data-sort="price-desc">Сначала дорогие</button>
                             <button class="filter-btn" data-sort="name">По названию</button>
+                            <button class="filter-btn" data-sort="popular">По популярности</button>
                         </div>
                     </div>
                 </div>
@@ -673,6 +677,14 @@ Xros 5 mini | 55 | pod | vaporesso | xros-5 | 💨 | 5</pre>
         <button onclick="location.reload()" style="margin-top:15px; padding:10px 30px; background:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">
             🔄 Перезагрузить
         </button>
+    </div>
+
+    <!-- Модальное окно для быстрого просмотра -->
+    <div id="quick-view-modal" class="quick-view-modal" style="display:none;">
+        <div class="quick-view-overlay" onclick="closeQuickView()"></div>
+        <div class="quick-view-content" id="quick-view-content">
+            <div class="quick-view-loader">⏳ Загрузка...</div>
+        </div>
     </div>
 
     <script src="app.js"></script>
