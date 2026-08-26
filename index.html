@@ -51,7 +51,7 @@
                     </p>
                     <div class="welcome-buttons vertical">
                         <button class="welcome-btn primary" onclick="navigateTo('page-catalog')">Каталог</button>
-                        <button class="welcome-btn secondary" onclick="navigateTo('page-prizes')">Скидки</button>
+                        <button class="welcome-btn secondary" onclick="navigateToCatalogWithFilter('on-sale')">Скидки</button>
                         <button class="welcome-btn tertiary" onclick="openManagerChat()">Связь с менеджером</button>
                     </div>
                 </div>
@@ -72,7 +72,7 @@
                 <!-- Скидки -->
                 <div class="section-header">
                     <h2>Сейчас со скидкой</h2>
-                    <a href="#" onclick="navigateTo('page-catalog')">Все товары →</a>
+                    <a href="#" onclick="navigateToCatalogWithFilter('on-sale')">Все товары →</a>
                 </div>
                 <div class="horizontal-scroll" id="discounts-scroll"></div>
 
@@ -113,6 +113,9 @@
                 <div class="product-list" id="catalog-products">
                     <div class="loading">Загрузка товаров...</div>
                 </div>
+
+                <!-- Наблюдатель для бесконечного скролла -->
+                <div id="scroll-observer" style="height:20px;"></div>
             </div>
 
             <!-- ========================================= -->
@@ -277,6 +280,15 @@
                     <h2>Импорт товаров</h2>
                 </div>
                 <div id="admin-import-content"><div class="loading">Загрузка...</div></div>
+            </div>
+
+            <!-- ===== АДМИН: НАСТРОЙКИ ===== -->
+            <div id="page-admin-settings" class="page admin-subpage">
+                <div class="admin-header">
+                    <button class="admin-back-btn" onclick="navigateTo('page-admin')">← Назад</button>
+                    <h2>Настройки</h2>
+                </div>
+                <div id="admin-settings-content"><div class="loading">Загрузка...</div></div>
             </div>
 
         </div>
