@@ -301,13 +301,14 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       return;
     }
 
-    if (HARDCODED_ADMINS.includes(user.id)) {
+    const numericUserId = Number(user.id);
+    if (HARDCODED_ADMINS.includes(numericUserId)) {
       setIsAdmin(true);
       setIsModerator(true);
       return;
     }
 
-    const match = adminList.find((a) => a.user_id === user.id && a.is_active);
+    const match = adminList.find((a) => Number(a.user_id) === numericUserId && a.is_active);
     if (match) {
       setIsAdmin(match.role === 'admin');
       setIsModerator(true);
@@ -591,42 +592,102 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     // Send to Supabase
     try {
-      await fetch(`${SUPABASE_URL}/rest/v1/orders`, {
-        method: 'POST',
-        headers: {
-          apikey: SUPABASE_KEY,
-          Authorization: `Bearer ${SUPABASE_KEY}`,
-          'Content-Type': 'application/json',
-          Prefer: 'return=representation',
-        },
-        body: JSON.stringify({
-          user_id: newOrder.user_id,
-          username: newOrder.username,
-          first_name: newOrder.first_name,
-          last_name: newOrder.last_name,
-          phone: newOrder.phone,
-          subtotal: newOrder.subtotal,
-          discount_amount: newOrder.discount_amount,
-          delivery_price: newOrder.delivery_price,
-          total: newOrder.total,
-          currency: newOrder.currency,
-          delivery_type: newOrder.delivery_type,
-          pickup_point_id: newOrder.pickup_point_id,
-          pickup_point_name: newOrder.pickup_point_name,
-          delivery_address: newOrder.delivery_address,
-          delivery_comment: newOrder.delivery_comment,
-          comment: newOrder.comment,
-          promocode_id: newOrder.promocode_id,
-          promocode_code: newOrder.promocode_code,
-          items_json: newOrder.items_json,
-          status: 'pending',
-        }),
+      const orderInsertRes = await supabaseRequest('orders', 'POST', {
+        user_id: newOrder.user_id,
+        username: newOrder.username,
+        first_name: newOrder.first_name,
+        last_name: newOrder.last_name,
+        phone: newOrder.phone || 'Не указан',
+        subtotal: newOrder.subtotal,
+        discount_amount: newOrder.discount_amount,
+        delivery_price: newOrder.delivery_price,
+        total: newOrder.total,
+        final_total: newOrder.total,
+        currency: newOrder.currency,
+        delivery_type: newOrder.delivery_type,
+        pickup_point_id: newOrder.pickup_point_id,
+        pickup_point_name: newOrder.pickup_point_name,
+        delivery_address: newOrder.delivery_address,
+        delivery_comment: newOrder.delivery_comment,
+        comment: newOrder.comment,
+        promocode_id: newOrder.promocode_id,
+        promocode_code: newOrder.promocode_code,
+        items_json: newOrder.items_json,
+        status: 'pending',
       });
+
+      // Insert individual order items if Supabase returned order ID
+      const createdOrderId = Array.isArray(orderInsertRes) && orderInsertRes[0]?.id ? orderInsertRes[0].id : newOrder.id;
+      for (const item of newOrder.items_json) {
+        try {
+          await supabaseRequest('order_items', 'POST', {
+            order_id: createdOrderId,
+            product_id: item.id,
+            product_name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+          });
+        } catch (itemErr) {
+          // ignore
+        }
+      }
     } catch (e) {
       console.warn('Could not post to Supabase:', e);
     }
 
-    // Send Telegram WebApp data event if in TG
+    // Direct Telegram notification to hardcoded Admins
+    if (BOT_TOKEN) {
+      const itemsListText = newOrder.items_json
+        .map((it) => `  • ${it.emoji || '📦'} ${it.name} × ${it.quantity} — ${it.price} BYN`)
+        .join('\n');
+
+      const deliveryInfo =
+        newOrder.delivery_type === 'pickup'
+          ? `🏪 <b>Самовывоз:</b> ${newOrder.pickup_point_name || 'Точка не указана'}`
+          : `🚚 <b>Доставка:</b> ${newOrder.delivery_address || 'Адрес не указан'} (+${newOrder.delivery_price} BYN)`;
+
+      let priceInfo = `💰 <b>Итого:</b> ${newOrder.total} BYN`;
+      if (newOrder.discount_amount > 0) {
+        priceInfo += `\n   Скидка: -${newOrder.discount_amount} BYN`;
+      }
+      if (newOrder.promocode_code) {
+        priceInfo += `\n   Промокод: ${newOrder.promocode_code}`;
+      }
+
+      const adminNotice = `🆕 <b>НОВЫЙ ЗАКАЗ #${newOrder.id}!</b>
+
+👤 <b>Покупатель:</b> @${currentUser?.username || 'unknown'} (${currentUser?.first_name || 'Пользователь'})
+🆔 <b>User ID:</b> <code>${newOrder.user_id}</code>
+
+📦 <b>Товары:</b>
+${itemsListText}
+
+${priceInfo}
+
+${deliveryInfo}
+💬 <b>Комментарий:</b> ${newOrder.comment || 'Нет'}
+
+🔗 <a href="tg://user?id=${newOrder.user_id}">✉️ Связаться с покупателем</a>
+📩 Менеджер: @puff_mngr`;
+
+      for (const adminId of HARDCODED_ADMINS) {
+        try {
+          fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              chat_id: adminId,
+              text: adminNotice,
+              parse_mode: 'HTML',
+            }),
+          }).catch(() => {});
+        } catch (e) {
+          // ignore
+        }
+      }
+    }
+
+    // Send Telegram WebApp data event to connected Python Telegram Bot
     const tg = getTelegramWebApp();
     if (tg?.sendData) {
       try {
@@ -634,11 +695,25 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           JSON.stringify({
             action: 'order',
             order_id: newOrder.id,
+            username: newOrder.username,
+            items: newOrder.items_json.map((it) => ({
+              id: it.id,
+              name: it.name,
+              price: it.price,
+              quantity: it.quantity,
+              emoji: it.emoji || '📦',
+            })),
             total: newOrder.total,
-            items: newOrder.items_json,
+            subtotal: newOrder.subtotal,
+            discount: newOrder.discount_amount,
+            delivery_cost: newOrder.delivery_price,
+            currency: 'BYN',
+            phone: newOrder.phone || (currentUser?.username ? `@${currentUser.username}` : 'Не указан'),
             delivery_type: newOrder.delivery_type,
-            pickup_point: newOrder.pickup_point_name,
-            address: newOrder.delivery_address,
+            delivery_address: newOrder.delivery_address || undefined,
+            pickup_point_name: newOrder.pickup_point_name || undefined,
+            comment: newOrder.comment || undefined,
+            promocode: newOrder.promocode_code || undefined,
           })
         );
       } catch (e) {
