@@ -59,18 +59,27 @@ export const HomeTab: React.FC<HomeTabProps> = ({
         <div className="absolute -top-16 -right-16 w-36 h-36 rounded-full bg-gradient-to-br from-purple-600/30 to-orange-500/20 blur-2xl pointer-events-none" />
 
         <div className="relative z-10">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-500/20 border border-purple-500/40 text-[11px] font-bold text-purple-300 mb-2.5 shadow-sm">
-            <Sparkles className="w-3.5 h-3.5 text-orange-400" />
-            <span>Премиум сервис & быстрая доставка</span>
+          <div className="flex items-center gap-3.5 mb-3">
+            <img
+              src={settings.logo_url || '/logo.png'}
+              alt="Puff Paradise Logo"
+              className="w-16 h-16 rounded-2xl object-cover border-2 border-purple-500/40 shadow-[0_0_20px_rgba(168,85,247,0.4)] shrink-0"
+              referrerPolicy="no-referrer"
+            />
+            <div>
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-purple-500/20 border border-purple-500/40 text-[10px] font-bold text-purple-300 mb-1 shadow-sm">
+                <Sparkles className="w-3 h-3 text-orange-400" />
+                <span>Премиум сервис & быстрая доставка</span>
+              </div>
+              <h2 className="text-lg font-black text-white tracking-tight leading-tight">
+                {settings.welcome_title || 'Добро пожаловать в Puff Paradise Shop'}
+              </h2>
+            </div>
           </div>
-
-          <h2 className="text-xl font-black text-white tracking-tight leading-snug mb-2">
-            {settings.welcome_title || 'Добро пожаловать в Puff Paradise Shop'}
-          </h2>
 
           <p className="text-xs text-zinc-300 leading-relaxed mb-4">
             {settings.welcome_description ||
-              'У нас есть все что тебе нужно : жидкости, одноразки, POD и многое другое! Каталог по линейкам, быстрый заказ и доставка. Множество акций и промокодов. Удобные способы оплаты.'}
+              'Официальный каталог Puff Paradise в Могилеве: оригинальные жидкости, POD-системы Vaporesso, испарители, картриджи, одноразки и снюс.'}
           </p>
 
           {/* Action Buttons */}

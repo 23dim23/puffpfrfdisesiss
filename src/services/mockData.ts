@@ -17,7 +17,7 @@ export const INITIAL_SETTINGS: ShopSettings = {
   welcome_title: 'Добро пожаловать в Puff Paradise Shop',
   welcome_description:
     'Официальный каталог Puff Paradise в Могилеве: оригинальные жидкости, POD-системы Vaporesso, испарители, картриджи, одноразки и снюс. Быстрая доставка по Могилеву и Беларуси, самовывоз из удобных точек!',
-  logo_url: '',
+  logo_url: '/logo.png',
   delivery_price: 5.0,
   free_delivery_min_items: 4,
   manager_username: 'puff_mngr',

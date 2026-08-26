@@ -18,17 +18,16 @@ export const Header: React.FC<HeaderProps> = ({ subtitle }) => {
       {/* Dev / Admin Indicator & Switcher bar in top right */}
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2.5">
-          {settings.logo_url ? (
-            <img
-              src={settings.logo_url}
-              alt="Puff Paradise"
-              className="w-9 h-9 rounded-full object-cover border border-purple-500/30 shadow-[0_0_12px_rgba(168,85,247,0.3)]"
-            />
-          ) : (
-            <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-purple-600 via-purple-500 to-orange-500 flex items-center justify-center text-lg shadow-[0_0_14px_rgba(168,85,247,0.4)]">
-              💨
-            </div>
-          )}
+          <img
+            src={settings.logo_url || '/logo.png'}
+            alt="Puff Paradise"
+            className="w-9 h-9 rounded-full object-cover border border-purple-500/30 shadow-[0_0_12px_rgba(168,85,247,0.3)]"
+            referrerPolicy="no-referrer"
+            onError={(e) => {
+              // fallback if not found
+              (e.currentTarget as HTMLElement).style.display = 'none';
+            }}
+          />
 
           <div>
             <h1 className="text-xl font-extrabold tracking-tight bg-gradient-to-r from-purple-400 via-fuchsia-300 to-orange-400 bg-clip-text text-transparent leading-none">

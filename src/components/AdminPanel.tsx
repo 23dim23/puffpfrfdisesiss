@@ -876,14 +876,27 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
           </div>
 
           <div>
-            <label className="text-xs font-bold text-zinc-300 block mb-1">URL логотипа</label>
-            <input
-              type="text"
-              value={settingsForm.logo_url}
-              onChange={(e) => setSettingsForm((prev) => ({ ...prev, logo_url: e.target.value }))}
-              placeholder="https://..."
-              className="w-full py-2 px-3 rounded-xl bg-white/5 border border-white/10 text-white text-xs"
-            />
+            <label className="text-xs font-bold text-zinc-300 block mb-1">URL логотипа магазина</label>
+            <div className="flex gap-3 items-center mb-2">
+              <img
+                src={settingsForm.logo_url || '/logo.png'}
+                alt="Logo Preview"
+                className="w-12 h-12 rounded-xl object-cover border border-purple-500/40 shadow-sm shrink-0 bg-black/40"
+                referrerPolicy="no-referrer"
+              />
+              <div className="flex-1">
+                <input
+                  type="text"
+                  value={settingsForm.logo_url}
+                  onChange={(e) => setSettingsForm((prev) => ({ ...prev, logo_url: e.target.value }))}
+                  placeholder="/logo.png или прямая ссылка https://..."
+                  className="w-full py-2 px-3 rounded-xl bg-white/5 border border-white/10 text-white text-xs"
+                />
+                <p className="text-[10px] text-zinc-400 mt-1">
+                  По умолчанию используется встроенный файл <code>/logo.png</code>. Также можно вставить прямую ссылку на картинку с любого фотохостинга (Imgur, Postimages, Telegram и др.).
+                </p>
+              </div>
+            </div>
           </div>
 
           <button

@@ -159,7 +159,11 @@ class LocalDatabase {
 
   // ================= SETTINGS =================
   public getSettings(): ShopSettings {
-    return getStoredItem<ShopSettings>(DB_KEYS.SETTINGS, INITIAL_SETTINGS);
+    const s = getStoredItem<ShopSettings>(DB_KEYS.SETTINGS, INITIAL_SETTINGS);
+    if (!s.logo_url) {
+      s.logo_url = '/logo.png';
+    }
+    return s;
   }
 
   public updateSettings(partial: Partial<ShopSettings>): ShopSettings {
