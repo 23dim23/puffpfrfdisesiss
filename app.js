@@ -7,6 +7,12 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const BOT_TOKEN = '8870349321:AAEXFersNinRpHnPETbR_vGFn_TnGWOCums';
 
 // ========================================
+// ===== ХАРДКОД АДМИНОВ =====
+// ========================================
+
+const HARDCODED_ADMINS = [5659638424, 8161417737];
+
+// ========================================
 // ===== ИНИЦИАЛИЗАЦИЯ =====
 // ========================================
 
@@ -33,6 +39,7 @@ let brands = [];
 let models = [];
 let attributeGroups = [];
 let attributeValues = [];
+let productColors = [];
 let settings = {};
 let pickupPoints = [];
 let promotions = [];
@@ -42,6 +49,7 @@ let appliedPromocode = null;
 let deliveryPrice = 5;
 let freeDeliveryMinItems = 4;
 let managerUsername = 'puff_mngr';
+let logoUrl = '';
 
 // Пагинация для каталога
 let catalogPage = 1;
@@ -75,14 +83,12 @@ async function fetchFromSupabase(table, filters = {}, order = {}) {
     try {
         let url = `${SUPABASE_URL}/rest/v1/${table}?select=*`;
         
-        // Фильтры
         Object.keys(filters).forEach(key => {
             if (filters[key] !== undefined && filters[key] !== null && filters[key] !== '') {
                 url += `&${key}=eq.${filters[key]}`;
             }
         });
         
-        // Сортировка
         if (order.by) {
             url += `&order=${order.by}.${order.direction || 'asc'}`;
         }
@@ -108,8 +114,25 @@ async function loadSettings() {
     deliveryPrice = parseFloat(settings.delivery_price) || 5;
     freeDeliveryMinItems = parseInt(settings.free_delivery_min_items) || 4;
     managerUsername = settings.manager_username || 'puff_mngr';
+    logoUrl = settings.logo_url || '';
+    
+    // Обновляем логотип
+    updateLogo();
+    
     console.log('✅ Загружены настройки:', settings);
     return settings;
+}
+
+function updateLogo() {
+    const logoElements = document.querySelectorAll('.logo-img');
+    logoElements.forEach(el => {
+        if (logoUrl) {
+            el.src = logoUrl;
+            el.style.display = 'block';
+        } else {
+            el.style.display = 'none';
+        }
+    });
 }
 
 async function loadCategories() {
@@ -140,6 +163,12 @@ async function loadAttributeValues() {
     attributeValues = await fetchFromSupabase('attribute_values', { is_active: true }, { by: 'sort_order' });
     console.log('✅ Загружено значений атрибутов:', attributeValues.length);
     return attributeValues;
+}
+
+async function loadProductColors() {
+    productColors = await fetchFromSupabase('product_colors', {}, { by: 'sort_order' });
+    console.log('✅ Загружено цветов товаров:', productColors.length);
+    return productColors;
 }
 
 async function loadProducts() {
@@ -186,6 +215,7 @@ async function loadAllData() {
         loadModels(),
         loadAttributeGroups(),
         loadAttributeValues(),
+        loadProductColors(),
         loadProducts(),
         loadPickupPoints(),
         loadPromotions(),
@@ -306,14 +336,38 @@ function createProductScrollCard(product) {
          <span class="product-discount">-${discountPercent}%</span>` :
         `<span class="product-price">${product.price} BYN</span>`;
     
+    // Получаем фото товара
+    const productImage = getProductImage(product.id);
+    const imageHtml = productImage ? 
+        `<img src="${productImage}" alt="${product.name}" />` : 
+        (product.emoji || '📦');
+    
     return `
         <div class="product-scroll-card" onclick="showProductDetail(${product.id})">
-            <div class="product-image-placeholder">${product.emoji || '📦'}</div>
+            <div class="product-image-placeholder">${imageHtml}</div>
             <div class="product-name">${product.name || 'Без названия'}</div>
             <div class="product-brand">${brandName}</div>
             <div class="product-price-row">${priceDisplay}</div>
         </div>
     `;
+}
+
+// ========================================
+// ===== ФОТОГРАФИИ ТОВАРОВ =====
+// ========================================
+
+function getProductImage(productId) {
+    // TODO: Реализовать получение фото из БД
+    // Пока возвращаем null — будет показываться эмодзи
+    return null;
+}
+
+function getProductImageHtml(product, size = 'small') {
+    const imageUrl = getProductImage(product.id);
+    if (imageUrl) {
+        return `<img src="${imageUrl}" alt="${product.name}" />`;
+    }
+    return product.emoji || '📦';
 }
 
 // ========================================
@@ -325,7 +379,7 @@ function renderCategoryFilters() {
     if (!container) return;
     
     const allCategories = [
-        { slug: 'all', name: 'Все товары', icon: '📋' },
+        { slug: 'all', name: 'Все товары', icon: '' },
         ...categories
     ];
     
@@ -371,7 +425,7 @@ function renderSubFilters() {
     if (categoryBrands.length > 0) {
         html += `
             <div class="sub-filter-group">
-                <div class="sub-filter-group-label">🏷️ Ассортимент</div>
+                <div class="sub-filter-group-label">Ассортимент</div>
                 <div class="sub-filters">
                     <button class="sub-filter-tab ${currentBrand === 'all' ? 'active' : ''}" onclick="selectBrand('all')">Весь ассортимент</button>
                     ${categoryBrands.map(b => `
@@ -384,29 +438,34 @@ function renderSubFilters() {
     
     // Атрибуты для жидкостей
     if (currentCategory === 'liquid') {
-        const strengthGroup = attributeGroups.find(g => g.slug === 'liquid_strength');
-        if (strengthGroup) {
-            const values = attributeValues.filter(v => v.attribute_group_slug === 'liquid_strength');
-            html += `
-                <div class="sub-filter-group">
-                    <div class="sub-filter-group-label">💪 Крепость</div>
-                    <div class="sub-filters">
-                        <button class="sub-filter-tab ${currentStrength === 'all' ? 'active' : ''}" onclick="selectStrength('all')">Вся крепость</button>
-                        ${values.map(v => `
-                            <button class="sub-filter-tab ${currentStrength === v.value ? 'active' : ''}" onclick="selectStrength('${v.value}')">${v.value}</button>
-                        `).join('')}
-                    </div>
-                </div>
-            `;
-        }
+        // Крепость — обобщённые группы
+        const strengthGroups = [
+            { label: '0 мг', min: 0, max: 0 },
+            { label: '20-50 мг', min: 20, max: 50 },
+            { label: '60-70 мг', min: 60, max: 70 },
+            { label: '80+ мг', min: 80, max: 999 }
+        ];
         
+        html += `
+            <div class="sub-filter-group">
+                <div class="sub-filter-group-label">Крепость</div>
+                <div class="sub-filters">
+                    <button class="sub-filter-tab ${currentStrength === 'all' ? 'active' : ''}" onclick="selectStrength('all')">Вся крепость</button>
+                    ${strengthGroups.map(g => `
+                        <button class="sub-filter-tab ${currentStrength === g.label ? 'active' : ''}" onclick="selectStrength('${g.label}')">${g.label}</button>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+        
+        // Линейки
         const lineGroup = attributeGroups.find(g => g.slug === 'liquid_brand_line');
         if (lineGroup) {
             const values = attributeValues.filter(v => v.attribute_group_slug === 'liquid_brand_line');
             if (values.length > 0) {
                 html += `
                     <div class="sub-filter-group">
-                        <div class="sub-filter-group-label">📦 Линейки</div>
+                        <div class="sub-filter-group-label">Линейки</div>
                         <div class="sub-filters">
                             <button class="sub-filter-tab ${currentLine === 'all' ? 'active' : ''}" onclick="selectLine('all')">Все линейки</button>
                             ${values.map(v => `
@@ -421,22 +480,26 @@ function renderSubFilters() {
     
     // Атрибуты для снюса
     if (currentCategory === 'snus') {
-        const strengthGroup = attributeGroups.find(g => g.slug === 'snus_strength');
-        if (strengthGroup) {
-            const values = attributeValues.filter(v => v.attribute_group_slug === 'snus_strength');
-            html += `
-                <div class="sub-filter-group">
-                    <div class="sub-filter-group-label">💪 Крепость</div>
-                    <div class="sub-filters">
-                        <button class="sub-filter-tab ${currentStrength === 'all' ? 'active' : ''}" onclick="selectStrength('all')">Вся крепость</button>
-                        ${values.map(v => `
-                            <button class="sub-filter-tab ${currentStrength === v.value ? 'active' : ''}" onclick="selectStrength('${v.value}')">${v.value}</button>
-                        `).join('')}
-                    </div>
+        const strengthGroups = [
+            { label: '75 мг', min: 75, max: 75 },
+            { label: '150 мг', min: 150, max: 150 },
+            { label: '200 мг', min: 200, max: 200 }
+        ];
+        
+        html += `
+            <div class="sub-filter-group">
+                <div class="sub-filter-group-label">Крепость</div>
+                <div class="sub-filters">
+                    <button class="sub-filter-tab ${currentStrength === 'all' ? 'active' : ''}" onclick="selectStrength('all')">Вся крепость</button>
+                    ${strengthGroups.map(g => `
+                        <button class="sub-filter-tab ${currentStrength === g.label ? 'active' : ''}" onclick="selectStrength('${g.label}')">${g.label}</button>
+                    `).join('')}
                 </div>
-            `;
-        }
+            </div>
+        `;
     }
+    
+    // POD системы — фильтр по бренду уже есть выше
     
     container.innerHTML = html || '<div style="padding:8px 0;"></div>';
 }
@@ -464,6 +527,7 @@ function selectLine(value) {
 
 function renderCatalog() {
     const container = document.getElementById('catalog-products');
+    const counter = document.getElementById('catalog-counter');
     if (!container) return;
     
     let filtered = products.filter(p => p.inStock);
@@ -480,7 +544,18 @@ function renderCatalog() {
     
     // Фильтр по крепости (для жидкостей и снюса)
     if (currentStrength !== 'all') {
-        // TODO: Фильтр по атрибутам через product_attributes
+        // Парсим числовые значения из строки
+        let min = 0, max = 999;
+        if (currentStrength === '0 мг') { min = 0; max = 0; }
+        else if (currentStrength === '20-50 мг') { min = 20; max = 50; }
+        else if (currentStrength === '60-70 мг') { min = 60; max = 70; }
+        else if (currentStrength === '80+ мг') { min = 80; max = 999; }
+        else if (currentStrength === '75 мг') { min = 75; max = 75; }
+        else if (currentStrength === '150 мг') { min = 150; max = 150; }
+        else if (currentStrength === '200 мг') { min = 200; max = 200; }
+        
+        // Ищем товары с атрибутом крепости в нужном диапазоне
+        // TODO: Реализовать через product_attributes
         // Пока оставляем как заглушку
     }
     
@@ -495,6 +570,7 @@ function renderCatalog() {
         filtered = filtered.filter(p => {
             const brand = brands.find(b => b.slug === p.brand_slug);
             const model = models.find(m => m.slug === p.model_slug);
+            // Ищем по вкусу/характеристикам через атрибуты
             return (p.name || '').toLowerCase().includes(q) ||
                    (brand?.name || '').toLowerCase().includes(q) ||
                    (model?.name || '').toLowerCase().includes(q);
@@ -502,6 +578,11 @@ function renderCatalog() {
     }
     
     catalogTotal = filtered.length;
+    
+    // Обновляем счётчик
+    if (counter) {
+        counter.textContent = `${catalogTotal} поз.`;
+    }
     
     if (filtered.length === 0) {
         container.innerHTML = `
@@ -525,37 +606,63 @@ function renderCatalog() {
         const brand = brands.find(b => b.slug === p.brand_slug);
         const brandName = brand ? brand.name : '';
         
+        // Получаем дополнительные детали (вкус, характеристика)
+        const details = getProductDetails(p);
+        
         const discountPercent = p.discount_price ? Math.round((1 - p.discount_price / p.price) * 100) : 0;
         
         const priceDisplay = p.discount_price ? 
             `${p.discount_price} BYN <span class="catalog-old-price">${p.price} BYN</span>` :
             `${p.price} BYN`;
         
+        const imageHtml = getProductImageHtml(p);
+        
         html += `
             <div class="catalog-item" onclick="showProductDetail(${p.id})">
-                <span class="catalog-emoji">${p.emoji || '📦'}</span>
+                <div class="catalog-image">${imageHtml}</div>
                 <div class="catalog-info">
                     <div class="catalog-name">${p.name}</div>
-                    <div class="catalog-brand">${brandName}</div>
-                    <div class="catalog-price">${priceDisplay}</div>
+                    <div class="catalog-details">${brandName} · ${details}</div>
+                    <div class="catalog-price-row">
+                        <span class="catalog-price">${priceDisplay}</span>
+                    </div>
                 </div>
                 <button class="catalog-add-btn" onclick="event.stopPropagation(); addToCart(${p.id})">+</button>
             </div>
         `;
     });
     
-    // Кнопка "Загрузить ещё"
+    // Кнопка "Показать ещё"
     if (hasMore) {
         html += `
             <div style="text-align:center; padding:12px 0;">
                 <button class="welcome-btn primary" onclick="loadMoreCatalog()" style="width:auto; padding:10px 24px; font-size:14px;">
-                    📦 Показать ещё (${filtered.length - end} осталось)
+                    Показать ещё (${filtered.length - end} осталось)
                 </button>
             </div>
         `;
     }
     
     container.innerHTML = html;
+}
+
+function getProductDetails(product) {
+    // Получаем детали товара из атрибутов
+    // TODO: Реализовать через product_attributes
+    // Пока возвращаем заглушку
+    const brand = brands.find(b => b.slug === product.brand_slug);
+    const model = models.find(m => m.slug === product.model_slug);
+    
+    let details = '';
+    if (brand) details += brand.name;
+    if (model) details += (details ? ' · ' : '') + model.name;
+    
+    // Для жидкостей — ищем вкус
+    if (product.category_slug === 'liquid') {
+        // TODO: Найти атрибут "Вкус"
+    }
+    
+    return details || 'Подробнее';
 }
 
 function loadMoreCatalog() {
@@ -589,6 +696,9 @@ function setupSearch() {
 // ===== МОДАЛЬНОЕ ОКНО ТОВАРА =====
 // ========================================
 
+let modalQuantity = 1;
+let selectedColorId = null;
+
 async function showProductDetail(productId) {
     const product = products.find(p => p.id === productId);
     if (!product) return;
@@ -598,6 +708,12 @@ async function showProductDetail(productId) {
     
     // Получаем атрибуты товара
     const productAttrs = await fetchFromSupabase('product_attributes', { product_id: productId });
+    
+    // Получаем цвета для POD-систем
+    let colors = [];
+    if (product.category_slug === 'pod') {
+        colors = productColors.filter(c => c.product_id === productId && c.stock_quantity > 0);
+    }
     
     const brand = brands.find(b => b.slug === product.brand_slug);
     const brandName = brand ? brand.name : '';
@@ -613,12 +729,16 @@ async function showProductDetail(productId) {
     
     // Атрибуты
     let attrsHtml = '';
+    let flavorValue = '';
     if (productAttrs.length > 0) {
         attrsHtml = '<div class="modal-attributes">';
         for (const attr of productAttrs) {
             const group = attributeGroups.find(g => g.slug === attr.attribute_group_slug);
             const value = attributeValues.find(v => v.id === attr.attribute_value_id);
             if (group && value) {
+                if (group.slug === 'liquid_flavor' || group.slug === 'snus_flavor') {
+                    flavorValue = value.value;
+                }
                 attrsHtml += `
                     <div class="modal-attr-item">
                         <span class="attr-label">${group.name}</span>
@@ -630,24 +750,115 @@ async function showProductDetail(productId) {
         attrsHtml += '</div>';
     }
     
+    // Цвета для POD
+    let colorHtml = '';
+    if (colors.length > 0) {
+        colorHtml = `
+            <div class="modal-color-select">
+                <label>🎨 Выберите цвет</label>
+                <select id="modal-color-select" onchange="selectColor(this.value)">
+                    <option value="">-- Выберите цвет --</option>
+                    ${colors.map(c => `
+                        <option value="${c.id}" data-stock="${c.stock_quantity}">
+                            ${c.color_name} (${c.stock_quantity} шт.)
+                        </option>
+                    `).join('')}
+                </select>
+            </div>
+        `;
+        // Устанавливаем первый цвет по умолчанию
+        if (colors.length > 0) {
+            selectedColorId = colors[0].id;
+        }
+    }
+    
+    const imageHtml = getProductImageHtml(product, 'large');
+    
+    // Сброс количества
+    modalQuantity = 1;
+    
     content.innerHTML = `
         <div class="modal-close" onclick="closeModal('product-modal')">✕</div>
-        <span class="modal-emoji">${product.emoji || '📦'}</span>
+        <div class="modal-image">${imageHtml}</div>
         <h2 class="modal-title">${product.name}</h2>
-        <div class="modal-brand">${brandName} ${modelName ? '· ' + modelName : ''}</div>
+        <div class="modal-subtitle">${brandName} ${modelName ? '· ' + modelName : ''}</div>
         <div class="modal-price">${priceDisplay}</div>
         <div class="modal-stock ${product.inStock ? 'in-stock' : 'out-of-stock'}">
             ${product.inStock ? `✅ В наличии (${product.stock_quantity || 0} шт.)` : '❌ Нет в наличии'}
         </div>
+        ${colorHtml}
         ${attrsHtml}
-        <div class="modal-description">${product.short_description || product.description || 'Описание отсутствует'}</div>
-        <button class="modal-add-btn" onclick="addToCart(${product.id})" ${!product.inStock ? 'disabled' : ''}>
-            🛒 Добавить в корзину
+        <div class="modal-quantity">
+            <span class="qty-label">Количество</span>
+            <button class="modal-qty-btn" onclick="changeModalQuantity(-1)">−</button>
+            <span class="modal-qty-value" id="modal-qty-value">1</span>
+            <button class="modal-qty-btn" onclick="changeModalQuantity(1)">+</button>
+        </div>
+        <button class="modal-add-btn" onclick="addToCartFromModal(${product.id})" ${!product.inStock ? 'disabled' : ''}>
+            🛒 В корзину · ${product.discount_price || product.price} BYN
         </button>
+        <div style="text-align:center;font-size:12px;color:#71717a;margin-top:8px;">
+            Оплата наличными или картой · быстрое оформление
+        </div>
     `;
     
     modal.style.display = 'flex';
     document.body.style.overflow = 'hidden';
+}
+
+function selectColor(colorId) {
+    selectedColorId = colorId;
+}
+
+function changeModalQuantity(delta) {
+    const newQty = modalQuantity + delta;
+    if (newQty < 1) return;
+    modalQuantity = newQty;
+    document.getElementById('modal-qty-value').textContent = newQty;
+}
+
+function addToCartFromModal(productId) {
+    // Проверяем цвет для POD
+    if (selectedColorId) {
+        const color = productColors.find(c => c.id == selectedColorId);
+        if (color && color.stock_quantity < modalQuantity) {
+            showMessage('⚠️ Лимит', `Доступно только ${color.stock_quantity} шт. этого цвета`);
+            return;
+        }
+    }
+    
+    const product = products.find(p => p.id === productId);
+    if (!product) {
+        showMessage('❌ Ошибка', 'Товар не найден');
+        return;
+    }
+    
+    if (!product.inStock) {
+        showMessage('❌ Нет в наличии', 'Товар закончился');
+        return;
+    }
+    
+    const existing = cart.find(item => item.id === productId);
+    if (existing) {
+        const newQty = (existing.quantity || 1) + modalQuantity;
+        if (newQty > product.stock_quantity) {
+            showMessage('⚠️ Лимит', `Доступно только ${product.stock_quantity} шт.`);
+            return;
+        }
+        existing.quantity = newQty;
+    } else {
+        cart.push({ 
+            ...product, 
+            quantity: modalQuantity,
+            color_id: selectedColorId || null
+        });
+    }
+    
+    saveCart();
+    updateCartBadge();
+    renderCart();
+    closeModal('product-modal');
+    showMessage('✅ Добавлено!', `${product.emoji || '📦'} ${product.name} в корзину`);
 }
 
 // ========================================
@@ -776,7 +987,7 @@ function renderCart() {
                 <span class="empty-emoji">🛒</span>
                 <h3>Корзина пуста</h3>
                 <p>Добавьте товары из каталога</p>
-                <button class="cart-empty-btn" onclick="navigateTo('page-catalog')">📋 В каталог</button>
+                <button class="cart-empty-btn" onclick="navigateTo('page-catalog')">В каталог</button>
             </div>
         `;
         return;
@@ -793,11 +1004,14 @@ function renderCart() {
         const brand = brands.find(b => b.slug === item.brand_slug);
         const brandName = brand ? brand.name : '';
         
+        const color = item.color_id ? productColors.find(c => c.id == item.color_id) : null;
+        const colorName = color ? ` (${color.color_name})` : '';
+        
         itemsHtml += `
             <div class="cart-item">
                 <span class="cart-item-emoji">${item.emoji || '📦'}</span>
                 <div class="cart-item-info">
-                    <div class="cart-item-name">${item.name}</div>
+                    <div class="cart-item-name">${item.name}${colorName}</div>
                     <div class="cart-item-brand">${brandName}</div>
                     <div class="cart-item-price">${(price * qty).toFixed(2)} BYN</div>
                 </div>
@@ -838,7 +1052,7 @@ function renderCart() {
         
         <div class="cart-checkout">
             <div class="checkout-group">
-                <label>📦 Способ получения</label>
+                <label>Способ получения</label>
                 <select class="checkout-select" id="delivery-type" onchange="renderCart()">
                     <option value="pickup">🏪 Самовывоз — БЕСПЛАТНО</option>
                     <option value="delivery">🚚 Доставка — ${deliveryPrice} BYN</option>
@@ -847,7 +1061,7 @@ function renderCart() {
             
             <div id="pickup-points-group">
                 <div class="checkout-group">
-                    <label>📍 Выберите точку самовывоза *</label>
+                    <label>📍 Выберите точку самовывоза</label>
                     <select class="checkout-select" id="pickup-point">
                         <option value="">-- Выберите точку --</option>
                         ${pickupPoints.map(p => `
@@ -859,7 +1073,7 @@ function renderCart() {
             
             <div id="delivery-address-group" style="display:none;">
                 <div class="checkout-group">
-                    <label>📍 Адрес доставки *</label>
+                    <label>📍 Адрес доставки</label>
                     <input class="checkout-input" id="delivery-address" placeholder="Город, улица, дом, квартира" />
                 </div>
             </div>
@@ -902,7 +1116,7 @@ function renderCart() {
                     ''}
             </div>
             
-            <button class="checkout-btn" onclick="checkout()">📦 Оформить заказ</button>
+            <button class="checkout-btn" onclick="checkout()">Оформить заказ</button>
         </div>
     `;
     
@@ -1052,7 +1266,8 @@ async function checkout() {
             name: item.name,
             price: item.discount_price || item.price || 0,
             quantity: item.quantity || 1,
-            emoji: item.emoji || '📦'
+            emoji: item.emoji || '📦',
+            color_id: item.color_id || null
         }))
     };
     
@@ -1169,7 +1384,7 @@ function showOrderSuccess(orderId, total, deliveryType) {
     const modal = document.getElementById('order-success-modal');
     const content = document.getElementById('order-success-content');
     
-    const paymentMethod = deliveryType === 'pickup' ? '💵 Наличные' : '💳 Карта при получении';
+    const paymentMethod = deliveryType === 'pickup' ? 'Наличные' : 'Карта при получении';
     
     content.innerHTML = `
         <div class="modal-close" onclick="closeModal('order-success-modal')">✕</div>
@@ -1177,7 +1392,7 @@ function showOrderSuccess(orderId, total, deliveryType) {
         <h2 class="modal-title">Готово!</h2>
         <div style="text-align:center;color:#a1a1aa;margin:8px 0 16px;">
             Заказ #${orderId} на ${total.toFixed(2)} BYN.<br />
-            Оплата: ${paymentMethod}
+            Оплата: 💵 ${paymentMethod}
         </div>
         <div style="text-align:center;color:#ffffff;font-size:15px;font-weight:500;margin-bottom:16px;">
             Заказ принят. Менеджер напишет вам в Telegram.
@@ -1223,7 +1438,7 @@ async function renderOrders() {
                 <span class="empty-emoji">📦</span>
                 <h3>У вас пока нет заказов</h3>
                 <p>Перейдите в каталог и сделайте первый заказ!</p>
-                <button class="cart-empty-btn" onclick="navigateTo('page-catalog')">📋 В каталог</button>
+                <button class="cart-empty-btn" onclick="navigateTo('page-catalog')">В каталог</button>
             </div>
         `;
         return;
@@ -1262,7 +1477,7 @@ async function renderOrders() {
                     ${order.comment ? `<div style="margin-top:4px;color:#71717a;">💬 ${order.comment}</div>` : ''}
                 </div>
                 <div class="order-card-actions">
-                    <button class="order-btn contact" onclick="openManagerChat()">📩 Написать менеджеру</button>
+                    <button class="order-btn contact" onclick="openManagerChat()">Написать менеджеру</button>
                     ${canCancel ? `<button class="order-btn cancel" onclick="cancelOrder(${order.id})">❌ Отменить заказ</button>` : ''}
                 </div>
             </div>
@@ -1342,7 +1557,8 @@ function renderAdminMenu() {
         { icon: '🎉', label: 'Акции', page: 'page-admin-promotions' },
         { icon: '🎫', label: 'Промокоды', page: 'page-admin-promocodes' },
         { icon: '📍', label: 'Точки вывоза', page: 'page-admin-pickup' },
-        { icon: '👥', label: 'Модераторы', page: 'page-admin-moderators' }
+        { icon: '👥', label: 'Модераторы', page: 'page-admin-moderators' },
+        { icon: '📥', label: 'Импорт', page: 'page-admin-import' }
     ];
     
     container.innerHTML = menuItems.map(item => `
@@ -1359,7 +1575,7 @@ async function renderAdminStats() {
     const container = document.getElementById('admin-stats-content');
     if (!container) return;
     
-    container.innerHTML = '<div class="loading">⏳ Загрузка статистики...</div>';
+    container.innerHTML = '<div class="loading">Загрузка статистики...</div>';
     
     try {
         const ordersData = await fetchFromSupabase('orders', { status: 'completed' });
@@ -1496,7 +1712,7 @@ async function renderAdminStats() {
         `;
         
         // Продажи по категориям
-        html += `<div style="margin-top:16px;"><h3 style="color:#ffffff;margin-bottom:8px;">📂 Продажи по категориям</h3>`;
+        html += `<div style="margin-top:16px;"><h3 style="color:#ffffff;margin-bottom:8px;">Продажи по категориям</h3>`;
         categories.forEach(c => {
             const data = categorySales[c.slug] || { revenue: 0, orders: 0 };
             html += `
@@ -1509,7 +1725,7 @@ async function renderAdminStats() {
         html += `</div>`;
         
         // Топ товаров
-        html += `<div style="margin-top:16px;"><h3 style="color:#ffffff;margin-bottom:8px;">🏆 Топ товаров</h3>`;
+        html += `<div style="margin-top:16px;"><h3 style="color:#ffffff;margin-bottom:8px;">Топ товаров</h3>`;
         if (topProducts.length === 0) {
             html += `<div style="color:#71717a;">Нет данных о продажах</div>`;
         } else {
@@ -1528,7 +1744,7 @@ async function renderAdminStats() {
         
     } catch (error) {
         console.error('❌ Ошибка загрузки статистики:', error);
-        container.innerHTML = '<div class="empty-state"><span class="empty-emoji">⚠️</span><h3>Ошибка загрузки</h3><p>Не удалось загрузить статистику</p></div>';
+        container.innerHTML = '<div class="empty-state"><span class="empty-emoji">⚠️</span><h3>Ошибка загрузки</h3></div>';
     }
 }
 
@@ -1538,7 +1754,7 @@ async function renderAdminOrders() {
     const container = document.getElementById('admin-orders-content');
     if (!container) return;
     
-    container.innerHTML = '<div class="loading">⏳ Загрузка заказов...</div>';
+    container.innerHTML = '<div class="loading">Загрузка заказов...</div>';
     
     try {
         const data = await fetchFromSupabase('orders', {}, { by: 'created_at', direction: 'desc' });
@@ -1554,7 +1770,6 @@ async function renderAdminOrders() {
             return;
         }
         
-        // Фильтры
         let html = `
             <div class="admin-filters">
                 <select id="admin-order-status-filter">
@@ -1570,8 +1785,8 @@ async function renderAdminOrders() {
                     <option value="pickup">Самовывоз</option>
                     <option value="delivery">Доставка</option>
                 </select>
-                <button class="filter-btn" onclick="applyAdminOrderFilters()">🔍 Применить</button>
-                <button class="filter-btn" onclick="resetAdminOrderFilters()">↺ Сбросить</button>
+                <button class="filter-btn" onclick="applyAdminOrderFilters()">Применить</button>
+                <button class="filter-btn" onclick="resetAdminOrderFilters()">Сбросить</button>
             </div>
             <button class="admin-add-btn" onclick="exportOrdersCSV()">📥 Экспорт в CSV</button>
         `;
@@ -1601,17 +1816,17 @@ async function renderAdminOrders() {
             let actionButtons = '';
             if (order.status === 'pending') {
                 actionButtons = `
-                    <button class="admin-btn confirm" onclick="updateOrderStatus(${order.id}, 'confirmed', ${order.user_id})">✅ Подтвердить</button>
-                    <button class="admin-btn delete" onclick="updateOrderStatus(${order.id}, 'cancelled', ${order.user_id})">❌ Отклонить</button>
+                    <button class="admin-btn confirm" onclick="updateOrderStatus(${order.id}, 'confirmed', ${order.user_id})">Подтвердить</button>
+                    <button class="admin-btn delete" onclick="updateOrderStatus(${order.id}, 'cancelled', ${order.user_id})">Отклонить</button>
                 `;
             } else if (order.status === 'confirmed') {
                 actionButtons = `
-                    <button class="admin-btn ship" onclick="updateOrderStatus(${order.id}, 'shipped', ${order.user_id})">📦 Отправлен</button>
-                    <button class="admin-btn complete" onclick="updateOrderStatus(${order.id}, 'completed', ${order.user_id})">✅ Выполнен</button>
+                    <button class="admin-btn ship" onclick="updateOrderStatus(${order.id}, 'shipped', ${order.user_id})">Отправлен</button>
+                    <button class="admin-btn complete" onclick="updateOrderStatus(${order.id}, 'completed', ${order.user_id})">Выполнен</button>
                 `;
             } else if (order.status === 'shipped') {
                 actionButtons = `
-                    <button class="admin-btn complete" onclick="updateOrderStatus(${order.id}, 'completed', ${order.user_id})">✅ Выполнен</button>
+                    <button class="admin-btn complete" onclick="updateOrderStatus(${order.id}, 'completed', ${order.user_id})">Выполнен</button>
                 `;
             }
             
@@ -1632,7 +1847,7 @@ async function renderAdminOrders() {
                     </div>
                     <div class="order-card-actions">
                         ${actionButtons}
-                        <button class="order-btn contact" onclick="openManagerChat()">💬 Написать</button>
+                        <button class="order-btn contact" onclick="openManagerChat()">Написать</button>
                     </div>
                 </div>
             `;
@@ -1659,7 +1874,6 @@ async function updateOrderStatus(orderId, status, userId) {
         });
         
         if (response.ok) {
-            // Отправляем уведомление пользователю
             if (userId) {
                 const messages = {
                     'confirmed': `✅ Ваш заказ #${orderId} ПОДТВЕРЖДЕН!\n\nСпасибо за заказ! Мы приступили к его обработке.\n\n📩 По вопросам заказа: @${managerUsername}`,
@@ -1695,8 +1909,17 @@ async function updateOrderStatus(orderId, status, userId) {
     }
 }
 
+function applyAdminOrderFilters() {
+    renderAdminOrders();
+}
+
+function resetAdminOrderFilters() {
+    document.getElementById('admin-order-status-filter').value = 'all';
+    document.getElementById('admin-order-delivery-filter').value = 'all';
+    renderAdminOrders();
+}
+
 function exportOrdersCSV() {
-    // Реализация экспорта
     showMessage('📥 Экспорт', 'Функция экспорта в разработке');
 }
 
@@ -1706,7 +1929,7 @@ async function renderAdminProducts() {
     const container = document.getElementById('admin-products-content');
     if (!container) return;
     
-    container.innerHTML = '<div class="loading">⏳ Загрузка товаров...</div>';
+    container.innerHTML = '<div class="loading">Загрузка товаров...</div>';
     
     try {
         const productsList = products;
@@ -1731,7 +1954,7 @@ async function renderAdminProducts() {
                     <option value="in-stock">В наличии</option>
                     <option value="out-of-stock">Нет в наличии</option>
                 </select>
-                <button class="filter-btn" onclick="applyAdminProductFilters()">🔍 Применить</button>
+                <button class="filter-btn" onclick="applyAdminProductFilters()">Применить</button>
             </div>
         `;
         
@@ -1765,7 +1988,6 @@ async function renderAdminProducts() {
 }
 
 function showAddProductForm() {
-    // Простая форма через prompt
     const name = prompt('📝 Название товара:');
     if (!name) return;
     const price = prompt('💰 Цена (BYN):');
@@ -1901,6 +2123,241 @@ async function deleteProduct(productId) {
     }
 }
 
+// ===== АДМИН: ИМПОРТ =====
+
+async function renderAdminImport() {
+    const container = document.getElementById('admin-import-content');
+    if (!container) return;
+    
+    container.innerHTML = `
+        <div style="margin-bottom:12px;">
+            <p style="color:#a1a1aa;font-size:14px;margin-bottom:8px;">
+                Вставьте данные для импорта товаров. Поддерживается формат:
+            </p>
+            <div style="background:rgba(255,255,255,0.04);padding:12px;border-radius:8px;font-size:12px;color:#71717a;font-family:monospace;margin-bottom:12px;">
+                Название | Цена | Категория | Бренд | Модель | Вкус | Крепость | Количество
+            </div>
+            <textarea id="import-textarea" class="import-textarea" placeholder="Вставьте данные для импорта..." rows="8"></textarea>
+            <button class="admin-add-btn" onclick="processImport()" style="margin-top:8px;">📥 Обработать импорт</button>
+            <div id="import-status" class="import-status"></div>
+            <div id="import-preview" class="import-preview"></div>
+        </div>
+    `;
+}
+
+async function processImport() {
+    const textarea = document.getElementById('import-textarea');
+    const status = document.getElementById('import-status');
+    const preview = document.getElementById('import-preview');
+    
+    if (!textarea || !status || !preview) return;
+    
+    const data = textarea.value.trim();
+    if (!data) {
+        status.textContent = '⚠️ Вставьте данные для импорта';
+        status.style.color = '#f59e0b';
+        return;
+    }
+    
+    // Парсим строки
+    const lines = data.split('\n').filter(line => line.trim());
+    const parsed = [];
+    let errors = [];
+    
+    for (const line of lines) {
+        // Пробуем разные разделители
+        let parts = line.split('|').map(s => s.trim());
+        if (parts.length < 2) {
+            parts = line.split(';').map(s => s.trim());
+        }
+        if (parts.length < 2) {
+            parts = line.split('\t').map(s => s.trim());
+        }
+        
+        if (parts.length < 2) {
+            errors.push(`❌ Не удалось распарсить: ${line}`);
+            continue;
+        }
+        
+        const item = {
+            name: parts[0] || '',
+            price: parseFloat(parts[1]) || 0,
+            category: parts[2] || 'liquid',
+            brand: parts[3] || '',
+            model: parts[4] || '',
+            flavor: parts[5] || '',
+            strength: parts[6] || '',
+            stock: parseInt(parts[7]) || 0,
+            emoji: '📦'
+        };
+        
+        // Определяем эмодзи по категории
+        const catMap = {
+            'liquid': '🧪',
+            'pod': '💨',
+            'disposable': '⚡',
+            'snus': '🫧',
+            'accessories': '🔧'
+        };
+        item.emoji = catMap[item.category] || '📦';
+        
+        parsed.push(item);
+    }
+    
+    if (parsed.length === 0) {
+        status.textContent = '❌ Не найдено товаров для импорта';
+        status.style.color = '#ef4444';
+        return;
+    }
+    
+    // Показываем предпросмотр
+    let previewHtml = `
+        <div style="margin-top:12px;">
+            <h4 style="color:#ffffff;margin-bottom:8px;">📋 Предпросмотр (${parsed.length} товаров)</h4>
+            <div style="max-height:300px;overflow-y:auto;">
+    `;
+    
+    parsed.forEach((item, i) => {
+        previewHtml += `
+            <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:13px;color:#a1a1aa;">
+                <span>${i+1}. ${item.emoji} ${item.name}</span>
+                <span style="color:#a855f7;">${item.price} BYN</span>
+                <span style="color:#71717a;">${item.category} · ${item.stock} шт.</span>
+            </div>
+        `;
+    });
+    
+    previewHtml += `
+            </div>
+            <div style="display:flex;gap:10px;margin-top:12px;">
+                <button class="admin-btn confirm" onclick="confirmImport(${JSON.stringify(parsed).replace(/"/g, '&quot;')})">✅ Подтвердить импорт</button>
+                <button class="admin-btn delete" onclick="cancelImport()">❌ Отменить</button>
+            </div>
+        </div>
+    `;
+    
+    preview.innerHTML = previewHtml;
+    status.textContent = `✅ Найдено ${parsed.length} товаров. Проверьте данные и подтвердите импорт.`;
+    status.style.color = '#22c55e';
+}
+
+async function confirmImport(items) {
+    const status = document.getElementById('import-status');
+    const preview = document.getElementById('import-preview');
+    
+    let success = 0;
+    let errors = [];
+    
+    for (const item of items) {
+        try {
+            // Находим или создаём категорию
+            let category = categories.find(c => c.slug === item.category);
+            if (!category) {
+                // Создаём категорию
+                const catData = {
+                    slug: item.category,
+                    name: item.category.charAt(0).toUpperCase() + item.category.slice(1),
+                    icon: '📂',
+                    is_active: true
+                };
+                const catResp = await fetch(`${SUPABASE_URL}/rest/v1/categories`, {
+                    method: 'POST',
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(catData)
+                });
+                if (catResp.ok) {
+                    const catResult = await catResp.json();
+                    category = catResult[0];
+                    categories.push(category);
+                }
+            }
+            
+            // Находим или создаём бренд
+            let brand = null;
+            if (item.brand) {
+                brand = brands.find(b => b.slug === item.brand.toLowerCase().replace(/\s+/g, '-'));
+                if (!brand && category) {
+                    const brandData = {
+                        slug: item.brand.toLowerCase().replace(/\s+/g, '-'),
+                        name: item.brand,
+                        category_slug: category.slug,
+                        is_active: true
+                    };
+                    const brandResp = await fetch(`${SUPABASE_URL}/rest/v1/brands`, {
+                        method: 'POST',
+                        headers: {
+                            'apikey': SUPABASE_KEY,
+                            'Authorization': `Bearer ${SUPABASE_KEY}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(brandData)
+                    });
+                    if (brandResp.ok) {
+                        const brandResult = await brandResp.json();
+                        brand = brandResult[0];
+                        brands.push(brand);
+                    }
+                }
+            }
+            
+            // Создаём товар
+            const productData = {
+                name: item.name,
+                price: item.price,
+                emoji: item.emoji || '📦',
+                category_slug: category?.slug || 'liquid',
+                brand_slug: brand?.slug || null,
+                stock_quantity: item.stock || 0,
+                in_stock: (item.stock || 0) > 0,
+                description: `Вкус: ${item.flavor || 'Не указан'}, Крепость: ${item.strength || 'Не указана'}`
+            };
+            
+            const productResp = await fetch(`${SUPABASE_URL}/rest/v1/products`, {
+                method: 'POST',
+                headers: {
+                    'apikey': SUPABASE_KEY,
+                    'Authorization': `Bearer ${SUPABASE_KEY}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(productData)
+            });
+            
+            if (productResp.ok) {
+                success++;
+            } else {
+                errors.push(`❌ Ошибка импорта: ${item.name}`);
+            }
+        } catch (error) {
+            errors.push(`❌ Ошибка импорта: ${item.name} - ${error.message}`);
+        }
+    }
+    
+    // Обновляем данные
+    await loadAllData();
+    renderAdminProducts();
+    renderDiscounts();
+    renderPopular();
+    
+    if (errors.length === 0) {
+        status.textContent = `✅ Импорт завершён! Добавлено ${success} товаров.`;
+        status.style.color = '#22c55e';
+    } else {
+        status.textContent = `⚠️ Импорт завершён с ошибками: ${errors.join(', ')}`;
+        status.style.color = '#f59e0b';
+    }
+    preview.innerHTML = '';
+}
+
+function cancelImport() {
+    document.getElementById('import-preview').innerHTML = '';
+    document.getElementById('import-status').textContent = '❌ Импорт отменён';
+    document.getElementById('import-status').style.color = '#ef4444';
+}
+
 // ========================================
 // ===== НАВИГАЦИЯ =====
 // ========================================
@@ -1908,20 +2365,17 @@ async function deleteProduct(productId) {
 function navigateTo(pageId) {
     console.log('🔄 Переход на:', pageId);
     
-    // Скрываем все страницы
     document.querySelectorAll('.page').forEach(p => {
         p.classList.remove('active');
         p.style.display = 'none';
     });
     
-    // Показываем нужную
     const target = document.getElementById(pageId);
     if (target) {
         target.classList.add('active');
         target.style.display = 'block';
     }
     
-    // Обновляем навигацию
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.page === pageId);
     });
@@ -1975,6 +2429,9 @@ function navigateTo(pageId) {
         case 'page-admin-moderators':
             renderAdminModerators();
             break;
+        case 'page-admin-import':
+            renderAdminImport();
+            break;
     }
 }
 
@@ -1990,7 +2447,6 @@ async function checkAdmin() {
     try {
         const user = tg.initDataUnsafe?.user;
         if (!user) {
-            // Режим разработки
             if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
                 console.log('⚠️ Режим разработки: админка доступна');
                 return true;
@@ -1998,6 +2454,13 @@ async function checkAdmin() {
             return false;
         }
         
+        // Проверяем хардкод админов
+        if (HARDCODED_ADMINS.includes(user.id)) {
+            console.log('👑 Хардкод админ найден:', user.id);
+            return true;
+        }
+        
+        // Проверяем в БД
         const data = await fetchFromSupabase('admins', { user_id: user.id, is_active: true });
         return data && data.length > 0;
     } catch (error) {
@@ -2032,34 +2495,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     getUser();
     loadCart();
     
-    // Загружаем все данные
     await loadAllData();
-    
-    // Обновляем приветственную карточку
     updateWelcomeCard();
     
-    // Рендерим главную
     renderPromotions();
     renderCategories();
     renderDiscounts();
     renderPopular();
     
-    // Рендерим каталог
     renderCategoryFilters();
     renderSubFilters();
     renderCatalog();
     
-    // Проверяем админа
     isAdmin = await checkAdmin();
     if (isAdmin) {
         document.getElementById('nav-admin').style.display = 'flex';
         console.log('👑 Админ-режим активирован');
     }
     
-    // Настройка поиска
     setupSearch();
     
-    // Навигация
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const page = btn.dataset.page;
@@ -2067,7 +2522,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
     
-    // Закрытие модалок по клику на фон
     document.querySelectorAll('.modal-overlay').forEach(el => {
         el.addEventListener('click', () => {
             const modal = el.closest('.modal');

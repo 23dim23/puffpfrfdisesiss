@@ -35,7 +35,7 @@
             <div id="page-home" class="page active">
                 <div class="app-header">
                     <div class="logo-row">
-                        <span class="logo-icon">💨</span>
+                        <img id="logo-image" src="" alt="Puff Paradise" class="logo-img" />
                         <h1>Puff Paradise Shop</h1>
                     </div>
                     <p class="greeting">👋 Привет, <span id="user-name">Гость</span>!</p>
@@ -49,36 +49,36 @@
                         Каталог по линейкам, быстрый заказ и доставка.<br />
                         Множество акций и промокодов. Удобные способы оплаты.
                     </p>
-                    <div class="welcome-buttons">
-                        <button class="welcome-btn primary" onclick="navigateTo('page-catalog')">📋 Каталог</button>
-                        <button class="welcome-btn secondary" onclick="navigateTo('page-prizes')">🎯 Скидки</button>
-                        <button class="welcome-btn tertiary" onclick="openManagerChat()">📩 Связь с менеджером</button>
+                    <div class="welcome-buttons vertical">
+                        <button class="welcome-btn primary" onclick="navigateTo('page-catalog')">Каталог</button>
+                        <button class="welcome-btn secondary" onclick="navigateTo('page-prizes')">Скидки</button>
+                        <button class="welcome-btn tertiary" onclick="openManagerChat()">Связь с менеджером</button>
                     </div>
                 </div>
 
                 <!-- Акции -->
                 <div class="section-header">
-                    <h2>🎉 Акции</h2>
+                    <h2>Акции</h2>
                     <a href="#" onclick="navigateTo('page-prizes')">Все акции →</a>
                 </div>
                 <div class="horizontal-scroll" id="promotions-scroll"></div>
 
                 <!-- Категории -->
                 <div class="section-header">
-                    <h2>📂 Категории</h2>
+                    <h2>Категории</h2>
                 </div>
                 <div class="horizontal-scroll" id="categories-scroll"></div>
 
                 <!-- Скидки -->
                 <div class="section-header">
-                    <h2>🔥 Сейчас со скидкой</h2>
+                    <h2>Сейчас со скидкой</h2>
                     <a href="#" onclick="navigateTo('page-catalog')">Все товары →</a>
                 </div>
                 <div class="horizontal-scroll" id="discounts-scroll"></div>
 
                 <!-- Популярное -->
                 <div class="section-header">
-                    <h2>⭐ Популярное</h2>
+                    <h2>Популярное</h2>
                     <a href="#" onclick="navigateTo('page-catalog')">Все товары →</a>
                 </div>
                 <div class="horizontal-scroll" id="popular-scroll"></div>
@@ -90,25 +90,28 @@
             <div id="page-catalog" class="page">
                 <div class="app-header">
                     <div class="logo-row">
-                        <span class="logo-icon">💨</span>
+                        <img id="logo-image-catalog" src="" alt="Puff Paradise" class="logo-img" />
                         <h1>Puff Paradise Shop</h1>
                     </div>
-                    <p class="greeting">📋 Каталог</p>
+                    <p class="greeting page-title">Каталог</p>
                 </div>
 
                 <div class="search-container">
-                    <input type="text" id="search-input" class="search-input" placeholder="🔍 Поиск товаров..." />
+                    <input type="text" id="search-input" class="search-input" placeholder="Поиск вкуса, бренда..." />
                 </div>
 
                 <!-- Фильтры категорий -->
                 <div class="filter-tabs" id="category-filters"></div>
+
+                <!-- Счётчик товаров -->
+                <div class="catalog-counter" id="catalog-counter">0 поз.</div>
 
                 <!-- Дополнительные фильтры -->
                 <div id="sub-filters-container"></div>
 
                 <!-- Список товаров -->
                 <div class="product-list" id="catalog-products">
-                    <div class="loading">⏳ Загрузка товаров...</div>
+                    <div class="loading">Загрузка товаров...</div>
                 </div>
             </div>
 
@@ -118,10 +121,10 @@
             <div id="page-cart" class="page">
                 <div class="app-header">
                     <div class="logo-row">
-                        <span class="logo-icon">💨</span>
+                        <img id="logo-image-cart" src="" alt="Puff Paradise" class="logo-img" />
                         <h1>Puff Paradise Shop</h1>
                     </div>
-                    <p class="greeting">🛒 Корзина</p>
+                    <p class="greeting page-title">Корзина</p>
                 </div>
                 <div id="cart-content"></div>
             </div>
@@ -132,12 +135,12 @@
             <div id="page-prizes" class="page">
                 <div class="app-header">
                     <div class="logo-row">
-                        <span class="logo-icon">💨</span>
+                        <img id="logo-image-prizes" src="" alt="Puff Paradise" class="logo-img" />
                         <h1>Puff Paradise Shop</h1>
                     </div>
-                    <p class="greeting">🎁 Акции и призы</p>
+                    <p class="greeting page-title">Акции</p>
                 </div>
-                <div id="prizes-list"><div class="loading">⏳ Загрузка акций...</div></div>
+                <div id="prizes-list"><div class="loading">Загрузка акций...</div></div>
             </div>
 
             <!-- ========================================= -->
@@ -146,12 +149,12 @@
             <div id="page-orders" class="page">
                 <div class="app-header">
                     <div class="logo-row">
-                        <span class="logo-icon">💨</span>
+                        <img id="logo-image-orders" src="" alt="Puff Paradise" class="logo-img" />
                         <h1>Puff Paradise Shop</h1>
                     </div>
-                    <p class="greeting">📦 Мои заказы</p>
+                    <p class="greeting page-title">Заказы</p>
                 </div>
-                <div id="orders-list"><div class="loading">⏳ Загрузка заказов...</div></div>
+                <div id="orders-list"><div class="loading">Загрузка заказов...</div></div>
             </div>
 
             <!-- ========================================= -->
@@ -163,7 +166,7 @@
                         <span class="logo-icon">⚙️</span>
                         <h1>Админ-панель</h1>
                     </div>
-                    <p class="greeting">Управление магазином</p>
+                    <p class="greeting page-title">Управление магазином</p>
                 </div>
                 <div class="admin-menu" id="admin-menu"></div>
             </div>
@@ -172,99 +175,108 @@
             <div id="page-admin-stats" class="page admin-subpage">
                 <div class="admin-header">
                     <button class="admin-back-btn" onclick="navigateTo('page-admin')">← Назад</button>
-                    <h2>📊 Статистика</h2>
+                    <h2>Статистика</h2>
                 </div>
-                <div id="admin-stats-content"><div class="loading">⏳ Загрузка...</div></div>
+                <div id="admin-stats-content"><div class="loading">Загрузка...</div></div>
             </div>
 
             <!-- ===== АДМИН: ЗАКАЗЫ ===== -->
             <div id="page-admin-orders" class="page admin-subpage">
                 <div class="admin-header">
                     <button class="admin-back-btn" onclick="navigateTo('page-admin')">← Назад</button>
-                    <h2>📦 Заказы</h2>
+                    <h2>Заказы</h2>
                 </div>
-                <div id="admin-orders-content"><div class="loading">⏳ Загрузка...</div></div>
+                <div id="admin-orders-content"><div class="loading">Загрузка...</div></div>
             </div>
 
             <!-- ===== АДМИН: ТОВАРЫ ===== -->
             <div id="page-admin-products" class="page admin-subpage">
                 <div class="admin-header">
                     <button class="admin-back-btn" onclick="navigateTo('page-admin')">← Назад</button>
-                    <h2>🛍️ Товары</h2>
+                    <h2>Товары</h2>
                 </div>
-                <div id="admin-products-content"><div class="loading">⏳ Загрузка...</div></div>
+                <div id="admin-products-content"><div class="loading">Загрузка...</div></div>
             </div>
 
             <!-- ===== АДМИН: КАТЕГОРИИ ===== -->
             <div id="page-admin-categories" class="page admin-subpage">
                 <div class="admin-header">
                     <button class="admin-back-btn" onclick="navigateTo('page-admin')">← Назад</button>
-                    <h2>📂 Категории</h2>
+                    <h2>Категории</h2>
                 </div>
-                <div id="admin-categories-content"><div class="loading">⏳ Загрузка...</div></div>
+                <div id="admin-categories-content"><div class="loading">Загрузка...</div></div>
             </div>
 
             <!-- ===== АДМИН: БРЕНДЫ ===== -->
             <div id="page-admin-brands" class="page admin-subpage">
                 <div class="admin-header">
                     <button class="admin-back-btn" onclick="navigateTo('page-admin')">← Назад</button>
-                    <h2>🏷️ Бренды</h2>
+                    <h2>Бренды</h2>
                 </div>
-                <div id="admin-brands-content"><div class="loading">⏳ Загрузка...</div></div>
+                <div id="admin-brands-content"><div class="loading">Загрузка...</div></div>
             </div>
 
             <!-- ===== АДМИН: МОДЕЛИ ===== -->
             <div id="page-admin-models" class="page admin-subpage">
                 <div class="admin-header">
                     <button class="admin-back-btn" onclick="navigateTo('page-admin')">← Назад</button>
-                    <h2>📦 Модели</h2>
+                    <h2>Модели</h2>
                 </div>
-                <div id="admin-models-content"><div class="loading">⏳ Загрузка...</div></div>
+                <div id="admin-models-content"><div class="loading">Загрузка...</div></div>
             </div>
 
             <!-- ===== АДМИН: АТРИБУТЫ ===== -->
             <div id="page-admin-attributes" class="page admin-subpage">
                 <div class="admin-header">
                     <button class="admin-back-btn" onclick="navigateTo('page-admin')">← Назад</button>
-                    <h2>🏷️ Атрибуты</h2>
+                    <h2>Атрибуты</h2>
                 </div>
-                <div id="admin-attributes-content"><div class="loading">⏳ Загрузка...</div></div>
+                <div id="admin-attributes-content"><div class="loading">Загрузка...</div></div>
             </div>
 
             <!-- ===== АДМИН: АКЦИИ ===== -->
             <div id="page-admin-promotions" class="page admin-subpage">
                 <div class="admin-header">
                     <button class="admin-back-btn" onclick="navigateTo('page-admin')">← Назад</button>
-                    <h2>🎉 Акции</h2>
+                    <h2>Акции</h2>
                 </div>
-                <div id="admin-promotions-content"><div class="loading">⏳ Загрузка...</div></div>
+                <div id="admin-promotions-content"><div class="loading">Загрузка...</div></div>
             </div>
 
             <!-- ===== АДМИН: ПРОМОКОДЫ ===== -->
             <div id="page-admin-promocodes" class="page admin-subpage">
                 <div class="admin-header">
                     <button class="admin-back-btn" onclick="navigateTo('page-admin')">← Назад</button>
-                    <h2>🎫 Промокоды</h2>
+                    <h2>Промокоды</h2>
                 </div>
-                <div id="admin-promocodes-content"><div class="loading">⏳ Загрузка...</div></div>
+                <div id="admin-promocodes-content"><div class="loading">Загрузка...</div></div>
             </div>
 
             <!-- ===== АДМИН: ТОЧКИ САМОВЫВОЗА ===== -->
             <div id="page-admin-pickup" class="page admin-subpage">
                 <div class="admin-header">
                     <button class="admin-back-btn" onclick="navigateTo('page-admin')">← Назад</button>
-                    <h2>📍 Точки самовывоза</h2>
+                    <h2>Точки самовывоза</h2>
                 </div>
-                <div id="admin-pickup-content"><div class="loading">⏳ Загрузка...</div></div>
+                <div id="admin-pickup-content"><div class="loading">Загрузка...</div></div>
             </div>
 
             <!-- ===== АДМИН: МОДЕРАТОРЫ ===== -->
             <div id="page-admin-moderators" class="page admin-subpage">
                 <div class="admin-header">
                     <button class="admin-back-btn" onclick="navigateTo('page-admin')">← Назад</button>
-                    <h2>👥 Модераторы</h2>
+                    <h2>Модераторы</h2>
                 </div>
-                <div id="admin-moderators-content"><div class="loading">⏳ Загрузка...</div></div>
+                <div id="admin-moderators-content"><div class="loading">Загрузка...</div></div>
+            </div>
+
+            <!-- ===== АДМИН: ИМПОРТ ===== -->
+            <div id="page-admin-import" class="page admin-subpage">
+                <div class="admin-header">
+                    <button class="admin-back-btn" onclick="navigateTo('page-admin')">← Назад</button>
+                    <h2>Импорт товаров</h2>
+                </div>
+                <div id="admin-import-content"><div class="loading">Загрузка...</div></div>
             </div>
 
         </div>

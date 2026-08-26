@@ -76,6 +76,11 @@ body::before {
     50% { transform: scale(1.05); }
 }
 
+@keyframes glow {
+    0%, 100% { text-shadow: 0 0 10px rgba(168, 85, 247, 0.3); }
+    50% { text-shadow: 0 0 25px rgba(168, 85, 247, 0.6), 0 0 50px rgba(168, 85, 247, 0.2); }
+}
+
 @keyframes badgePop {
     0% { transform: scale(0); }
     70% { transform: scale(1.4); }
@@ -107,6 +112,15 @@ body::before {
     margin-bottom: 4px;
 }
 
+.logo-img {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: rgba(168, 85, 247, 0.1);
+    border: 1px solid rgba(168, 85, 247, 0.2);
+}
+
 .logo-icon {
     font-size: 28px;
     filter: drop-shadow(0 0 20px rgba(168, 85, 247, 0.3));
@@ -132,6 +146,15 @@ body::before {
 .greeting #user-name {
     color: #ffffff;
     font-weight: 600;
+}
+
+/* Заголовки страниц — жирные белые со свечением */
+.page-title {
+    font-size: 20px;
+    font-weight: 700 !important;
+    color: #ffffff !important;
+    animation: glow 3s ease-in-out infinite;
+    margin-top: 4px;
 }
 
 /* ======================================== */
@@ -180,24 +203,25 @@ body::before {
     z-index: 1;
 }
 
-.welcome-buttons {
+/* Кнопки — вертикально друг под другом */
+.welcome-buttons.vertical {
     display: flex;
+    flex-direction: column;
     gap: 10px;
-    flex-wrap: wrap;
     position: relative;
     z-index: 1;
 }
 
 .welcome-btn {
-    flex: 1;
-    min-width: 100px;
-    padding: 12px 16px;
+    width: 100%;
+    padding: 14px 20px;
     border: none;
     border-radius: 14px;
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-align: center;
 }
 
 .welcome-btn.primary {
@@ -254,6 +278,7 @@ body::before {
     font-size: 18px;
     font-weight: 700;
     color: #ffffff;
+    animation: glow 3s ease-in-out infinite;
 }
 
 .section-header a {
@@ -421,7 +446,7 @@ body::before {
 }
 
 /* ======================================== */
-/* ===== КАРТОЧКИ ТОВАРОВ ===== */
+/* ===== КАРТОЧКИ ТОВАРОВ (ГОРИЗОНТАЛЬНЫЙ СКРОЛЛ) ===== */
 /* ======================================== */
 
 .product-scroll-card {
@@ -457,6 +482,13 @@ body::before {
     align-items: center;
     justify-content: center;
     font-size: 40px;
+    overflow: hidden;
+}
+
+.product-scroll-card .product-image-placeholder img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .product-scroll-card .product-name {
@@ -533,6 +565,17 @@ body::before {
     box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.1);
 }
 
+/* Счётчик товаров */
+.catalog-counter {
+    text-align: right;
+    font-size: 14px;
+    font-weight: 600;
+    color: #a855f7;
+    padding: 4px 0 8px;
+    margin-top: -4px;
+}
+
+/* Фильтры категорий */
 .filter-tabs {
     display: flex;
     gap: 8px;
@@ -622,7 +665,10 @@ body::before {
     transform: scale(0.95);
 }
 
-/* Элементы каталога */
+/* ======================================== */
+/* ===== ЭЛЕМЕНТЫ КАТАЛОГА (КАК В ALPAKAA) ===== */
+/* ======================================== */
+
 .catalog-item {
     display: flex;
     align-items: center;
@@ -633,7 +679,7 @@ body::before {
     margin-bottom: 10px;
     cursor: pointer;
     transition: all 0.3s;
-    border: 1px solid transparent;
+    border: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 .catalog-item:hover {
@@ -645,8 +691,23 @@ body::before {
     transform: scale(0.98);
 }
 
-.catalog-emoji {
+.catalog-image {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.04);
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-size: 28px;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.catalog-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .catalog-info {
@@ -658,7 +719,15 @@ body::before {
     font-size: 14px;
     font-weight: 500;
     color: #ffffff;
-    margin-bottom: 2px;
+    margin-bottom: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.catalog-details {
+    font-size: 12px;
+    color: #71717a;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -667,6 +736,13 @@ body::before {
 .catalog-brand {
     font-size: 12px;
     color: #71717a;
+}
+
+.catalog-price-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 2px;
 }
 
 .catalog-price {
@@ -679,7 +755,6 @@ body::before {
     font-size: 12px;
     color: #71717a;
     text-decoration: line-through;
-    margin-left: 6px;
 }
 
 .catalog-add-btn {
@@ -765,22 +840,34 @@ body::before {
     color: #ffffff;
 }
 
-.modal-emoji {
-    font-size: 56px;
-    text-align: center;
-    display: block;
-    margin-bottom: 8px;
+.modal-image {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.04);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 64px;
+    margin-bottom: 12px;
+    overflow: hidden;
+}
+
+.modal-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .modal-title {
-    font-size: 22px;
+    font-size: 20px;
     font-weight: 700;
     color: #ffffff;
     text-align: center;
-    margin-bottom: 4px;
+    margin-bottom: 2px;
 }
 
-.modal-brand {
+.modal-subtitle {
     text-align: center;
     font-size: 14px;
     color: #71717a;
@@ -833,11 +920,76 @@ body::before {
     font-weight: 500;
 }
 
-.modal-description {
+/* Выбор цвета в модалке */
+.modal-color-select {
+    margin-bottom: 12px;
+}
+
+.modal-color-select label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #a1a1aa;
+    margin-bottom: 4px;
+}
+
+.modal-color-select select {
+    width: 100%;
+    padding: 10px 14px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    color: #ffffff;
+    font-size: 14px;
+    appearance: auto;
+}
+
+.modal-color-select select option {
+    background: #1a1a2e;
+}
+
+.modal-color-select select:focus {
+    outline: none;
+    border-color: rgba(168, 85, 247, 0.3);
+}
+
+/* Количество в модалке */
+.modal-quantity {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.modal-quantity .qty-label {
     font-size: 14px;
     color: #a1a1aa;
-    line-height: 1.6;
-    margin-bottom: 16px;
+}
+
+.modal-qty-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    border: none;
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.modal-qty-btn:active {
+    transform: scale(0.9);
+}
+
+.modal-qty-value {
+    font-size: 18px;
+    font-weight: 600;
+    color: #ffffff;
+    min-width: 30px;
+    text-align: center;
 }
 
 .modal-add-btn {
@@ -1285,6 +1437,7 @@ body::before {
     font-size: 18px;
     font-weight: 700;
     color: #ffffff;
+    animation: glow 3s ease-in-out infinite;
 }
 
 /* Статистика */
@@ -1427,6 +1580,51 @@ body::before {
     font-weight: 500;
     cursor: pointer;
 }
+
+/* Импорт */
+.import-textarea {
+    width: 100%;
+    padding: 12px 14px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    color: #ffffff;
+    font-size: 13px;
+    font-family: monospace;
+    resize: vertical;
+    min-height: 150px;
+}
+
+.import-textarea:focus {
+    outline: none;
+    border-color: rgba(168, 85, 247, 0.3);
+}
+
+.import-status {
+    margin-top: 12px;
+    font-size: 14px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    min-height: 24px;
+}
+
+.import-preview {
+    margin-top: 12px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.import-preview-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    font-size: 13px;
+    color: #a1a1aa;
+}
+
+.import-preview-item .name { color: #ffffff; }
+.import-preview-item .price { color: #a855f7; }
 
 /* ======================================== */
 /* ===== НИЖНЯЯ НАВИГАЦИЯ ===== */
@@ -1578,12 +1776,15 @@ body::before {
     .admin-menu-btn { padding: 12px 6px; }
     .admin-menu-btn .admin-icon { font-size: 22px; }
     .admin-menu-btn .admin-label { font-size: 10px; }
+    .catalog-image { width: 40px; height: 40px; font-size: 22px; }
+    .catalog-name { font-size: 13px; }
+    .catalog-details { font-size: 11px; }
 }
 
 @media (max-width: 360px) {
     .app-header h1 { font-size: 18px; }
-    .logo-icon { font-size: 22px; }
-    .welcome-btn { font-size: 12px; padding: 10px 12px; min-width: 80px; }
+    .logo-img { width: 30px; height: 30px; }
+    .welcome-btn { font-size: 13px; padding: 12px 16px; }
     .category-card { min-width: 95px; padding: 12px 10px; }
     .category-card .cat-emoji { font-size: 22px; }
     .category-card .cat-name { font-size: 11px; }
@@ -1592,4 +1793,8 @@ body::before {
     .nav-btn .nav-label { font-size: 8px; }
     .nav-btn .nav-icon { font-size: 18px; }
     .admin-menu { grid-template-columns: repeat(2, 1fr); }
+    .catalog-image { width: 36px; height: 36px; font-size: 18px; }
+    .catalog-name { font-size: 12px; }
+    .catalog-details { font-size: 10px; }
+    .catalog-add-btn { width: 30px; height: 30px; font-size: 16px; }
 }
