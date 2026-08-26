@@ -42,9 +42,14 @@
                     <div class="loading">⏳ Загрузка акций...</div>
                 </div>
 
+                <!-- Категории на главной -->
+                <div class="category-grid" id="home-categories">
+                    <!-- Сюда рендерятся категории из JS -->
+                </div>
+
                 <div class="section-header">
                     <h2>🔥 Хиты продаж</h2>
-                    <a href="#" onclick="navigateTo('page-catalog')">Смотреть все</a>
+                    <a href="#" onclick="event.preventDefault(); navigateTo('page-catalog'); return false;">Смотреть все</a>
                 </div>
                 <div class="product-grid" id="hits-grid">
                     <div class="loading">⏳ Загрузка...</div>
@@ -52,7 +57,7 @@
 
                 <div class="section-header">
                     <h2>✨ Новинки</h2>
-                    <a href="#" onclick="navigateTo('page-catalog')">Смотреть все</a>
+                    <a href="#" onclick="event.preventDefault(); navigateTo('page-catalog'); return false;">Смотреть все</a>
                 </div>
                 <div class="product-grid" id="new-grid">
                     <div class="loading">⏳ Загрузка...</div>
@@ -73,7 +78,7 @@
                     <input type="text" id="search-input" placeholder="🔍 Поиск товаров..." class="search-input">
                 </div>
 
-                <!-- Фильтры-теги категорий (НОВЫЙ ЭЛЕМЕНТ) -->
+                <!-- Фильтры-теги категорий -->
                 <div id="category-tabs" class="category-tabs"></div>
 
                 <!-- Сортировка -->
@@ -279,12 +284,13 @@
                 </div>
             </div>
 
-            <!-- СТАТИСТИКА (расширенная) -->
+            <!-- СТАТИСТИКА -->
             <div id="page-admin-stats" class="page">
                 <div class="app-header">
                     <h1>📊 Статистика</h1>
                     <p>Аналитика продаж</p>
                 </div>
+                <button class="admin-back-btn" onclick="navigateTo('page-admin')">🔙 Назад</button>
                 <button class="admin-reload-btn" onclick="loadStats()" style="margin-bottom:10px; padding:8px 16px; background:#667eea; color:white; border:none; border-radius:8px; cursor:pointer; width:100%; font-weight:600;">
                     🔄 Обновить статистику
                 </button>
@@ -377,12 +383,13 @@
                 </div>
             </div>
 
-            <!-- ЗАКАЗЫ (админка) с фильтрами -->
+            <!-- ЗАКАЗЫ (админка) -->
             <div id="page-admin-orders" class="page">
                 <div class="app-header">
                     <h1>📦 Заказы</h1>
                     <p>Управление заказами</p>
                 </div>
+                <button class="admin-back-btn" onclick="navigateTo('page-admin')">🔙 Назад</button>
                 
                 <div class="order-filters">
                     <div class="filter-group">
@@ -437,6 +444,7 @@
                     <h1>🛍️ Товары</h1>
                     <p>Управление каталогом</p>
                 </div>
+                <button class="admin-back-btn" onclick="navigateTo('page-admin')">🔙 Назад</button>
                 
                 <div class="admin-filters">
                     <select id="admin-product-filter-category" class="admin-filter-select">
@@ -465,6 +473,7 @@
                     <h1>📂 Категории</h1>
                     <p>Управление категориями</p>
                 </div>
+                <button class="admin-back-btn" onclick="navigateTo('page-admin')">🔙 Назад</button>
                 <button class="admin-reload-btn" onclick="loadAdminCategories()" style="margin-bottom:10px; padding:8px 16px; background:#667eea; color:white; border:none; border-radius:8px; cursor:pointer; width:100%; font-weight:600;">
                     🔄 Принудительно загрузить категории
                 </button>
@@ -480,6 +489,7 @@
                     <h1>🏷️ Бренды</h1>
                     <p>Управление производителями</p>
                 </div>
+                <button class="admin-back-btn" onclick="navigateTo('page-admin')">🔙 Назад</button>
                 <button class="admin-reload-btn" onclick="loadAdminBrands()" style="margin-bottom:10px; padding:8px 16px; background:#667eea; color:white; border:none; border-radius:8px; cursor:pointer; width:100%; font-weight:600;">
                     🔄 Принудительно загрузить бренды
                 </button>
@@ -495,6 +505,7 @@
                     <h1>📦 Модели</h1>
                     <p>Управление моделями товаров</p>
                 </div>
+                <button class="admin-back-btn" onclick="navigateTo('page-admin')">🔙 Назад</button>
                 <button class="admin-reload-btn" onclick="loadAdminModels()" style="margin-bottom:10px; padding:8px 16px; background:#667eea; color:white; border:none; border-radius:8px; cursor:pointer; width:100%; font-weight:600;">
                     🔄 Принудительно загрузить модели
                 </button>
@@ -510,6 +521,7 @@
                     <h1>🏷️ Атрибуты</h1>
                     <p>Управление характеристиками товаров</p>
                 </div>
+                <button class="admin-back-btn" onclick="navigateTo('page-admin')">🔙 Назад</button>
                 <button class="admin-reload-btn" onclick="loadAdminAttributes()" style="margin-bottom:10px; padding:8px 16px; background:#667eea; color:white; border:none; border-radius:8px; cursor:pointer; width:100%; font-weight:600;">
                     🔄 Принудительно загрузить атрибуты
                 </button>
@@ -525,6 +537,7 @@
                     <h1>🎉 Акции</h1>
                     <p>Управление акциями</p>
                 </div>
+                <button class="admin-back-btn" onclick="navigateTo('page-admin')">🔙 Назад</button>
                 <button class="admin-reload-btn" onclick="loadAdminPromotions()" style="margin-bottom:10px; padding:8px 16px; background:#667eea; color:white; border:none; border-radius:8px; cursor:pointer; width:100%; font-weight:600;">
                     🔄 Принудительно загрузить акции
                 </button>
@@ -540,6 +553,7 @@
                     <h1>🎁 Призы</h1>
                     <p>Управление призами</p>
                 </div>
+                <button class="admin-back-btn" onclick="navigateTo('page-admin')">🔙 Назад</button>
                 <button class="admin-reload-btn" onclick="loadAdminPrizes()" style="margin-bottom:10px; padding:8px 16px; background:#667eea; color:white; border:none; border-radius:8px; cursor:pointer; width:100%; font-weight:600;">
                     🔄 Принудительно загрузить призы
                 </button>
@@ -554,6 +568,7 @@
                     <h1>🎫 Промокоды</h1>
                     <p>Управление промокодами</p>
                 </div>
+                <button class="admin-back-btn" onclick="navigateTo('page-admin')">🔙 Назад</button>
                 <button class="admin-reload-btn" onclick="loadAdminPromocodes()" style="margin-bottom:10px; padding:8px 16px; background:#667eea; color:white; border:none; border-radius:8px; cursor:pointer; width:100%; font-weight:600;">
                     🔄 Принудительно загрузить промокоды
                 </button>
@@ -568,6 +583,7 @@
                     <h1>⚙️ Настройки</h1>
                     <p>Управление настройками магазина</p>
                 </div>
+                <button class="admin-back-btn" onclick="navigateTo('page-admin')">🔙 Назад</button>
                 <div id="admin-settings-container">
                     <div class="loading">⏳ Загрузка настроек...</div>
                 </div>
@@ -579,6 +595,7 @@
                     <h1>📥 Импорт товаров</h1>
                     <p>Массовое добавление товаров</p>
                 </div>
+                <button class="admin-back-btn" onclick="navigateTo('page-admin')">🔙 Назад</button>
                 <div id="admin-import-container">
                     <div class="import-info">
                         <p>📋 Вставьте данные в формате:</p>
@@ -600,6 +617,7 @@ Xros 5 mini | 55 | pod | vaporesso | xros-5 | 💨 | 5</pre>
                     <h1>👥 Модераторы</h1>
                     <p>Управление доступом</p>
                 </div>
+                <button class="admin-back-btn" onclick="navigateTo('page-admin')">🔙 Назад</button>
                 <button class="admin-reload-btn" onclick="loadAdmins()" style="margin-bottom:10px; padding:8px 16px; background:#667eea; color:white; border:none; border-radius:8px; cursor:pointer; width:100%; font-weight:600;">
                     🔄 Принудительно загрузить модераторов
                 </button>
@@ -619,6 +637,7 @@ Xros 5 mini | 55 | pod | vaporesso | xros-5 | 💨 | 5</pre>
                     <h1>📍 Точки самовывоза</h1>
                     <p>Управление точками самовывоза</p>
                 </div>
+                <button class="admin-back-btn" onclick="navigateTo('page-admin')">🔙 Назад</button>
                 <button class="admin-reload-btn" onclick="loadAdminPickupPoints()" style="margin-bottom:10px; padding:8px 16px; background:#667eea; color:white; border:none; border-radius:8px; cursor:pointer; width:100%; font-weight:600;">
                     🔄 Принудительно загрузить точки
                 </button>

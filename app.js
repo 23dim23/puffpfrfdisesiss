@@ -352,6 +352,27 @@ async function loadPickupPoints() {
 }
 
 // ==========================================
+// ===== АНИМАЦИЯ ЗАГРУЗКИ =====
+// ==========================================
+
+function showLoader(container) {
+    if (!container) return;
+    container.innerHTML = `
+        <div class="loader-container">
+            <div class="loader-spinner"></div>
+            <p class="loader-text">⏳ Загрузка...</p>
+        </div>
+    `;
+}
+
+function hideLoader(container) {
+    if (!container) return;
+    // Удаляем loader если он есть
+    const loader = container.querySelector('.loader-container');
+    if (loader) loader.remove();
+}
+
+// ==========================================
 // ===== ОТОБРАЖЕНИЕ =====
 // ==========================================
 
@@ -410,7 +431,7 @@ function renderHits() {
     const hits = (products || []).filter(p => p.isHit && p.inStock);
     
     if (hits.length === 0) {
-        grid.innerHTML = '<div class="empty-message">Хитов пока нет</div>';
+        grid.innerHTML = '<div class="empty-message">🔥 Хитов пока нет</div>';
         return;
     }
     
@@ -428,12 +449,48 @@ function renderNewItems() {
     const newItems = (products || []).filter(p => p.isNew && p.inStock);
     
     if (newItems.length === 0) {
-        grid.innerHTML = '<div class="empty-message">Новинок пока нет</div>';
+        grid.innerHTML = '<div class="empty-message">✨ Новинок пока нет</div>';
         return;
     }
     
     grid.innerHTML = newItems.slice(0, 4).map(p => createProductCard(p)).join('');
     addBuyButtons(grid);
+}
+
+// ==========================================
+// ===== КАТЕГОРИИ НА ГЛАВНОЙ =====
+// ==========================================
+
+function renderHomeCategories() {
+    const container = document.getElementById('home-categories');
+    if (!container) return;
+    
+    // Показываем только категории (без "Все" на главной)
+    const displayCategories = FIXED_CATEGORIES.filter(c => c.slug !== 'all');
+    
+    container.innerHTML = displayCategories.map(cat => `
+        <div class="category-item" data-slug="${cat.slug}" onclick="selectCategoryTabFromHome('${cat.slug}')">
+            <span class="cat-emoji">${cat.icon}</span>
+            <span class="cat-name">${cat.name}</span>
+        </div>
+    `).join('');
+    
+    // Добавляем "Все" отдельно в конце
+    container.innerHTML += `
+        <div class="category-item" data-slug="all" onclick="selectCategoryTabFromHome('all')">
+            <span class="cat-emoji">📋</span>
+            <span class="cat-name">Все</span>
+        </div>
+    `;
+}
+
+function selectCategoryTabFromHome(slug) {
+    currentCategorySlug = slug;
+    // Переходим в каталог
+    navigateTo('page-catalog');
+    // Обновляем табы в каталоге
+    renderCategoryTabs();
+    renderCatalog();
 }
 
 // ==========================================
@@ -468,31 +525,57 @@ function renderCatalog() {
         return;
     }
     
-    // Получаем отфильтрованные товары
-    let filtered = getFilteredProducts();
+    // Показываем лоадер
+    showLoader(grid);
     
-    // Сортируем
-    switch (currentSort) {
-        case 'price-asc': filtered.sort((a, b) => a.price - b.price); break;
-        case 'price-desc': filtered.sort((a, b) => b.price - a.price); break;
-        case 'name': filtered.sort((a, b) => (a.name || '').localeCompare(b.name || '')); break;
-        case 'popular': filtered.sort((a, b) => (b.soldCount || 0) - (a.soldCount || 0)); break;
-        default: filtered.sort((a, b) => a.id - b.id);
-    }
-    
-    // Сохраняем для пагинации
-    totalFilteredItems = filtered;
-    catalogCurrentPage = 1;
-    
-    const countEl = document.getElementById('catalog-count');
-    if (countEl) countEl.textContent = `${filtered.length} товаров`;
-    
-    if (filtered.length === 0) {
-        grid.innerHTML = `<div class="empty-message">😕 Товары не найдены</div>`;
-        return;
-    }
-    
-    renderPage(grid);
+    // Небольшая задержка для имитации загрузки (для плавности)
+    setTimeout(() => {
+        // Получаем отфильтрованные товары
+        let filtered = getFilteredProducts();
+        
+        // Сортируем
+        switch (currentSort) {
+            case 'price-asc': filtered.sort((a, b) => a.price - b.price); break;
+            case 'price-desc': filtered.sort((a, b) => b.price - a.price); break;
+            case 'name': filtered.sort((a, b) => (a.name || '').localeCompare(b.name || '')); break;
+            case 'popular': filtered.sort((a, b) => (b.soldCount || 0) - (a.soldCount || 0)); break;
+            default: filtered.sort((a, b) => a.id - b.id);
+        }
+        
+        // Сохраняем для пагинации
+        totalFilteredItems = filtered;
+        catalogCurrentPage = 1;
+        
+        const countEl = document.getElementById('catalog-count');
+        if (countEl) countEl.textContent = `${filtered.length} товаров`;
+        
+        if (filtered.length === 0) {
+            // Обработка пустого каталога с предложением добавить товары
+            const isAdminUser = isAdmin;
+            grid.innerHTML = `
+                <div class="empty-catalog">
+                    <div class="empty-catalog-icon">📦</div>
+                    <h3>Товары не найдены</h3>
+                    <p>В каталоге пока нет товаров</p>
+                    ${isAdminUser ? `
+                        <button class="admin-add-btn" onclick="addNewProduct()" style="margin-top:12px;">
+                            ➕ Добавить первый товар
+                        </button>
+                        <button class="admin-add-btn" onclick="navigateTo('page-admin-import')" style="margin-top:8px;">
+                            📥 Импортировать товары
+                        </button>
+                    ` : `
+                        <p style="color:#9ca3af; font-size:13px; margin-top:8px;">
+                            Товары скоро появятся. Загляните позже!
+                        </p>
+                    `}
+                </div>
+            `;
+            return;
+        }
+        
+        renderPage(grid);
+    }, 200);
 }
 
 function getFilteredProducts() {
@@ -787,7 +870,7 @@ function updateCartUI() {
     if (!cartItems) return;
     
     if (!cart || cart.length === 0) {
-        cartItems.innerHTML = '<li class="cart-empty">Корзина пуста</li>';
+        cartItems.innerHTML = '<li class="cart-empty">🛒 Корзина пуста</li>';
         if (totalPrice) totalPrice.textContent = '0 BYN';
         if (checkoutBtn) checkoutBtn.disabled = true;
         if (orderForm) orderForm.style.display = 'none';
@@ -3606,6 +3689,11 @@ async function loadAdminCategories() {
     container.style.display = 'block';
     container.style.visibility = 'visible';
     
+    const brandCounts = {};
+    const modelCounts = {};
+    (brands || []).forEach(b => { brandCounts[b.main_category_slug] = (brandCounts[b.main_category_slug] || 0) + 1; });
+    (productModels || []).forEach(m => { modelCounts[m.main_category_slug] = (modelCounts[m.main_category_slug] || 0) + 1; });
+    
     container.innerHTML = `
         <div class="admin-categories-fixed">
             <div class="admin-categories-header">
@@ -3619,8 +3707,8 @@ async function loadAdminCategories() {
                         <div class="admin-category-name">${cat.name}</div>
                         <div class="admin-category-slug">${cat.slug}</div>
                         <div class="admin-category-stats">
-                            Брендов: ${(brands || []).filter(b => b.main_category_slug === cat.slug).length} | 
-                            Моделей: ${(productModels || []).filter(m => m.main_category_slug === cat.slug).length}
+                            Брендов: ${brandCounts[cat.slug] || 0} | 
+                            Моделей: ${modelCounts[cat.slug] || 0}
                         </div>
                     </div>
                     <div class="admin-category-actions">
@@ -3633,7 +3721,10 @@ async function loadAdminCategories() {
 }
 
 async function addNewCategory() {
-    showMessage('ℹ️ Фиксированные категории', 'Основные категории (Pod-системы, Жижи, Комплектующие, Одноразовые, Снюс) зафиксированы в коде.\n\nДля добавления новых категорий обратитесь к разработчику.');
+    showMessage('ℹ️ Фиксированные категории', 
+        'Основные категории (Pod-системы, Жижи, Комплектующие, Одноразовые, Снюс) зафиксированы в коде.\n\n' +
+        'Для добавления новых категорий обратитесь к разработчику.'
+    );
 }
 
 // ==========================================
@@ -3822,6 +3913,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             console.error('❌ Ошибка загрузки данных:', loadError);
             showMessage('⚠️ Внимание', 'Некоторые данные не загрузились. Проверьте подключение к интернету.');
         }
+        
+        // Рендерим категории на главной
+        renderHomeCategories();
         
         renderCategoryTabs();
         setupSortFilters();
