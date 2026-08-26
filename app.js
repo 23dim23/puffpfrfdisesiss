@@ -2859,10 +2859,13 @@ async function deleteAttribute(attributeId) {
 document.addEventListener('DOMContentLoaded', async () => {
     try {
         console.log('🚀 ИНИЦИАЛИЗАЦИЯ ПРИЛОЖЕНИЯ...');
+        console.log('📱 initData:', window.Telegram.WebApp.initData || 'empty');
+        console.log('👤 initDataUnsafe:', window.Telegram.WebApp.initDataUnsafe || 'empty');
+        console.log('📱 platform:', window.Telegram.WebApp.platform || 'unknown');
         
         const pages = document.querySelectorAll('.page');
         if (pages.length === 0) {
-            console.error('❌ КРИТИЧЕСКАЯ ОШИБКА: Страницы не найдены!');
+            console.error('❌ КРИТИЧЕСКАЯ ОШИБКА: Страницы не найдены! Проверьте HTML.');
             return;
         }
         
@@ -2881,6 +2884,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const adminNavBtn = document.getElementById('nav-admin');
         if (adminNavBtn && isAdmin) {
             adminNavBtn.style.display = 'flex';
+            console.log('✅ Кнопка админки показана');
         }
         
         try {
@@ -2896,9 +2900,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             await loadProductsFromSupabase();
         } catch (loadError) {
             console.error('❌ Ошибка загрузки данных:', loadError);
-            showMessage('⚠️ Внимание', 'Некоторые данные не загрузились.');
+            showMessage('⚠️ Внимание', 'Некоторые данные не загрузились. Проверьте подключение к интернету.');
         }
         
+        renderCategoryTabs();
         setupSortFilters();
         setupSearch();
         setupOrderFilters();
@@ -2949,6 +2954,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             btn.addEventListener('click', () => {
                 const page = btn.dataset.page;
                 if (page) {
+                    console.log('🔽 Клик по навигации:', page);
                     navigateTo(page);
                 }
             });
@@ -2958,6 +2964,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             btn.addEventListener('click', () => {
                 const page = btn.dataset.page;
                 if (page) {
+                    console.log('⚙️ Клик по админ-меню:', page);
                     navigateTo(page);
                 }
             });
@@ -2969,12 +2976,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         
         if (isAdmin) {
-           // document.getElementById('admin-add-category-btn')?.addEventListener('click', addNewCategory);
+            // Эти функции пока не используются или удалены — закомментированы
+            // document.getElementById('admin-add-category-btn')?.addEventListener('click', addNewCategory);
+            // document.getElementById('admin-add-promotion-btn')?.addEventListener('click', addNewPromotion);
+            
+            // Рабочие функции
             document.getElementById('admin-add-product-btn')?.addEventListener('click', addNewProduct);
             document.getElementById('admin-add-brand-btn')?.addEventListener('click', addNewBrand);
             document.getElementById('admin-add-model-btn')?.addEventListener('click', addNewModel);
             document.getElementById('admin-add-attribute-btn')?.addEventListener('click', addNewAttribute);
-            document.getElementById('admin-add-promotion-btn')?.addEventListener('click', addNewPromotion);
             document.getElementById('admin-add-btn')?.addEventListener('click', addAdmin);
             document.getElementById('admin-add-pickup-point-btn')?.addEventListener('click', addNewPickupPoint);
             document.getElementById('admin-export-orders-btn')?.addEventListener('click', exportOrdersCSV);
