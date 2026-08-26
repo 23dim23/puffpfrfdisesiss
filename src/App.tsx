@@ -15,7 +15,7 @@ import { OrderSuccessModal } from './components/OrderSuccessModal';
 import { initTelegramApp, hapticImpact } from './services/telegram';
 
 const MainContent: React.FC = () => {
-  const { isStaff, isAdmin } = useStore();
+  const { isAdmin, isAuthorizedAdmin } = useStore();
 
   const [activeTab, setActiveTab] = useState<TabType>('home');
   const [catalogInitialCategory, setCatalogInitialCategory] = useState<string>('all');
@@ -27,6 +27,13 @@ const MainContent: React.FC = () => {
     initTelegramApp();
   }, []);
 
+  // Strict guard: if activeTab is admin but user is not admin, redirect to home
+  useEffect(() => {
+    if (activeTab === 'admin' && !isAdmin) {
+      setActiveTab('home');
+    }
+  }, [activeTab, isAdmin]);
+
   const handleNavigateToCatalog = (categorySlug: string = 'all') => {
     setCatalogInitialCategory(categorySlug);
     setActiveTab('catalog');
@@ -34,6 +41,9 @@ const MainContent: React.FC = () => {
   };
 
   const handleTabChange = (tab: TabType) => {
+    if (tab === 'admin' && !isAdmin) {
+      return;
+    }
     setActiveTab(tab);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };

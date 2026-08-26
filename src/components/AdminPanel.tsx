@@ -87,9 +87,14 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
     addAdminUser,
     deleteAdminUser,
     importProducts,
+    exportDatabaseDump,
+    importDatabaseDump,
+    resetDatabaseDefaults,
   } = useStore();
 
   const [activeSubpage, setActiveSubpage] = useState<AdminSubpage>('menu');
+  const [dbDumpInput, setDbDumpInput] = useState<string>('');
+  const [showDbTools, setShowDbTools] = useState<boolean>(false);
 
   // Orders filters
   const [orderStatusFilter, setOrderStatusFilter] = useState<string>('all');
@@ -897,6 +902,79 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
           >
             Сохранить настройки
           </button>
+
+          {/* Database Backup & Restore */}
+          <div className="pt-3 border-t border-white/10 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                <span>💾 База данных (Бэкап и Восстановление)</span>
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowDbTools((prev) => !prev)}
+                className="text-[11px] font-semibold text-purple-400 hover:text-purple-300"
+              >
+                {showDbTools ? 'Скрыть' : 'Открыть инструменты'}
+              </button>
+            </div>
+
+            {showDbTools && (
+              <div className="p-3 rounded-xl bg-black/40 border border-purple-500/20 space-y-2.5">
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const dump = exportDatabaseDump();
+                      navigator.clipboard.writeText(dump);
+                      alert('JSON дамп базы данных успешно скопирован в буфер обмена!');
+                    }}
+                    className="py-2 px-3 rounded-lg bg-white/5 border border-white/10 text-white text-[11px] font-semibold hover:bg-white/10"
+                  >
+                    📋 Скопировать JSON дамп
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (confirm('Вы уверены, что хотите сбросить базу данных к начальным товарам и категориям? Все созданные вручную товары будут заменены исходными.')) {
+                        resetDatabaseDefaults();
+                        alert('База данных успешно сброшена!');
+                      }
+                    }}
+                    className="py-2 px-3 rounded-lg bg-red-500/20 border border-red-500/30 text-red-300 text-[11px] font-semibold hover:bg-red-500/30"
+                  >
+                    ⚠️ Сброс к дефолту
+                  </button>
+                </div>
+
+                <div className="space-y-1.5 pt-1">
+                  <label className="text-[11px] text-zinc-400 block">Импорт JSON дампа базы данных:</label>
+                  <textarea
+                    value={dbDumpInput}
+                    onChange={(e) => setDbDumpInput(e.target.value)}
+                    placeholder="Вставьте сюда валидный JSON дамп..."
+                    rows={3}
+                    className="w-full p-2 rounded-lg bg-white/5 border border-white/10 text-white font-mono text-[10px]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!dbDumpInput.trim()) return;
+                      const ok = importDatabaseDump(dbDumpInput.trim());
+                      if (ok) {
+                        alert('База данных успешно обновлена из дампа!');
+                        setDbDumpInput('');
+                      } else {
+                        alert('Ошибка парсинга JSON дампа!');
+                      }
+                    }}
+                    className="w-full py-2 rounded-lg bg-purple-600/50 border border-purple-500/50 text-white text-xs font-bold"
+                  >
+                    Восстановить базу из JSON
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
