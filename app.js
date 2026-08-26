@@ -2969,7 +2969,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         
         if (isAdmin) {
-            document.getElementById('admin-add-category-btn')?.addEventListener('click', addNewCategory);
+           // document.getElementById('admin-add-category-btn')?.addEventListener('click', addNewCategory);
             document.getElementById('admin-add-product-btn')?.addEventListener('click', addNewProduct);
             document.getElementById('admin-add-brand-btn')?.addEventListener('click', addNewBrand);
             document.getElementById('admin-add-model-btn')?.addEventListener('click', addNewModel);
