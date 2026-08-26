@@ -763,7 +763,10 @@ button:active:not(:disabled),
     margin-bottom: 12px;
 }
 
-/* --- Карточки категорий в каталоге --- */
+/* ======================================== */
+/* ===== КАРТОЧКИ КАТЕГОРИЙ В КАТАЛОГЕ (ИСПРАВЛЕНО) ===== */
+/* ======================================== */
+
 .category-card {
     display: flex;
     align-items: center;
@@ -775,10 +778,16 @@ button:active:not(:disabled),
     cursor: pointer;
     box-shadow: 0 2px 8px rgba(0,0,0,0.04);
     margin-bottom: 10px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    min-height: 60px;
+    width: 100%;
 }
 
 .category-card .category-icon {
     font-size: 32px;
+    flex-shrink: 0;
+    width: 40px;
+    text-align: center;
 }
 
 .category-card .category-name {
@@ -788,6 +797,9 @@ button:active:not(:disabled),
     color: #1f2937;
     word-break: break-word;
     overflow-wrap: break-word;
+    hyphens: auto;
+    line-height: 1.3;
+    min-width: 0;
 }
 
 .category-card .category-arrow {
@@ -795,6 +807,7 @@ button:active:not(:disabled),
     color: #9ca3af;
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     flex-shrink: 0;
+    margin-left: 4px;
 }
 
 .category-card:hover .category-arrow {
@@ -920,15 +933,21 @@ button:active:not(:disabled),
 /* --- Промокод --- */
 #promocode-section {
     margin: 12px 0 8px;
+    padding: 12px 14px;
+    background: #f0f4ff;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
 }
 
 .promocode-group {
     display: flex;
     gap: 8px;
+    align-items: center;
 }
 
 .promocode-group .order-input {
     flex: 1;
+    min-width: 0;
 }
 
 .promocode-apply-btn {
@@ -952,6 +971,18 @@ button:active:not(:disabled),
     font-size: 13px;
     margin-top: 6px;
     min-height: 20px;
+}
+
+.promocode-status.success {
+    color: #22c55e;
+}
+
+.promocode-status.error {
+    color: #ef4444;
+}
+
+.promocode-status.info {
+    color: #f59e0b;
 }
 
 /* --- Форма заказа --- */
@@ -1045,6 +1076,15 @@ button:active:not(:disabled),
 
 #delivery-price-display {
     color: #6b7280;
+}
+
+#discount-info {
+    color: #22c55e;
+    font-weight: 500;
+}
+
+#discount-display {
+    font-weight: 600;
 }
 
 #checkout-btn {
@@ -3160,6 +3200,24 @@ button:active:not(:disabled),
     .filter-actions {
         flex-direction: column;
     }
+    
+    .category-card {
+        padding: 14px 16px;
+        min-height: 54px;
+    }
+    
+    .category-card .category-icon {
+        font-size: 28px;
+        width: 36px;
+    }
+    
+    .category-card .category-name {
+        font-size: 15px;
+    }
+    
+    .category-card .category-arrow {
+        font-size: 16px;
+    }
 }
 
 @media (max-width: 360px) {
@@ -3210,6 +3268,25 @@ button:active:not(:disabled),
         right: 4px;
         top: 0px;
     }
+    
+    .category-card {
+        padding: 12px 14px;
+        min-height: 48px;
+        gap: 10px;
+    }
+    
+    .category-card .category-icon {
+        font-size: 24px;
+        width: 32px;
+    }
+    
+    .category-card .category-name {
+        font-size: 14px;
+    }
+    
+    .category-card .category-arrow {
+        font-size: 14px;
+    }
 }
 
 @media (max-width: 340px) {
@@ -3258,5 +3335,36 @@ button:active:not(:disabled),
     .container {
         padding: 12px 10px 16px;
         border-radius: 20px;
+    }
+    
+    .category-card {
+        padding: 10px 12px;
+        min-height: 42px;
+        gap: 8px;
+    }
+    
+    .category-card .category-icon {
+        font-size: 20px;
+        width: 28px;
+    }
+    
+    .category-card .category-name {
+        font-size: 13px;
+    }
+    
+    .category-card .category-arrow {
+        font-size: 12px;
+    }
+}
+
+/* --- Промокод в адаптиве --- */
+@media (max-width: 380px) {
+    .promocode-group {
+        flex-direction: column;
+    }
+    
+    .promocode-apply-btn {
+        width: 100%;
+        justify-content: center;
     }
 }
