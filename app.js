@@ -3973,4 +3973,4 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 });
-
+tg.onEvent('mainButtonClicked', checkout);
