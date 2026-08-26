@@ -352,27 +352,6 @@ async function loadPickupPoints() {
 }
 
 // ==========================================
-// ===== АНИМАЦИЯ ЗАГРУЗКИ =====
-// ==========================================
-
-function showLoader(container) {
-    if (!container) return;
-    container.innerHTML = `
-        <div class="loader-container">
-            <div class="loader-spinner"></div>
-            <p class="loader-text">⏳ Загрузка...</p>
-        </div>
-    `;
-}
-
-function hideLoader(container) {
-    if (!container) return;
-    // Удаляем loader если он есть
-    const loader = container.querySelector('.loader-container');
-    if (loader) loader.remove();
-}
-
-// ==========================================
 // ===== ОТОБРАЖЕНИЕ =====
 // ==========================================
 
@@ -465,7 +444,6 @@ function renderHomeCategories() {
     const container = document.getElementById('home-categories');
     if (!container) return;
     
-    // Показываем только категории (без "Все" на главной)
     const displayCategories = FIXED_CATEGORIES.filter(c => c.slug !== 'all');
     
     container.innerHTML = displayCategories.map(cat => `
@@ -475,7 +453,6 @@ function renderHomeCategories() {
         </div>
     `).join('');
     
-    // Добавляем "Все" отдельно в конце
     container.innerHTML += `
         <div class="category-item" data-slug="all" onclick="selectCategoryTabFromHome('all')">
             <span class="cat-emoji">📋</span>
@@ -486,9 +463,7 @@ function renderHomeCategories() {
 
 function selectCategoryTabFromHome(slug) {
     currentCategorySlug = slug;
-    // Переходим в каталог
     navigateTo('page-catalog');
-    // Обновляем табы в каталоге
     renderCategoryTabs();
     renderCatalog();
 }
@@ -516,7 +491,7 @@ function selectCategoryTab(slug) {
 }
 
 // ==========================================
-// ===== КАТАЛОГ (НОВАЯ ВЕРСИЯ) =====
+// ===== КАТАЛОГ =====
 // ==========================================
 function renderCatalog() {
     const grid = document.getElementById('catalog-grid');
@@ -528,12 +503,9 @@ function renderCatalog() {
     // Показываем лоадер
     showLoader(grid);
     
-    // Небольшая задержка для имитации загрузки (для плавности)
     setTimeout(() => {
-        // Получаем отфильтрованные товары
         let filtered = getFilteredProducts();
         
-        // Сортируем
         switch (currentSort) {
             case 'price-asc': filtered.sort((a, b) => a.price - b.price); break;
             case 'price-desc': filtered.sort((a, b) => b.price - a.price); break;
@@ -542,7 +514,6 @@ function renderCatalog() {
             default: filtered.sort((a, b) => a.id - b.id);
         }
         
-        // Сохраняем для пагинации
         totalFilteredItems = filtered;
         catalogCurrentPage = 1;
         
@@ -550,7 +521,6 @@ function renderCatalog() {
         if (countEl) countEl.textContent = `${filtered.length} товаров`;
         
         if (filtered.length === 0) {
-            // Обработка пустого каталога с предложением добавить товары
             const isAdminUser = isAdmin;
             grid.innerHTML = `
                 <div class="empty-catalog">
@@ -581,7 +551,6 @@ function renderCatalog() {
 function getFilteredProducts() {
     let filtered = (products || []).filter(p => p.inStock);
     
-    // Поиск
     if (searchQuery) {
         const q = searchQuery.toLowerCase();
         filtered = filtered.filter(p => {
@@ -596,7 +565,6 @@ function getFilteredProducts() {
         });
     }
     
-    // Фильтр по категории
     if (currentCategorySlug !== 'all') {
         filtered = filtered.filter(p => p.mainCategorySlug === currentCategorySlug);
     }
@@ -614,7 +582,6 @@ function renderPage(grid) {
     let html = '';
     html += pageItems.map(p => createProductCard(p)).join('');
     
-    // Кнопка "Показать ещё"
     if (hasMore) {
         html += `
             <div class="load-more-container">
@@ -629,7 +596,6 @@ function renderPage(grid) {
     grid.innerHTML = html;
     addBuyButtons(grid);
     
-    // Обновляем счётчик
     const countEl = document.getElementById('catalog-count');
     if (countEl) {
         countEl.textContent = `${pageItems.length} из ${totalFilteredItems.length} товаров`;
@@ -654,9 +620,7 @@ function loadMoreProducts() {
     }, 300);
 }
 
-// ==========================================
 // ===== ПОИСК =====
-// ==========================================
 function setupSearch() {
     const searchInput = document.getElementById('search-input');
     if (!searchInput) return;
@@ -673,8 +637,19 @@ function clearSearch() {
     renderCatalog();
 }
 
+// ===== АНИМАЦИЯ ЗАГРУЗКИ =====
+function showLoader(container) {
+    if (!container) return;
+    container.innerHTML = `
+        <div class="loader-container">
+            <div class="loader-spinner"></div>
+            <p class="loader-text">⏳ Загрузка...</p>
+        </div>
+    `;
+}
+
 // ==========================================
-// ===== КАРТОЧКА ТОВАРА (КОМПАКТНАЯ) =====
+// ===== КАРТОЧКА ТОВАРА =====
 // ==========================================
 function createProductCard(product) {
     if (!product) return '';
@@ -688,7 +663,6 @@ function createProductCard(product) {
         `<span class="old-price">${product.price}</span> <span class="price">${product.discountPrice}</span>` :
         `<span class="price">${product.price}</span>`;
     
-    // Находим бренд и модель для отображения
     const brand = (brands || []).find(b => b.slug === product.brandSlug);
     const model = (productModels || []).find(m => m.slug === product.modelSlug);
     
@@ -728,7 +702,7 @@ function addBuyButtons(grid) {
 }
 
 // ==========================================
-// ===== БЫСТРЫЙ ПРОСМОТР (МОДАЛКА) =====
+// ===== БЫСТРЫЙ ПРОСМОТР =====
 // ==========================================
 function showQuickView(productId) {
     const product = products.find(p => p.id === productId);
@@ -863,8 +837,6 @@ function updateCartUI() {
     const checkoutBtn = document.getElementById('checkout-btn');
     const orderForm = document.getElementById('order-form');
     const deliveryInfo = document.getElementById('delivery-info');
-    const promocodeInput = document.getElementById('promocode-input');
-    const promocodeStatus = document.getElementById('promocode-status');
     const deliveryPriceEl = document.getElementById('delivery-price-display');
     
     if (!cartItems) return;
@@ -962,7 +934,9 @@ function updateBadge() {
     badge.classList.toggle('hidden', count === 0);
 }
 
+// ==========================================
 // ===== ПРОМОКОДЫ =====
+// ==========================================
 async function applyPromocode() {
     const input = document.getElementById('promocode-input');
     const status = document.getElementById('promocode-status');
@@ -1148,7 +1122,6 @@ function navigateTo(pageId) {
                     loadAdminSettings();
                     break;
                 case 'page-admin-import':
-                    // Импорт загружается автоматически
                     break;
                 case 'page-admin-prizes':
                     loadAdminPrizes();
@@ -1169,7 +1142,7 @@ function navigateTo(pageId) {
 }
 
 // ==========================================
-// ===== ОФОРМЛЕНИЕ ЗАКАЗА (С ДОСТАВКОЙ И ПРОМОКОДАМИ) =====
+// ===== ОФОРМЛЕНИЕ ЗАКАЗА =====
 // ==========================================
 async function checkout() {
     if (!cart || cart.length === 0) return;
@@ -1180,9 +1153,6 @@ async function checkout() {
     const pickupPointId = document.getElementById('order-pickup-point')?.value || '';
     const address = document.getElementById('order-address')?.value?.trim() || '';
     const comment = document.getElementById('order-comment')?.value?.trim() || '';
-    
-    // Телефон НЕ ОБЯЗАТЕЛЕН
-    // if (!phone) { ... }
     
     if (deliveryType === 'pickup' && !pickupPointId) {
         showMessage('⚠️ Выберите точку', 'Пожалуйста, выберите точку самовывоза');
@@ -1481,7 +1451,7 @@ async function cancelOrder(orderId) {
 }
 
 // ==========================================
-// ===== РАСШИРЕННАЯ СТАТИСТИКА =====
+// ===== СТАТИСТИКА =====
 // ==========================================
 async function loadStats() {
     console.log('🔄 ЗАГРУЗКА СТАТИСТИКИ...');
@@ -1522,14 +1492,6 @@ async function loadStats() {
             categorySales: {},
             topProducts: [],
             totalOrders: 0
-        };
-        
-        const categoryNames = {
-            'pod': 'Pod-системы',
-            'liquid': 'Жижи',
-            'accessories': 'Комплектующие',
-            'disposable': 'Одноразовые pod',
-            'snus': 'Снюс'
         };
         
         FIXED_CATEGORIES.forEach(cat => {
@@ -1708,7 +1670,7 @@ function setupOrderFilters() {
     }
 }
 
-// --- Заказы (с фильтрами и юзернеймом) ---
+// --- Заказы (админка) ---
 async function loadAdminOrders() {
     console.log('🔄 ЗАГРУЗКА ЗАКАЗОВ...');
     const container = document.getElementById('admin-orders-list');
@@ -1880,7 +1842,6 @@ async function updateOrderStatus(orderId, status) {
     }
 }
 
-// ===== ОТПРАВКА СООБЩЕНИЯ ПОКУПАТЕЛЮ (С @puff_mngr) =====
 function openChatWithUser(userId, orderId) {
     if (!userId) {
         showMessage('⚠️ Ошибка', 'У пользователя нет ID для связи');
@@ -1909,7 +1870,6 @@ function openChatWithUser(userId, orderId) {
     .catch(err => console.error('❌ Ошибка:', err));
 }
 
-// ===== ЭКСПОРТ ЗАКАЗОВ =====
 function exportOrdersCSV() {
     fetch(`${SUPABASE_URL}/rest/v1/orders?select=*&order=created_at.desc`, {
         headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
@@ -1976,7 +1936,7 @@ function checkNewOrders() {
 }
 
 // ==========================================
-// ===== УПРАВЛЕНИЕ ТОЧКАМИ САМОВЫВОЗА =====
+// ===== ТОЧКИ САМОВЫВОЗА =====
 // ==========================================
 
 async function loadAdminPickupPoints() {
@@ -2094,7 +2054,10 @@ async function deletePickupPoint(pointId) {
     }
 }
 
-// --- Товары (админка) ---
+// ==========================================
+// ===== ТОВАРЫ (АДМИНКА) =====
+// ==========================================
+
 async function loadAdminProducts() {
     console.log('🔄 ЗАГРУЗКА ТОВАРОВ...');
     const container = document.getElementById('admin-products-list');
@@ -2485,7 +2448,7 @@ ${isHit ? '🔥 Хит' : ''} ${isNew ? '✨ Новинка' : ''}
 }
 
 // ==========================================
-// ===== УПРАВЛЕНИЕ БРЕНДАМИ =====
+// ===== БРЕНДЫ (АДМИНКА) =====
 // ==========================================
 
 async function loadAdminBrands() {
@@ -2613,7 +2576,7 @@ async function deleteBrand(brandId) {
 }
 
 // ==========================================
-// ===== УПРАВЛЕНИЕ МОДЕЛЯМИ =====
+// ===== МОДЕЛИ (АДМИНКА) =====
 // ==========================================
 
 async function loadAdminModels() {
@@ -2673,7 +2636,6 @@ async function addNewModel() {
     const slug = prompt('🔑 Введите slug (уникальный идентификатор на латинице, например: "xros-3"):');
     if (!slug) return;
     
-    // Показываем доступные бренды
     const brandOptions = (brands || []).map((b, i) => `${i+1}. ${b.name} (${b.slug})`).join('\n');
     if (!brands || brands.length === 0) {
         alert('⚠️ Сначала добавьте бренд через админку → Бренды.');
@@ -2829,7 +2791,6 @@ async function loadAdminAttributes() {
 }
 
 async function addNewAttribute() {
-    // Показываем список доступных моделей с их slug
     let modelList = '';
     if (productModels && productModels.length > 0) {
         modelList = productModels.map(m => `  📦 ${m.name} → slug: "${m.slug}"`).join('\n');
@@ -2913,7 +2874,7 @@ async function deleteAttribute(attributeId) {
 }
 
 // ==========================================
-// ===== АКЦИИ (АДМИНКА) С ИСПРАВЛЕННЫМ РЕДАКТИРОВАНИЕМ =====
+// ===== АКЦИИ (АДМИНКА) =====
 // ==========================================
 
 async function loadAdminPromotions() {
@@ -3029,7 +2990,6 @@ async function addNewPromotion() {
     }
 }
 
-// ===== ИСПРАВЛЕННАЯ ФУНКЦИЯ РЕДАКТИРОВАНИЯ АКЦИЙ =====
 async function editPromotion(promotionId) {
     const promotion = promotions.find(p => p.id === promotionId);
     if (!promotion) {
@@ -3099,7 +3059,7 @@ async function deletePromotion(promotionId) {
 }
 
 // ==========================================
-// ===== АДМИН-НАСТРОЙКИ (ДОСТАВКА) =====
+// ===== НАСТРОЙКИ (АДМИНКА) =====
 // ==========================================
 async function loadAdminSettings() {
     console.log('🔄 ЗАГРУЗКА НАСТРОЕК...');
@@ -3206,7 +3166,7 @@ async function saveSettings() {
 }
 
 // ==========================================
-// ===== АДМИН-ИМПОРТ ТОВАРОВ =====
+// ===== ИМПОРТ ТОВАРОВ =====
 // ==========================================
 async function importProducts() {
     const textarea = document.getElementById('import-textarea');
@@ -3381,7 +3341,7 @@ async function importProducts() {
 }
 
 // ==========================================
-// ===== АДМИН-ПРИЗЫ =====
+// ===== ПРИЗЫ (АДМИНКА) =====
 // ==========================================
 async function loadAdminPrizes() {
     console.log('🔄 ЗАГРУЗКА ПРИЗОВ...');
@@ -3527,7 +3487,7 @@ async function deletePrize(prizeId) {
 }
 
 // ==========================================
-// ===== АДМИН-ПРОМОКОДЫ =====
+// ===== ПРОМОКОДЫ (АДМИНКА) =====
 // ==========================================
 async function loadAdminPromocodes() {
     console.log('🔄 ЗАГРУЗКА ПРОМОКОДОВ...');
@@ -3914,9 +3874,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             showMessage('⚠️ Внимание', 'Некоторые данные не загрузились. Проверьте подключение к интернету.');
         }
         
-        // Рендерим категории на главной
         renderHomeCategories();
-        
         renderCategoryTabs();
         setupSortFilters();
         setupSearch();
