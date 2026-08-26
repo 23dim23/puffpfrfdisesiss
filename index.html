@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Puff Paradise</title>
-    <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Puff Paradise Shop</title>
+    <link rel="stylesheet" href="styles.css" />
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- Добавляем защиту от ошибок -->
     <script>
-        window.onerror = function(msg, url, line, col, error) {
-            console.error('❌ ОШИБКА:', msg, 'в', url, 'на строке', line);
+        // Защита от ошибок
+        window.onerror = function (msg, url, line, col, error) {
+            console.error('❌ Ошибка:', msg, 'в', url, 'на строке', line);
             try {
                 if (window.Telegram && window.Telegram.WebApp) {
                     window.Telegram.WebApp.showPopup({
@@ -18,625 +18,201 @@
                         buttons: [{ type: 'ok' }]
                     });
                 }
-            } catch(e) {
+            } catch (e) {
                 alert('Ошибка: ' + msg);
             }
             return true;
         };
-        console.log('✅ HTML загружен');
+        console.log('✅ Puff Paradise v2 загружается...');
     </script>
 </head>
 <body>
     <div class="app-wrapper">
+        <!-- ========================================= -->
+        <!-- ===== КОНТЕЙНЕР ===== -->
+        <!-- ========================================= -->
         <div class="container" id="app-content">
 
             <!-- ========================================= -->
-            <!-- ===== ГЛАВНАЯ ===== -->
+            <!-- ===== ГЛАВНАЯ СТРАНИЦА ===== -->
             <!-- ========================================= -->
             <div id="page-home" class="page active">
+                <!-- Шапка с приветствием -->
                 <div class="app-header">
-                    <h1>💨 Puff Paradise</h1>
-                    <p>Всё для парения в одном месте</p>
+                    <div class="logo-row">
+                        <span class="logo-icon">💨</span>
+                        <h1>Puff Paradise Shop</h1>
+                    </div>
+                    <p class="greeting" id="greeting-text">👋 Привет, <span id="user-name">Гость</span>!</p>
                 </div>
 
-                <!-- Акции -->
-                <div id="promotions-container">
-                    <div class="loading">⏳ Загрузка акций...</div>
+                <!-- Приветственная карточка -->
+                <div class="welcome-card" id="welcome-card">
+                    <h2 id="welcome-title">Добро пожаловать в Puff Paradise Shop</h2>
+                    <p id="welcome-description">
+                        У нас есть всё, что тебе нужно: жидкости, одноразки, POD-системы и многое другое!<br />
+                        Каталог по линейкам, быстрый заказ и доставка.<br />
+                        Множество акций и промокодов. Удобные способы оплаты.
+                    </p>
+                    <div class="welcome-buttons">
+                        <button class="welcome-btn primary" onclick="navigateTo('page-catalog')">
+                            📋 Каталог
+                        </button>
+                        <button class="welcome-btn secondary" onclick="navigateTo('page-prizes')">
+                            🎯 Скидки
+                        </button>
+                        <button class="welcome-btn tertiary" onclick="openManagerChat()">
+                            📩 Связь с менеджером
+                        </button>
+                    </div>
                 </div>
 
-                <!-- Хиты -->
+                <!-- ===== АКЦИИ (заглушка) ===== -->
                 <div class="section-header">
-                    <h2>🔥 Хиты продаж</h2>
-                    <a href="#" onclick="navigateTo('page-catalog')">Смотреть все</a>
+                    <h2>🎉 Акции</h2>
+                    <a href="#" onclick="navigateTo('page-prizes')">Все акции →</a>
                 </div>
-                <div class="product-grid" id="hits-grid">
-                    <div class="loading">⏳ Загрузка...</div>
+                <div class="horizontal-scroll" id="promotions-scroll">
+                    <div class="promotion-card placeholder">
+                        <div class="promotion-placeholder">
+                            <span class="promo-emoji">🎁</span>
+                            <h4>Скоро здесь будут акции!</h4>
+                            <p>Следите за обновлениями</p>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Новинки -->
+                <!-- ===== КАТЕГОРИИ ===== -->
                 <div class="section-header">
-                    <h2>✨ Новинки</h2>
-                    <a href="#" onclick="navigateTo('page-catalog')">Смотреть все</a>
+                    <h2>📂 Категории</h2>
                 </div>
-                <div class="product-grid" id="new-grid">
-                    <div class="loading">⏳ Загрузка...</div>
+                <div class="horizontal-scroll" id="categories-scroll">
+                    <!-- Категории будут загружены из JS -->
+                </div>
+
+                <!-- ===== СКИДКИ ===== -->
+                <div class="section-header">
+                    <h2>🔥 Сейчас со скидкой</h2>
+                    <a href="#" onclick="navigateTo('page-catalog')">Все товары →</a>
+                </div>
+                <div class="horizontal-scroll" id="discounts-scroll">
+                    <!-- Товары со скидкой будут загружены из JS -->
+                </div>
+
+                <!-- ===== ПОПУЛЯРНОЕ ===== -->
+                <div class="section-header">
+                    <h2>⭐ Популярное</h2>
+                    <a href="#" onclick="navigateTo('page-catalog')">Все товары →</a>
+                </div>
+                <div class="horizontal-scroll" id="popular-scroll">
+                    <!-- Популярные товары будут загружены из JS -->
                 </div>
             </div>
 
             <!-- ========================================= -->
-            <!-- ===== КАТАЛОГ (С ПОИСКОМ И ФИЛЬТРАМИ-ТЕГАМИ) ===== -->
+            <!-- ===== КАТАЛОГ ===== -->
             <!-- ========================================= -->
             <div id="page-catalog" class="page">
                 <div class="app-header">
-                    <h1>📋 Каталог</h1>
-                    <p>Все товары в одном месте</p>
+                    <div class="logo-row">
+                        <span class="logo-icon">💨</span>
+                        <h1>Puff Paradise Shop</h1>
+                    </div>
+                    <p class="greeting">📋 Каталог</p>
                 </div>
 
                 <!-- Поиск -->
-                <div class="catalog-search">
-                    <input type="text" id="search-input" placeholder="🔍 Поиск товаров..." class="search-input">
+                <div class="search-container">
+                    <input type="text" id="search-input" class="search-input" placeholder="🔍 Поиск товаров..." />
                 </div>
 
-                <!-- Фильтры-теги категорий (НОВЫЙ ЭЛЕМЕНТ) -->
-                <div id="category-tabs" class="category-tabs"></div>
-
-                <!-- Сортировка -->
-                <div class="catalog-filters">
-                    <div class="filter-section">
-                        <div class="filter-label">Сортировка</div>
-                        <div class="filter-options" id="sort-filters">
-                            <button class="filter-btn active" data-sort="default">По умолчанию</button>
-                            <button class="filter-btn" data-sort="price-asc">Сначала дешёвые</button>
-                            <button class="filter-btn" data-sort="price-desc">Сначала дорогие</button>
-                            <button class="filter-btn" data-sort="name">По названию</button>
-                            <button class="filter-btn" data-sort="popular">По популярности</button>
-                        </div>
-                    </div>
+                <!-- Фильтры категорий (горизонтальный скролл) -->
+                <div class="filter-tabs" id="category-filters">
+                    <button class="filter-tab active" data-category="all">Все товары</button>
+                    <button class="filter-tab" data-category="liquid">Жидкости</button>
+                    <button class="filter-tab" data-category="accessories">Комплектующие</button>
+                    <button class="filter-tab" data-category="pod">Pod-системы</button>
+                    <button class="filter-tab" data-category="disposable">Одноразки</button>
+                    <button class="filter-tab" data-category="snus">Снюс</button>
                 </div>
 
-                <!-- Результаты -->
-                <div class="catalog-results">
-                    <span id="catalog-count">0 товаров</span>
-                    <div class="product-grid" id="catalog-grid">
-                        <div class="loading">⏳ Загрузка товаров...</div>
-                    </div>
+                <!-- Дополнительные фильтры (динамические) -->
+                <div id="sub-filters-container">
+                    <!-- Сюда будут подгружаться дополнительные фильтры -->
+                </div>
+
+                <!-- Список товаров (бесконечный скролл) -->
+                <div class="product-list" id="catalog-products">
+                    <div class="loading">⏳ Загрузка товаров...</div>
                 </div>
             </div>
 
             <!-- ========================================= -->
-            <!-- ===== КОРЗИНА (С ДОСТАВКОЙ И ПРОМОКОДАМИ) ===== -->
+            <!-- ===== КОРЗИНА ===== -->
             <!-- ========================================= -->
             <div id="page-cart" class="page">
                 <div class="app-header">
-                    <h1>🛒 Корзина</h1>
-                    <p>Ваши выбранные товары</p>
+                    <div class="logo-row">
+                        <span class="logo-icon">💨</span>
+                        <h1>Puff Paradise Shop</h1>
+                    </div>
+                    <p class="greeting">🛒 Корзина</p>
                 </div>
                 <div id="cart-content">
-                    <ul id="cart-items">
-                        <li class="cart-empty">🛒 Корзина пуста</li>
-                    </ul>
-                    
-                    <!-- Промокод -->
-                    <div id="promocode-section" style="display:none; margin-top: 12px;">
-                        <div class="promocode-group">
-                            <input type="text" id="promocode-input" placeholder="🎫 Введите промокод" class="order-input" style="flex:1;">
-                            <button id="promocode-apply-btn" class="promocode-apply-btn">Применить</button>
-                        </div>
-                        <div id="promocode-status" class="promocode-status"></div>
-                    </div>
-                    
-                    <!-- Форма оформления заказа -->
-                    <div id="order-form" style="display:none; margin-top: 16px;">
-                        <div class="form-group">
-                            <label>👤 Ваш Telegram (необязательно)</label>
-                            <input type="text" id="order-username" placeholder="@username" class="order-input">
-                        </div>
-                        <div class="form-group">
-                            <label>📱 Телефон (необязательно)</label>
-                            <input type="text" id="order-phone" placeholder="+375 (29) 123-45-67" class="order-input">
-                        </div>
-                        <div class="form-group">
-                            <label>📦 Способ получения</label>
-                            <select id="order-delivery-type" class="order-input">
-                                <option value="pickup">🏪 Самовывоз — БЕСПЛАТНО</option>
-                                <option value="delivery">🚚 Доставка — <span id="delivery-price-option">5 BYN</span></option>
-                            </select>
-                        </div>
-                        
-                        <!-- Выбор точки самовывоза -->
-                        <div id="pickup-point-group" style="display:block;">
-                            <div class="form-group">
-                                <label>📍 Выберите точку самовывоза *</label>
-                                <select id="order-pickup-point" class="order-input">
-                                    <option value="">-- Выберите точку --</option>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <div id="delivery-address-group" style="display:none;">
-                            <div class="form-group">
-                                <label>📍 Адрес доставки *</label>
-                                <input type="text" id="order-address" placeholder="Город, улица, дом, квартира" class="order-input">
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label>💬 Комментарий к заказу</label>
-                            <textarea id="order-comment" placeholder="Дополнительная информация..." class="order-input" rows="2"></textarea>
-                        </div>
-                    </div>
-                    
-                    <div class="cart-total">
-                        <div>
-                            <span>Товары</span>
-                            <span id="cart-subtotal">0 BYN</span>
-                        </div>
-                        <div id="delivery-info" style="display:none;">
-                            <span>🚚 Доставка</span>
-                            <span id="delivery-price-display">Бесплатно</span>
-                        </div>
-                        <div style="border-top:1px solid #e5e7eb; padding-top:8px; margin-top:4px;">
-                            <span style="font-weight:700;">Итого</span>
-                            <span class="total-price" id="total-price">0 BYN</span>
-                        </div>
-                    </div>
-                    <button id="checkout-btn" class="checkout-btn" disabled>📦 Оформить заказ</button>
+                    <!-- Корзина будет загружена из JS -->
                 </div>
             </div>
 
             <!-- ========================================= -->
-            <!-- ===== ПРИЗЫ ===== -->
+            <!-- ===== ПРИЗЫ / АКЦИИ ===== -->
             <!-- ========================================= -->
             <div id="page-prizes" class="page">
                 <div class="app-header">
-                    <h1>🎁 Призы</h1>
-                    <p>Получайте бонусы за покупки</p>
+                    <div class="logo-row">
+                        <span class="logo-icon">💨</span>
+                        <h1>Puff Paradise Shop</h1>
+                    </div>
+                    <p class="greeting">🎁 Акции и призы</p>
                 </div>
                 <div id="prizes-list">
-                    <div class="loading">⏳ Загрузка призов...</div>
+                    <div class="loading">⏳ Загрузка акций...</div>
                 </div>
             </div>
 
             <!-- ========================================= -->
             <!-- ===== МОИ ЗАКАЗЫ ===== -->
             <!-- ========================================= -->
-            <div id="page-my-orders" class="page">
+            <div id="page-orders" class="page">
                 <div class="app-header">
-                    <h1>📦 Мои заказы</h1>
-                    <p>История ваших заказов</p>
+                    <div class="logo-row">
+                        <span class="logo-icon">💨</span>
+                        <h1>Puff Paradise Shop</h1>
+                    </div>
+                    <p class="greeting">📦 Мои заказы</p>
                 </div>
-                <button class="admin-reload-btn" onclick="loadMyOrders()" style="margin-bottom:10px; padding:8px 16px; background:#667eea; color:white; border:none; border-radius:8px; cursor:pointer; width:100%; font-weight:600;">
-                    🔄 Обновить
-                </button>
-                <div id="my-orders-list">
-                    <div class="loading">⏳ Загрузка ваших заказов...</div>
-                </div>
-            </div>
-
-            <!-- ========================================= -->
-            <!-- ===== АДМИН-ПАНЕЛЬ ===== -->
-            <!-- ========================================= -->
-
-            <!-- АДМИН-МЕНЮ -->
-            <div id="page-admin" class="page">
-                <div class="app-header">
-                    <h1>⚙️ Админ-панель</h1>
-                    <p>Управление магазином</p>
-                </div>
-                <div class="admin-menu">
-                    <button class="admin-menu-btn" data-page="page-admin-stats">
-                        <span class="admin-menu-icon">📊</span>
-                        <span class="admin-menu-label">Статистика</span>
-                    </button>
-                    <button class="admin-menu-btn" data-page="page-admin-orders">
-                        <span class="admin-menu-icon">📦</span>
-                        <span class="admin-menu-label">Заказы</span>
-                    </button>
-                    <button class="admin-menu-btn" data-page="page-admin-products">
-                        <span class="admin-menu-icon">🛍️</span>
-                        <span class="admin-menu-label">Товары</span>
-                    </button>
-                    <button class="admin-menu-btn" data-page="page-admin-categories">
-                        <span class="admin-menu-icon">📂</span>
-                        <span class="admin-menu-label">Категории</span>
-                    </button>
-                    <button class="admin-menu-btn" data-page="page-admin-brands">
-                        <span class="admin-menu-icon">🏷️</span>
-                        <span class="admin-menu-label">Бренды</span>
-                    </button>
-                    <button class="admin-menu-btn" data-page="page-admin-models">
-                        <span class="admin-menu-icon">📦</span>
-                        <span class="admin-menu-label">Модели</span>
-                    </button>
-                    <button class="admin-menu-btn" data-page="page-admin-attributes">
-                        <span class="admin-menu-icon">🏷️</span>
-                        <span class="admin-menu-label">Атрибуты</span>
-                    </button>
-                    <button class="admin-menu-btn" data-page="page-admin-promotions">
-                        <span class="admin-menu-icon">🎉</span>
-                        <span class="admin-menu-label">Акции</span>
-                    </button>
-                    <button class="admin-menu-btn" data-page="page-admin-prizes">
-                        <span class="admin-menu-icon">🎁</span>
-                        <span class="admin-menu-label">Призы</span>
-                    </button>
-                    <button class="admin-menu-btn" data-page="page-admin-promocodes">
-                        <span class="admin-menu-icon">🎫</span>
-                        <span class="admin-menu-label">Промокоды</span>
-                    </button>
-                    <button class="admin-menu-btn" data-page="page-admin-settings">
-                        <span class="admin-menu-icon">⚙️</span>
-                        <span class="admin-menu-label">Настройки</span>
-                    </button>
-                    <button class="admin-menu-btn" data-page="page-admin-import">
-                        <span class="admin-menu-icon">📥</span>
-                        <span class="admin-menu-label">Импорт товаров</span>
-                    </button>
-                    <button class="admin-menu-btn" data-page="page-admin-moderators">
-                        <span class="admin-menu-icon">👥</span>
-                        <span class="admin-menu-label">Модераторы</span>
-                    </button>
-                    <button class="admin-menu-btn" data-page="page-admin-pickup-points">
-                        <span class="admin-menu-icon">📍</span>
-                        <span class="admin-menu-label">Точки самовывоза</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- СТАТИСТИКА (расширенная) -->
-            <div id="page-admin-stats" class="page">
-                <div class="app-header">
-                    <h1>📊 Статистика</h1>
-                    <p>Аналитика продаж</p>
-                </div>
-                <button class="admin-reload-btn" onclick="loadStats()" style="margin-bottom:10px; padding:8px 16px; background:#667eea; color:white; border:none; border-radius:8px; cursor:pointer; width:100%; font-weight:600;">
-                    🔄 Обновить статистику
-                </button>
-                
-                <!-- Основные показатели -->
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-icon">💰</div>
-                        <div class="stat-info">
-                            <div class="stat-value" id="stat-today">0 BYN</div>
-                            <div class="stat-label">Сегодня</div>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">📈</div>
-                        <div class="stat-info">
-                            <div class="stat-value" id="stat-week">0 BYN</div>
-                            <div class="stat-label">За неделю</div>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">📊</div>
-                        <div class="stat-info">
-                            <div class="stat-value" id="stat-month">0 BYN</div>
-                            <div class="stat-label">За месяц</div>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">🏆</div>
-                        <div class="stat-info">
-                            <div class="stat-value" id="stat-total">0 BYN</div>
-                            <div class="stat-label">Всего продаж</div>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">📦</div>
-                        <div class="stat-info">
-                            <div class="stat-value" id="stat-orders-today">0</div>
-                            <div class="stat-label">Заказов сегодня</div>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">🔄</div>
-                        <div class="stat-info">
-                            <div class="stat-value" id="stat-orders-pending">0</div>
-                            <div class="stat-label">В обработке</div>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">🚚</div>
-                        <div class="stat-info">
-                            <div class="stat-value" id="stat-delivery">0</div>
-                            <div class="stat-label">Доставок</div>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">🏪</div>
-                        <div class="stat-info">
-                            <div class="stat-value" id="stat-pickup">0</div>
-                            <div class="stat-label">Самовывозов</div>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">💰</div>
-                        <div class="stat-info">
-                            <div class="stat-value" id="stat-delivery-revenue">0 BYN</div>
-                            <div class="stat-label">Доход от доставки</div>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">📋</div>
-                        <div class="stat-info">
-                            <div class="stat-value" id="stat-total-orders">0</div>
-                            <div class="stat-label">Всего заказов</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Продажи по категориям -->
-                <div class="section-header" style="margin-top:20px;">
-                    <h2>📂 Продажи по категориям</h2>
-                </div>
-                <div id="stat-categories">
-                    <div class="loading">⏳ Загрузка данных по категориям...</div>
-                </div>
-
-                <!-- Топ товаров -->
-                <div class="section-header" style="margin-top:20px;">
-                    <h2>🏆 Топ товаров</h2>
-                </div>
-                <div id="stat-top-products">
-                    <div class="loading">⏳ Загрузка топ товаров...</div>
-                </div>
-            </div>
-
-            <!-- ЗАКАЗЫ (админка) с фильтрами -->
-            <div id="page-admin-orders" class="page">
-                <div class="app-header">
-                    <h1>📦 Заказы</h1>
-                    <p>Управление заказами</p>
-                </div>
-                
-                <!-- Фильтры заказов -->
-                <div class="order-filters">
-                    <div class="filter-group">
-                        <label>Статус</label>
-                        <select id="order-filter-status" class="order-filter-select">
-                            <option value="all">Все</option>
-                            <option value="pending">В обработке</option>
-                            <option value="confirmed">Подтвержден</option>
-                            <option value="shipped">Отправлен</option>
-                            <option value="completed">Выполнен</option>
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label>Способ получения</label>
-                        <select id="order-filter-delivery" class="order-filter-select">
-                            <option value="all">Все</option>
-                            <option value="pickup">Самовывоз</option>
-                            <option value="delivery">Доставка</option>
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label>Дата от</label>
-                        <input type="date" id="order-filter-date-from" class="order-filter-input">
-                    </div>
-                    <div class="filter-group">
-                        <label>Дата до</label>
-                        <input type="date" id="order-filter-date-to" class="order-filter-input">
-                    </div>
-                    <div class="filter-actions">
-                        <button class="filter-apply-btn" id="order-filter-apply">🔍 Применить</button>
-                        <button class="filter-reset-btn" id="order-filter-reset">↺ Сбросить</button>
-                    </div>
-                </div>
-                
-                <div class="order-actions-bar">
-                    <button class="admin-reload-btn" onclick="loadAdminOrders()" style="margin-bottom:10px; padding:8px 16px; background:#667eea; color:white; border:none; border-radius:8px; cursor:pointer; width:100%; font-weight:600;">
-                        🔄 Принудительно загрузить заказы
-                    </button>
-                    <button class="admin-export-btn" id="admin-export-orders-btn" style="margin-bottom:10px; padding:8px 16px; background:#22c55e; color:white; border:none; border-radius:8px; cursor:pointer; width:100%; font-weight:600;">
-                        📥 Экспорт в CSV
-                    </button>
-                </div>
-                
-                <div id="admin-orders-list">
+                <div id="orders-list">
                     <div class="loading">⏳ Загрузка заказов...</div>
                 </div>
             </div>
 
-            <!-- ТОВАРЫ (админка) -->
-            <div id="page-admin-products" class="page">
+            <!-- ========================================= -->
+            <!-- ===== АДМИНКА (показывается только админам) ===== -->
+            <!-- ========================================= -->
+            <div id="page-admin" class="page">
                 <div class="app-header">
-                    <h1>🛍️ Товары</h1>
-                    <p>Управление каталогом</p>
-                </div>
-                
-                <!-- Фильтры в админке -->
-                <div class="admin-filters">
-                    <select id="admin-product-filter-category" class="admin-filter-select">
-                        <option value="all">Все категории</option>
-                    </select>
-                    <select id="admin-product-filter-stock" class="admin-filter-select">
-                        <option value="all">Все товары</option>
-                        <option value="in-stock">В наличии</option>
-                        <option value="out-of-stock">Нет в наличии</option>
-                    </select>
-                    <button class="admin-filter-btn" id="admin-product-filter-btn">🔍 Применить</button>
-                </div>
-
-                <button class="admin-reload-btn" onclick="loadAdminProducts()" style="margin-bottom:10px; padding:8px 16px; background:#667eea; color:white; border:none; border-radius:8px; cursor:pointer; width:100%; font-weight:600;">
-                    🔄 Принудительно загрузить товары
-                </button>
-                <button class="admin-add-btn" id="admin-add-product-btn">➕ Добавить товар</button>
-                <div id="admin-products-list">
-                    <div class="loading">⏳ Загрузка товаров...</div>
-                </div>
-            </div>
-
-            <!-- КАТЕГОРИИ (админка) -->
-            <div id="page-admin-categories" class="page">
-                <div class="app-header">
-                    <h1>📂 Категории</h1>
-                    <p>Управление категориями</p>
-                </div>
-                <button class="admin-reload-btn" onclick="loadAdminCategories()" style="margin-bottom:10px; padding:8px 16px; background:#667eea; color:white; border:none; border-radius:8px; cursor:pointer; width:100%; font-weight:600;">
-                    🔄 Принудительно загрузить категории
-                </button>
-                <button class="admin-add-btn" id="admin-add-category-btn">➕ Добавить категорию</button>
-                <div id="admin-categories-list">
-                    <div class="loading">⏳ Загрузка категорий...</div>
-                </div>
-            </div>
-
-            <!-- БРЕНДЫ (админка) -->
-            <div id="page-admin-brands" class="page">
-                <div class="app-header">
-                    <h1>🏷️ Бренды</h1>
-                    <p>Управление производителями</p>
-                </div>
-                <button class="admin-reload-btn" onclick="loadAdminBrands()" style="margin-bottom:10px; padding:8px 16px; background:#667eea; color:white; border:none; border-radius:8px; cursor:pointer; width:100%; font-weight:600;">
-                    🔄 Принудительно загрузить бренды
-                </button>
-                <button class="admin-add-btn" id="admin-add-brand-btn">➕ Добавить бренд</button>
-                <div id="admin-brands-list">
-                    <div class="loading">⏳ Загрузка брендов...</div>
-                </div>
-            </div>
-
-            <!-- МОДЕЛИ (админка) -->
-            <div id="page-admin-models" class="page">
-                <div class="app-header">
-                    <h1>📦 Модели</h1>
-                    <p>Управление моделями товаров</p>
-                </div>
-                <button class="admin-reload-btn" onclick="loadAdminModels()" style="margin-bottom:10px; padding:8px 16px; background:#667eea; color:white; border:none; border-radius:8px; cursor:pointer; width:100%; font-weight:600;">
-                    🔄 Принудительно загрузить модели
-                </button>
-                <button class="admin-add-btn" id="admin-add-model-btn">➕ Добавить модель</button>
-                <div id="admin-models-list">
-                    <div class="loading">⏳ Загрузка моделей...</div>
-                </div>
-            </div>
-
-            <!-- АТРИБУТЫ (админка) -->
-            <div id="page-admin-attributes" class="page">
-                <div class="app-header">
-                    <h1>🏷️ Атрибуты</h1>
-                    <p>Управление характеристиками товаров</p>
-                </div>
-                <button class="admin-reload-btn" onclick="loadAdminAttributes()" style="margin-bottom:10px; padding:8px 16px; background:#667eea; color:white; border:none; border-radius:8px; cursor:pointer; width:100%; font-weight:600;">
-                    🔄 Принудительно загрузить атрибуты
-                </button>
-                <button class="admin-add-btn" id="admin-add-attribute-btn">➕ Добавить атрибут</button>
-                <div id="admin-attributes-list">
-                    <div class="loading">⏳ Загрузка атрибутов...</div>
-                </div>
-            </div>
-
-            <!-- АКЦИИ (админка) -->
-            <div id="page-admin-promotions" class="page">
-                <div class="app-header">
-                    <h1>🎉 Акции</h1>
-                    <p>Управление акциями</p>
-                </div>
-                <button class="admin-reload-btn" onclick="loadAdminPromotions()" style="margin-bottom:10px; padding:8px 16px; background:#667eea; color:white; border:none; border-radius:8px; cursor:pointer; width:100%; font-weight:600;">
-                    🔄 Принудительно загрузить акции
-                </button>
-                <button class="admin-add-btn" id="admin-add-promotion-btn">➕ Добавить акцию</button>
-                <div id="admin-promotions-list">
-                    <div class="loading">⏳ Загрузка акций...</div>
-                </div>
-            </div>
-
-            <!-- ПРИЗЫ (админка) -->
-            <div id="page-admin-prizes" class="page">
-                <div class="app-header">
-                    <h1>🎁 Призы</h1>
-                    <p>Управление призами</p>
-                </div>
-                <button class="admin-reload-btn" onclick="loadAdminPrizes()" style="margin-bottom:10px; padding:8px 16px; background:#667eea; color:white; border:none; border-radius:8px; cursor:pointer; width:100%; font-weight:600;">
-                    🔄 Принудительно загрузить призы
-                </button>
-                <div id="admin-prizes-list">
-                    <div class="loading">⏳ Загрузка призов...</div>
-                </div>
-            </div>
-
-            <!-- ПРОМОКОДЫ (админка) -->
-            <div id="page-admin-promocodes" class="page">
-                <div class="app-header">
-                    <h1>🎫 Промокоды</h1>
-                    <p>Управление промокодами</p>
-                </div>
-                <button class="admin-reload-btn" onclick="loadAdminPromocodes()" style="margin-bottom:10px; padding:8px 16px; background:#667eea; color:white; border:none; border-radius:8px; cursor:pointer; width:100%; font-weight:600;">
-                    🔄 Принудительно загрузить промокоды
-                </button>
-                <div id="admin-promocodes-list">
-                    <div class="loading">⏳ Загрузка промокодов...</div>
-                </div>
-            </div>
-
-            <!-- НАСТРОЙКИ (админка) -->
-            <div id="page-admin-settings" class="page">
-                <div class="app-header">
-                    <h1>⚙️ Настройки</h1>
-                    <p>Управление настройками магазина</p>
-                </div>
-                <div id="admin-settings-container">
-                    <div class="loading">⏳ Загрузка настроек...</div>
-                </div>
-            </div>
-
-            <!-- ИМПОРТ ТОВАРОВ (админка) -->
-            <div id="page-admin-import" class="page">
-                <div class="app-header">
-                    <h1>📥 Импорт товаров</h1>
-                    <p>Массовое добавление товаров</p>
-                </div>
-                <div id="admin-import-container">
-                    <div class="import-info">
-                        <p>📋 Вставьте данные в формате:</p>
-                        <pre>Название | Цена | Категория | Бренд | Модель | Эмодзи | Остаток</pre>
-                        <p>Пример:</p>
-                        <pre>Кислотные червячки | 25 | snus | husky | 50mg | 🍬 | 10
-Xros 5 mini | 55 | pod | vaporesso | xros-5 | 💨 | 5</pre>
-                        <p>💡 Поддерживаются разделители: <code>|</code>, <code>;</code>, <code>Tab</code></p>
+                    <div class="logo-row">
+                        <span class="logo-icon">⚙️</span>
+                        <h1>Админ-панель</h1>
                     </div>
-                    <textarea id="import-textarea" class="import-textarea" placeholder="Вставьте данные для импорта..." rows="10"></textarea>
-                    <button class="admin-import-btn" id="admin-import-btn" onclick="importProducts()">📥 Импортировать товары</button>
-                    <div id="import-status" class="import-status"></div>
+                    <p class="greeting">Управление магазином</p>
+                </div>
+                <!-- Админ-меню -->
+                <div class="admin-menu" id="admin-menu">
+                    <!-- Будет загружено из JS -->
                 </div>
             </div>
 
-            <!-- МОДЕРАТОРЫ (админка) -->
-            <div id="page-admin-moderators" class="page">
-                <div class="app-header">
-                    <h1>👥 Модераторы</h1>
-                    <p>Управление доступом</p>
-                </div>
-                <button class="admin-reload-btn" onclick="loadAdmins()" style="margin-bottom:10px; padding:8px 16px; background:#667eea; color:white; border:none; border-radius:8px; cursor:pointer; width:100%; font-weight:600;">
-                    🔄 Принудительно загрузить модераторов
-                </button>
-                <div class="admin-add-form">
-                    <input type="text" id="admin-add-id" placeholder="Telegram ID">
-                    <input type="text" id="admin-add-username" placeholder="Имя пользователя">
-                    <button id="admin-add-btn">➕ Добавить</button>
-                </div>
-                <div id="admin-moderators-list">
-                    <div class="loading">⏳ Загрузка модераторов...</div>
-                </div>
-            </div>
-
-            <!-- ТОЧКИ САМОВЫВОЗА (админка) -->
-            <div id="page-admin-pickup-points" class="page">
-                <div class="app-header">
-                    <h1>📍 Точки самовывоза</h1>
-                    <p>Управление точками самовывоза</p>
-                </div>
-                <button class="admin-reload-btn" onclick="loadAdminPickupPoints()" style="margin-bottom:10px; padding:8px 16px; background:#667eea; color:white; border:none; border-radius:8px; cursor:pointer; width:100%; font-weight:600;">
-                    🔄 Принудительно загрузить точки
-                </button>
-                <button class="admin-add-btn" id="admin-add-pickup-point-btn">➕ Добавить точку</button>
-                <div id="admin-pickup-points-list">
-                    <div class="loading">⏳ Загрузка точек самовывоза...</div>
-                </div>
-            </div>
-
-        </div>
+        </div> <!-- /container -->
 
         <!-- ========================================= -->
         <!-- ===== НИЖНЯЯ НАВИГАЦИЯ ===== -->
@@ -655,13 +231,13 @@ Xros 5 mini | 55 | pod | vaporesso | xros-5 | 💨 | 5</pre>
                 <span class="nav-label">Корзина</span>
                 <span class="cart-badge hidden" id="cart-badge">0</span>
             </button>
-            <button class="nav-btn" data-page="page-my-orders" id="nav-my-orders">
-                <span class="nav-icon">📦</span>
-                <span class="nav-label">Мои заказы</span>
-            </button>
             <button class="nav-btn" data-page="page-prizes">
                 <span class="nav-icon">🎁</span>
-                <span class="nav-label">Призы</span>
+                <span class="nav-label">Акции</span>
+            </button>
+            <button class="nav-btn" data-page="page-orders">
+                <span class="nav-icon">📦</span>
+                <span class="nav-label">Заказы</span>
             </button>
             <button class="nav-btn admin-only" data-page="page-admin" id="nav-admin" style="display:none;">
                 <span class="nav-icon">⚙️</span>
@@ -670,20 +246,11 @@ Xros 5 mini | 55 | pod | vaporesso | xros-5 | 💨 | 5</pre>
         </nav>
     </div>
 
-    <!-- Добавляем защитный блок -->
-    <div id="app-error" style="display:none; padding:20px; text-align:center; background:#ff6b6b; color:white; border-radius:8px; margin:20px; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:9999; max-width:90%;">
-        <h3>⚠️ Ошибка загрузки</h3>
-        <p id="error-message">Произошла ошибка при загрузке приложения</p>
-        <button onclick="location.reload()" style="margin-top:15px; padding:10px 30px; background:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">
-            🔄 Перезагрузить
-        </button>
-    </div>
-
-    <!-- Модальное окно для быстрого просмотра -->
-    <div id="quick-view-modal" class="quick-view-modal" style="display:none;">
-        <div class="quick-view-overlay" onclick="closeQuickView()"></div>
-        <div class="quick-view-content" id="quick-view-content">
-            <div class="quick-view-loader">⏳ Загрузка...</div>
+    <!-- ===== Модальное окно для деталей товара ===== -->
+    <div id="product-modal" class="modal" style="display:none;">
+        <div class="modal-overlay" onclick="closeProductModal()"></div>
+        <div class="modal-content" id="product-modal-content">
+            <!-- Загружается из JS -->
         </div>
     </div>
 
