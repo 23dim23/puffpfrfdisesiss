@@ -1,6 +1,0 @@
-{
-  "name": "Puff Paradise Shop",
-  "description": "Telegram Mini App вейп-шопа в Беларуси: каталог с умными фильтрами, корзина с доставкой и самовывозом, акции, история заказов и многофункциональная админ-панель.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}
