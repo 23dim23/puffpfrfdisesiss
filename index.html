@@ -6,7 +6,6 @@
     <title>Puff Paradise</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- Добавляем защиту от ошибок -->
     <script>
         window.onerror = function(msg, url, line, col, error) {
             console.error('❌ ОШИБКА:', msg, 'в', url, 'на строке', line);
@@ -39,12 +38,10 @@
                     <p>Всё для парения в одном месте</p>
                 </div>
 
-                <!-- Акции -->
                 <div id="promotions-container">
                     <div class="loading">⏳ Загрузка акций...</div>
                 </div>
 
-                <!-- Хиты -->
                 <div class="section-header">
                     <h2>🔥 Хиты продаж</h2>
                     <a href="#" onclick="navigateTo('page-catalog')">Смотреть все</a>
@@ -53,7 +50,6 @@
                     <div class="loading">⏳ Загрузка...</div>
                 </div>
 
-                <!-- Новинки -->
                 <div class="section-header">
                     <h2>✨ Новинки</h2>
                     <a href="#" onclick="navigateTo('page-catalog')">Смотреть все</a>
@@ -64,7 +60,7 @@
             </div>
 
             <!-- ========================================= -->
-            <!-- ===== КАТАЛОГ (С ПОИСКОМ, ХЛЕБНЫМИ КРОШКАМИ И ПАГИНАЦИЕЙ) ===== -->
+            <!-- ===== КАТАЛОГ (НОВАЯ ВЕРСИЯ) ===== -->
             <!-- ========================================= -->
             <div id="page-catalog" class="page">
                 <div class="app-header">
@@ -77,10 +73,8 @@
                     <input type="text" id="search-input" placeholder="🔍 Поиск товаров..." class="search-input">
                 </div>
 
-                <!-- Хлебные крошки (НОВЫЙ ЭЛЕМЕНТ) -->
-                <div id="breadcrumbs" class="breadcrumbs-container">
-                    <span class="breadcrumb">🏠 Главная</span>
-                </div>
+                <!-- Фильтры-теги категорий (НОВЫЙ ЭЛЕМЕНТ) -->
+                <div id="category-tabs" class="category-tabs"></div>
 
                 <!-- Сортировка -->
                 <div class="catalog-filters">
@@ -91,6 +85,7 @@
                             <button class="filter-btn" data-sort="price-asc">Сначала дешёвые</button>
                             <button class="filter-btn" data-sort="price-desc">Сначала дорогие</button>
                             <button class="filter-btn" data-sort="name">По названию</button>
+                            <button class="filter-btn" data-sort="popular">По популярности</button>
                         </div>
                     </div>
                 </div>
@@ -117,7 +112,6 @@
                         <li class="cart-empty">🛒 Корзина пуста</li>
                     </ul>
                     
-                    <!-- Промокод -->
                     <div id="promocode-section" style="display:none; margin-top: 12px;">
                         <div class="promocode-group">
                             <input type="text" id="promocode-input" placeholder="🎫 Введите промокод" class="order-input" style="flex:1;">
@@ -126,7 +120,6 @@
                         <div id="promocode-status" class="promocode-status"></div>
                     </div>
                     
-                    <!-- Форма оформления заказа -->
                     <div id="order-form" style="display:none; margin-top: 16px;">
                         <div class="form-group">
                             <label>👤 Ваш Telegram (необязательно)</label>
@@ -144,7 +137,6 @@
                             </select>
                         </div>
                         
-                        <!-- Выбор точки самовывоза -->
                         <div id="pickup-point-group" style="display:block;">
                             <div class="form-group">
                                 <label>📍 Выберите точку самовывоза *</label>
@@ -297,7 +289,6 @@
                     🔄 Обновить статистику
                 </button>
                 
-                <!-- Основные показатели -->
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-icon">💰</div>
@@ -371,7 +362,6 @@
                     </div>
                 </div>
 
-                <!-- Продажи по категориям -->
                 <div class="section-header" style="margin-top:20px;">
                     <h2>📂 Продажи по категориям</h2>
                 </div>
@@ -379,7 +369,6 @@
                     <div class="loading">⏳ Загрузка данных по категориям...</div>
                 </div>
 
-                <!-- Топ товаров -->
                 <div class="section-header" style="margin-top:20px;">
                     <h2>🏆 Топ товаров</h2>
                 </div>
@@ -395,7 +384,6 @@
                     <p>Управление заказами</p>
                 </div>
                 
-                <!-- Фильтры заказов -->
                 <div class="order-filters">
                     <div class="filter-group">
                         <label>Статус</label>
@@ -450,7 +438,6 @@
                     <p>Управление каталогом</p>
                 </div>
                 
-                <!-- Фильтры в админке -->
                 <div class="admin-filters">
                     <select id="admin-product-filter-category" class="admin-filter-select">
                         <option value="all">Все категории</option>
@@ -675,7 +662,7 @@ Xros 5 mini | 55 | pod | vaporesso | xros-5 | 💨 | 5</pre>
         </nav>
     </div>
 
-    <!-- Добавляем защитный блок -->
+    <!-- Защитный блок -->
     <div id="app-error" style="display:none; padding:20px; text-align:center; background:#ff6b6b; color:white; border-radius:8px; margin:20px; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:9999; max-width:90%;">
         <h3>⚠️ Ошибка загрузки</h3>
         <p id="error-message">Произошла ошибка при загрузке приложения</p>
@@ -684,7 +671,6 @@ Xros 5 mini | 55 | pod | vaporesso | xros-5 | 💨 | 5</pre>
         </button>
     </div>
 
-    <!-- Добавляем контейнер для быстрого просмотра (создаётся через JS, но на всякий случай) -->
     <div id="quick-view-modal" class="quick-view-modal" style="display:none;">
         <div class="quick-view-overlay" onclick="closeQuickView()"></div>
         <div class="quick-view-content" id="quick-view-content">
@@ -694,6 +680,5 @@ Xros 5 mini | 55 | pod | vaporesso | xros-5 | 💨 | 5</pre>
     </div>
 
     <script src="app.js"></script>
-    <!-- <script src="catalog.js"></script> -->
 </body>
 </html>

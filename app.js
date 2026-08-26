@@ -38,10 +38,11 @@ const SUPABASE_KEY = SUPABASE_SERVICE_ROLE;
 
 // ===== ФИКСИРОВАННЫЕ КАТЕГОРИИ =====
 const FIXED_CATEGORIES = [
+    { slug: 'all', name: 'Все', icon: '📋' },
     { slug: 'pod', name: 'Pod-системы', icon: '💨' },
     { slug: 'liquid', name: 'Жижи', icon: '🧪' },
     { slug: 'accessories', name: 'Комплектующие', icon: '🔧' },
-    { slug: 'disposable', name: 'Одноразовые pod', icon: '⚡' },
+    { slug: 'disposable', name: 'Одноразовые', icon: '⚡' },
     { slug: 'snus', name: 'Снюс', icon: '🫧' }
 ];
 
@@ -60,9 +61,6 @@ let prizes = [];
 let promocodes = [];
 let settings = {};
 let currentCategorySlug = 'all';
-let currentBrandSlug = 'all';
-let currentModelSlug = 'all';
-let currentAttributeValue = 'all';
 let currentSort = 'default';
 let adminFilterCategory = 'all';
 let adminFilterStock = 'all';
@@ -74,6 +72,12 @@ let lastOrderCheck = 0;
 let appliedPromocode = null;
 let deliveryPrice = 5;
 let deliveryEnabled = true;
+
+// ===== ПАГИНАЦИЯ =====
+const ITEMS_PER_PAGE = 10;
+let catalogCurrentPage = 1;
+let totalFilteredItems = [];
+let isLoading = false;
 
 // ===== РЕЖИМ РАЗРАБОТКИ =====
 const isDevelopment = !window.Telegram.WebApp.initDataUnsafe?.user;
@@ -433,7 +437,29 @@ function renderNewItems() {
 }
 
 // ==========================================
-// ===== КАТАЛОГ (С ПОИСКОМ) =====
+// ===== ФИЛЬТРЫ-ТЕГИ КАТЕГОРИЙ =====
+// ==========================================
+function renderCategoryTabs() {
+    const container = document.getElementById('category-tabs');
+    if (!container) return;
+    
+    container.innerHTML = FIXED_CATEGORIES.map(cat => `
+        <button class="category-tab ${currentCategorySlug === cat.slug ? 'active' : ''}" 
+                data-slug="${cat.slug}" 
+                onclick="selectCategoryTab('${cat.slug}')">
+            ${cat.icon} ${cat.name}
+        </button>
+    `).join('');
+}
+
+function selectCategoryTab(slug) {
+    currentCategorySlug = slug;
+    renderCategoryTabs();
+    renderCatalog();
+}
+
+// ==========================================
+// ===== КАТАЛОГ (НОВАЯ ВЕРСИЯ) =====
 // ==========================================
 function renderCatalog() {
     const grid = document.getElementById('catalog-grid');
@@ -442,284 +468,107 @@ function renderCatalog() {
         return;
     }
     
-    if (currentCategorySlug === 'all' && !searchQuery) {
-        renderMainCategories(grid);
-    } else if (currentBrandSlug === 'all' && !searchQuery) {
-        renderBrands(grid);
-    } else if (currentModelSlug === 'all' && !searchQuery) {
-        renderModels(grid);
-    } else if (currentAttributeValue === 'all' && !searchQuery) {
-        renderAttributes(grid);
-    } else {
-        renderProductsWithSearch(grid);
-    }
-}
-
-function renderProductsWithSearch(grid) {
-    let filtered = (products || []).filter(p => p.inStock);
+    // Получаем отфильтрованные товары
+    let filtered = getFilteredProducts();
     
-    if (searchQuery) {
-        const q = searchQuery.toLowerCase();
-        filtered = filtered.filter(p => 
-            (p.name || '').toLowerCase().includes(q) || 
-            (p.emoji && p.emoji.includes(q))
-        );
-    }
-    
-    if (currentCategorySlug !== 'all') {
-        filtered = filtered.filter(p => p.mainCategorySlug === currentCategorySlug);
-    }
-    if (currentBrandSlug !== 'all') {
-        filtered = filtered.filter(p => p.brandSlug === currentBrandSlug);
-    }
-    if (currentModelSlug !== 'all') {
-        filtered = filtered.filter(p => p.modelSlug === currentModelSlug);
-    }
-    if (currentAttributeValue !== 'all') {
-        filtered = filtered.filter(p => {
-            const productAttrs = (productAttributes || []).filter(a => a.product_model_slug === p.modelSlug);
-            return productAttrs.some(a => a.attribute_value === currentAttributeValue);
-        });
-    }
-    
+    // Сортируем
     switch (currentSort) {
         case 'price-asc': filtered.sort((a, b) => a.price - b.price); break;
         case 'price-desc': filtered.sort((a, b) => b.price - a.price); break;
         case 'name': filtered.sort((a, b) => (a.name || '').localeCompare(b.name || '')); break;
+        case 'popular': filtered.sort((a, b) => (b.soldCount || 0) - (a.soldCount || 0)); break;
         default: filtered.sort((a, b) => a.id - b.id);
     }
+    
+    // Сохраняем для пагинации
+    totalFilteredItems = filtered;
+    catalogCurrentPage = 1;
     
     const countEl = document.getElementById('catalog-count');
     if (countEl) countEl.textContent = `${filtered.length} товаров`;
     
     if (filtered.length === 0) {
-        let backHtml = '';
-        if (searchQuery) {
-            backHtml = `<div class="category-back" onclick="clearSearch()">← Очистить поиск</div>`;
-        } else if (currentAttributeValue !== 'all') {
-            backHtml = `<div class="category-back" onclick="selectAttributeValue('all')">← Назад к характеристикам</div>`;
-        } else if (currentModelSlug !== 'all') {
-            backHtml = `<div class="category-back" onclick="selectModel('all')">← Назад к моделям</div>`;
-        } else if (currentBrandSlug !== 'all') {
-            backHtml = `<div class="category-back" onclick="selectBrand('all')">← Назад к брендам</div>`;
-        } else {
-            backHtml = `<div class="category-back" onclick="resetCatalog()">← Назад к категориям</div>`;
-        }
-        grid.innerHTML = `${backHtml}<div class="empty-message">Товары не найдены</div>`;
+        grid.innerHTML = `<div class="empty-message">😕 Товары не найдены</div>`;
         return;
     }
     
-    let backHtml = '';
+    renderPage(grid);
+}
+
+function getFilteredProducts() {
+    let filtered = (products || []).filter(p => p.inStock);
+    
+    // Поиск
     if (searchQuery) {
-        backHtml = `<div class="category-back" onclick="clearSearch()">← Очистить поиск</div>`;
-    } else if (currentAttributeValue !== 'all') {
-        backHtml = `<div class="category-back" onclick="selectAttributeValue('all')">← Назад к характеристикам</div>`;
-    } else if (currentModelSlug !== 'all') {
-        backHtml = `<div class="category-back" onclick="selectModel('all')">← Назад к моделям</div>`;
-    } else if (currentBrandSlug !== 'all') {
-        backHtml = `<div class="category-back" onclick="selectBrand('all')">← Назад к брендам</div>`;
-    } else {
-        backHtml = `<div class="category-back" onclick="resetCatalog()">← Назад к категориям</div>`;
-    }
-    
-    grid.innerHTML = `${backHtml}${filtered.map(p => createProductCard(p)).join('')}`;
-    addBuyButtons(grid);
-}
-
-function clearSearch() {
-    searchQuery = '';
-    const searchInput = document.getElementById('search-input');
-    if (searchInput) searchInput.value = '';
-    renderCatalog();
-}
-
-function renderMainCategories(grid) {
-    grid.innerHTML = FIXED_CATEGORIES.map(cat => `
-        <div class="category-card" onclick="selectMainCategory('${cat.slug}')">
-            <span class="category-icon">${cat.icon || '📂'}</span>
-            <span class="category-name">${cat.name}</span>
-            <span class="category-arrow">→</span>
-        </div>
-    `).join('');
-}
-
-function renderBrands(grid) {
-    const categoryBrands = (brands || []).filter(b => b.main_category_slug === currentCategorySlug);
-    
-    if (categoryBrands.length === 0) {
-        grid.innerHTML = `
-            <div class="category-back" onclick="resetCatalog()">← Назад к категориям</div>
-            <div class="empty-message">Производители не найдены</div>
-        `;
-        return;
-    }
-    
-    grid.innerHTML = `
-        <div class="category-back" onclick="resetCatalog()">← Назад к категориям</div>
-        ${categoryBrands.map(b => `
-            <div class="category-card" onclick="selectBrand('${b.slug}')">
-                <span class="category-icon">🏷️</span>
-                <span class="category-name">${b.name || 'Без названия'}</span>
-                <span class="category-arrow">→</span>
-            </div>
-        `).join('')}
-    `;
-}
-
-function renderModels(grid) {
-    const brandModels = (productModels || []).filter(m => m.brand_slug === currentBrandSlug);
-    
-    if (brandModels.length === 0) {
-        grid.innerHTML = `
-            <div class="category-back" onclick="selectBrand('all')">← Назад к брендам</div>
-            <div class="empty-message">Модели не найдены</div>
-        `;
-        return;
-    }
-    
-    grid.innerHTML = `
-        <div class="category-back" onclick="selectBrand('all')">← Назад к брендам</div>
-        ${brandModels.map(m => `
-            <div class="category-card" onclick="selectModel('${m.slug}')">
-                <span class="category-icon">📦</span>
-                <span class="category-name">${m.name || 'Без названия'}</span>
-                <span class="category-arrow">→</span>
-            </div>
-        `).join('')}
-    `;
-}
-
-function renderAttributes(grid) {
-    const modelAttributes = (productAttributes || []).filter(a => a.product_model_slug === currentModelSlug);
-    
-    if (modelAttributes.length === 0) {
-        currentAttributeValue = 'all';
-        renderProductsWithSearch(grid);
-        return;
-    }
-    
-    const attrGroups = {};
-    modelAttributes.forEach(a => {
-        if (!attrGroups[a.attribute_name]) {
-            attrGroups[a.attribute_name] = [];
-        }
-        attrGroups[a.attribute_name].push(a.attribute_value);
-    });
-    
-    let html = `<div class="category-back" onclick="selectModel('all')">← Назад к моделям</div>`;
-    
-    Object.keys(attrGroups).forEach(attrName => {
-        html += `<div class="filter-section"><div class="filter-label">${attrName}</div><div class="filter-options">`;
-        html += `<button class="filter-btn active" onclick="selectAttributeValue('all')">Все</button>`;
-        attrGroups[attrName].forEach(value => {
-            html += `<button class="filter-btn" onclick="selectAttributeValue('${value}')">${value}</button>`;
+        const q = searchQuery.toLowerCase();
+        filtered = filtered.filter(p => {
+            const brand = brands.find(b => b.slug === p.brandSlug);
+            const model = productModels.find(m => m.slug === p.modelSlug);
+            const category = FIXED_CATEGORIES.find(c => c.slug === p.mainCategorySlug);
+            
+            return (p.name || '').toLowerCase().includes(q) ||
+                   (brand?.name || '').toLowerCase().includes(q) ||
+                   (model?.name || '').toLowerCase().includes(q) ||
+                   (category?.name || '').toLowerCase().includes(q);
         });
-        html += `</div></div>`;
-    });
+    }
+    
+    // Фильтр по категории
+    if (currentCategorySlug !== 'all') {
+        filtered = filtered.filter(p => p.mainCategorySlug === currentCategorySlug);
+    }
+    
+    return filtered;
+}
+
+function renderPage(grid) {
+    const start = 0;
+    const end = catalogCurrentPage * ITEMS_PER_PAGE;
+    const pageItems = totalFilteredItems.slice(start, end);
+    const hasMore = end < totalFilteredItems.length;
+    const remaining = totalFilteredItems.length - end;
+    
+    let html = '';
+    html += pageItems.map(p => createProductCard(p)).join('');
+    
+    // Кнопка "Показать ещё"
+    if (hasMore) {
+        html += `
+            <div class="load-more-container">
+                <button class="load-more-btn" onclick="loadMoreProducts()">
+                    📦 Показать ещё ${Math.min(ITEMS_PER_PAGE, remaining)} товаров
+                    <span class="load-more-count">(осталось ${remaining})</span>
+                </button>
+            </div>
+        `;
+    }
     
     grid.innerHTML = html;
+    addBuyButtons(grid);
+    
+    // Обновляем счётчик
+    const countEl = document.getElementById('catalog-count');
+    if (countEl) {
+        countEl.textContent = `${pageItems.length} из ${totalFilteredItems.length} товаров`;
+    }
 }
 
-// ===== ФУНКЦИИ НАВИГАЦИИ ПО КАТАЛОГУ =====
-window.selectMainCategory = function(slug) {
-    currentCategorySlug = slug;
-    currentBrandSlug = 'all';
-    currentModelSlug = 'all';
-    currentAttributeValue = 'all';
-    searchQuery = '';
-    renderCatalog();
-};
-
-window.selectBrand = function(slug) {
-    currentBrandSlug = slug;
-    currentModelSlug = 'all';
-    currentAttributeValue = 'all';
-    renderCatalog();
-};
-
-window.selectModel = function(slug) {
-    currentModelSlug = slug;
-    currentAttributeValue = 'all';
-    renderCatalog();
-};
-
-window.selectAttributeValue = function(value) {
-    currentAttributeValue = value;
-    renderCatalog();
-};
-
-window.resetCatalog = function() {
-    currentCategorySlug = 'all';
-    currentBrandSlug = 'all';
-    currentModelSlug = 'all';
-    currentAttributeValue = 'all';
-    searchQuery = '';
-    const searchInput = document.getElementById('search-input');
-    if (searchInput) searchInput.value = '';
-    renderCatalog();
-};
-
-// ===== КАРТОЧКА ТОВАРА С БРЕНДОМ И МОДЕЛЬЮ =====
-function createProductCard(product) {
-    if (!product) return '';
-    const discountBadge = product.discountPrice ? 
-        `<span class="discount-badge">-${Math.round((1 - product.discountPrice / product.price) * 100)}%</span>` : '';
-    const hitBadge = product.isHit ? `<span class="hit-badge">🔥 Хит</span>` : '';
-    const newBadge = product.isNew ? `<span class="new-badge">✨ Новинка</span>` : '';
-    const stockBadge = product.stockQuantity <= 5 && product.stockQuantity > 0 ? 
-        `<span class="stock-badge">⚠️ Осталось ${product.stockQuantity}</span>` : '';
+function loadMoreProducts() {
+    const grid = document.getElementById('catalog-grid');
+    if (!grid || isLoading) return;
     
-    const priceDisplay = product.discountPrice ? 
-        `<span class="old-price">${product.price} BYN</span> <span class="price">${product.discountPrice} BYN</span>` :
-        `<span class="price">${product.price} BYN</span>`;
+    isLoading = true;
+    const btn = grid.querySelector('.load-more-btn');
+    if (btn) {
+        btn.textContent = '⏳ Загрузка...';
+        btn.disabled = true;
+    }
     
-    // Находим бренд и модель
-    const brand = (brands || []).find(b => b.slug === product.brandSlug);
-    const model = (productModels || []).find(m => m.slug === product.modelSlug);
-    
-    const brandDisplay = brand ? `<span class="product-brand">${brand.name}</span>` : '';
-    const modelDisplay = model ? `<span class="product-model">${model.name}</span>` : '';
-    const infoDisplay = (brandDisplay || modelDisplay) ? 
-        `<div class="product-info">${brandDisplay} ${modelDisplay}</div>` : '';
-    
-    return `
-        <div class="product-card" data-id="${product.id}">
-            <div class="product-badges">
-                ${hitBadge}
-                ${newBadge}
-                ${discountBadge}
-                ${stockBadge}
-            </div>
-            <span class="emoji">${product.emoji || '📦'}</span>
-            <h3>${product.name || 'Без названия'}</h3>
-            ${infoDisplay}
-            <div class="price-row">${priceDisplay}</div>
-            <button class="buy-btn" data-id="${product.id}">🔥 Купить</button>
-        </div>
-    `;
-}
-
-function addBuyButtons(grid) {
-    if (!grid) return;
-    grid.querySelectorAll('.buy-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const id = parseInt(e.target.dataset.id);
-            addToCart(id);
-        });
-    });
-}
-
-function setupSortFilters() {
-    const sortFilters = document.querySelectorAll('#sort-filters .filter-btn');
-    if (!sortFilters.length) return;
-    sortFilters.forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('#sort-filters .filter-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            currentSort = btn.dataset.sort;
-            renderCatalog();
-        });
-    });
+    setTimeout(() => {
+        catalogCurrentPage++;
+        renderPage(grid);
+        isLoading = false;
+    }, 300);
 }
 
 // ==========================================
@@ -730,15 +579,155 @@ function setupSearch() {
     if (!searchInput) return;
     searchInput.addEventListener('input', function() {
         searchQuery = this.value.trim();
-        if (searchQuery) {
-            currentCategorySlug = 'all';
-            currentBrandSlug = 'all';
-            currentModelSlug = 'all';
-            currentAttributeValue = 'all';
+        renderCatalog();
+    });
+}
+
+function clearSearch() {
+    searchQuery = '';
+    const searchInput = document.getElementById('search-input');
+    if (searchInput) searchInput.value = '';
+    renderCatalog();
+}
+
+// ==========================================
+// ===== КАРТОЧКА ТОВАРА (КОМПАКТНАЯ) =====
+// ==========================================
+function createProductCard(product) {
+    if (!product) return '';
+    
+    const discountBadge = product.discountPrice ? 
+        `<span class="discount-badge">-${Math.round((1 - product.discountPrice / product.price) * 100)}%</span>` : '';
+    const hitBadge = product.isHit ? `<span class="hit-badge">🔥</span>` : '';
+    const newBadge = product.isNew ? `<span class="new-badge">✨</span>` : '';
+    
+    const priceDisplay = product.discountPrice ? 
+        `<span class="old-price">${product.price}</span> <span class="price">${product.discountPrice}</span>` :
+        `<span class="price">${product.price}</span>`;
+    
+    // Находим бренд и модель для отображения
+    const brand = (brands || []).find(b => b.slug === product.brandSlug);
+    const model = (productModels || []).find(m => m.slug === product.modelSlug);
+    
+    const infoParts = [];
+    if (brand) infoParts.push(brand.name);
+    if (model) infoParts.push(model.name);
+    const infoDisplay = infoParts.length > 0 ? 
+        `<span class="product-info-text">${infoParts.join(' · ')}</span>` : '';
+    
+    return `
+        <div class="product-card compact" data-id="${product.id}" onclick="showQuickView(${product.id})">
+            <div class="product-badges">
+                ${hitBadge}
+                ${newBadge}
+                ${discountBadge}
+            </div>
+            <span class="emoji">${product.emoji || '📦'}</span>
+            <div class="product-details">
+                <h3>${product.name || 'Без названия'}</h3>
+                ${infoDisplay}
+                <div class="price-row">${priceDisplay}</div>
+            </div>
+            <button class="buy-btn" data-id="${product.id}" onclick="event.stopPropagation(); addToCart(${product.id})">🔥</button>
+        </div>
+    `;
+}
+
+function addBuyButtons(grid) {
+    if (!grid) return;
+    grid.querySelectorAll('.buy-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const id = parseInt(e.target.dataset.id);
+            addToCart(id);
+        });
+    });
+}
+
+// ==========================================
+// ===== БЫСТРЫЙ ПРОСМОТР (МОДАЛКА) =====
+// ==========================================
+function showQuickView(productId) {
+    const product = products.find(p => p.id === productId);
+    if (!product) return;
+    
+    const brand = brands.find(b => b.slug === product.brandSlug);
+    const model = productModels.find(m => m.slug === product.modelSlug);
+    const attributes = productAttributes.filter(a => a.product_model_slug === product.modelSlug);
+    
+    const modal = document.getElementById('quick-view-modal');
+    if (!modal) return;
+    
+    const content = document.getElementById('quick-view-content');
+    if (!content) return;
+    
+    const priceDisplay = product.discountPrice ? 
+        `<span class="old-price">${product.price} BYN</span> <span class="price">${product.discountPrice} BYN</span>` :
+        `<span class="price">${product.price} BYN</span>`;
+    
+    const stockStatus = product.stockQuantity > 0 ? 
+        `<span class="in-stock">✅ В наличии (${product.stockQuantity} шт.)</span>` : 
+        `<span class="out-of-stock">❌ Нет в наличии</span>`;
+    
+    let attrsHtml = '';
+    if (attributes.length > 0) {
+        attrsHtml = `
+            <div class="quick-view-attributes">
+                <h4>📋 Характеристики</h4>
+                ${attributes.map(a => `
+                    <div class="quick-view-attr">
+                        <span class="attr-name">${a.attribute_name}</span>
+                        <span class="attr-value">${a.attribute_value}</span>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+    
+    content.innerHTML = `
+        <div class="quick-view-close" onclick="closeQuickView()">✕</div>
+        <div class="quick-view-emoji">${product.emoji || '📦'}</div>
+        <h2 class="quick-view-title">${product.name}</h2>
+        <div class="quick-view-info">
+            ${brand ? `<span class="quick-view-brand">🏷️ ${brand.name}</span>` : ''}
+            ${model ? `<span class="quick-view-model">📦 ${model.name}</span>` : ''}
+        </div>
+        <div class="quick-view-stock">${stockStatus}</div>
+        <div class="quick-view-price">${priceDisplay}</div>
+        ${attrsHtml}
+        <button class="buy-btn quick-view-buy" onclick="addToCartQuick(${product.id})">🔥 Добавить в корзину</button>
+    `;
+    
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeQuickView() {
+    const modal = document.getElementById('quick-view-modal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+}
+
+function addToCartQuick(productId) {
+    addToCart(productId);
+    closeQuickView();
+}
+
+// ==========================================
+// ===== СОРТИРОВКА =====
+// ==========================================
+function setupSortFilters() {
+    const sortFilters = document.querySelectorAll('#sort-filters .filter-btn');
+    if (!sortFilters.length) return;
+    sortFilters.forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('#sort-filters .filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentSort = btn.dataset.sort;
             renderCatalog();
-        } else {
-            resetCatalog();
-        }
+        });
     });
 }
 
@@ -2588,7 +2577,7 @@ async function loadAdminModels() {
                     <button class="admin-delete-btn" onclick="deleteModel(${m.id})">🗑️</button>
                 </div>
             </div>
-        `}).join('');
+        `).join('');
     } catch (error) {
         console.error('❌ Ошибка загрузки моделей:', error);
         container.innerHTML = '<div class="error-message">Ошибка загрузки моделей</div>';
@@ -3834,6 +3823,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             showMessage('⚠️ Внимание', 'Некоторые данные не загрузились. Проверьте подключение к интернету.');
         }
         
+        renderCategoryTabs();
         setupSortFilters();
         setupSearch();
         setupOrderFilters();
