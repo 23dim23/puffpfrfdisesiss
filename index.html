@@ -100,7 +100,7 @@
             </div>
 
             <!-- ========================================= -->
-            <!-- ===== КОРЗИНА (С ТОЧКАМИ САМОВЫВОЗА) ===== -->
+            <!-- ===== КОРЗИНА (С ДОСТАВКОЙ И ПРОМОКОДАМИ) ===== -->
             <!-- ========================================= -->
             <div id="page-cart" class="page">
                 <div class="app-header">
@@ -112,17 +112,30 @@
                         <li class="cart-empty">🛒 Корзина пуста</li>
                     </ul>
                     
+                    <!-- Промокод -->
+                    <div id="promocode-section" style="display:none; margin-top: 12px;">
+                        <div class="promocode-group">
+                            <input type="text" id="promocode-input" placeholder="🎫 Введите промокод" class="order-input" style="flex:1;">
+                            <button id="promocode-apply-btn" class="promocode-apply-btn">Применить</button>
+                        </div>
+                        <div id="promocode-status" class="promocode-status"></div>
+                    </div>
+                    
                     <!-- Форма оформления заказа -->
                     <div id="order-form" style="display:none; margin-top: 16px;">
                         <div class="form-group">
-                            <label>📱 Телефон *</label>
+                            <label>👤 Ваш Telegram (необязательно)</label>
+                            <input type="text" id="order-username" placeholder="@username" class="order-input">
+                        </div>
+                        <div class="form-group">
+                            <label>📱 Телефон (необязательно)</label>
                             <input type="text" id="order-phone" placeholder="+375 (29) 123-45-67" class="order-input">
                         </div>
                         <div class="form-group">
                             <label>📦 Способ получения</label>
                             <select id="order-delivery-type" class="order-input">
-                                <option value="pickup">🏪 Самовывоз</option>
-                                <option value="delivery">🚚 Доставка</option>
+                                <option value="pickup">🏪 Самовывоз — БЕСПЛАТНО</option>
+                                <option value="delivery">🚚 Доставка — <span id="delivery-price-option">5 BYN</span></option>
                             </select>
                         </div>
                         
@@ -149,8 +162,18 @@
                     </div>
                     
                     <div class="cart-total">
-                        <span>Итого</span>
-                        <span class="total-price" id="total-price">0 BYN</span>
+                        <div>
+                            <span>Товары</span>
+                            <span id="cart-subtotal">0 BYN</span>
+                        </div>
+                        <div id="delivery-info" style="display:none;">
+                            <span>🚚 Доставка</span>
+                            <span id="delivery-price-display">Бесплатно</span>
+                        </div>
+                        <div style="border-top:1px solid #e5e7eb; padding-top:8px; margin-top:4px;">
+                            <span style="font-weight:700;">Итого</span>
+                            <span class="total-price" id="total-price">0 BYN</span>
+                        </div>
                     </div>
                     <button id="checkout-btn" class="checkout-btn" disabled>📦 Оформить заказ</button>
                 </div>
@@ -164,28 +187,8 @@
                     <h1>🎁 Призы</h1>
                     <p>Получайте бонусы за покупки</p>
                 </div>
-                <div class="prizes-list">
-                    <div class="prize-card">
-                        <span>🌟</span>
-                        <div>
-                            <h4>5% кешбэк</h4>
-                            <p>На все заказы от 50 BYN</p>
-                        </div>
-                    </div>
-                    <div class="prize-card">
-                        <span>🎯</span>
-                        <div>
-                            <h4>Бесплатная доставка</h4>
-                            <p>При заказе от 100 BYN</p>
-                        </div>
-                    </div>
-                    <div class="prize-card">
-                        <span>🏆</span>
-                        <div>
-                            <h4>Подарок</h4>
-                            <p>Каждый 5-й заказ — бонус!</p>
-                        </div>
-                    </div>
+                <div id="prizes-list">
+                    <div class="loading">⏳ Загрузка призов...</div>
                 </div>
             </div>
 
@@ -248,6 +251,22 @@
                         <span class="admin-menu-icon">🎉</span>
                         <span class="admin-menu-label">Акции</span>
                     </button>
+                    <button class="admin-menu-btn" data-page="page-admin-prizes">
+                        <span class="admin-menu-icon">🎁</span>
+                        <span class="admin-menu-label">Призы</span>
+                    </button>
+                    <button class="admin-menu-btn" data-page="page-admin-promocodes">
+                        <span class="admin-menu-icon">🎫</span>
+                        <span class="admin-menu-label">Промокоды</span>
+                    </button>
+                    <button class="admin-menu-btn" data-page="page-admin-settings">
+                        <span class="admin-menu-icon">⚙️</span>
+                        <span class="admin-menu-label">Настройки</span>
+                    </button>
+                    <button class="admin-menu-btn" data-page="page-admin-import">
+                        <span class="admin-menu-icon">📥</span>
+                        <span class="admin-menu-label">Импорт товаров</span>
+                    </button>
                     <button class="admin-menu-btn" data-page="page-admin-moderators">
                         <span class="admin-menu-icon">👥</span>
                         <span class="admin-menu-label">Модераторы</span>
@@ -259,7 +278,7 @@
                 </div>
             </div>
 
-            <!-- СТАТИСТИКА (админка) -->
+            <!-- СТАТИСТИКА (расширенная) -->
             <div id="page-admin-stats" class="page">
                 <div class="app-header">
                     <h1>📊 Статистика</h1>
@@ -269,6 +288,7 @@
                     🔄 Обновить статистику
                 </button>
                 
+                <!-- Основные показатели -->
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-icon">💰</div>
@@ -312,6 +332,50 @@
                             <div class="stat-label">В обработке</div>
                         </div>
                     </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🚚</div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="stat-delivery">0</div>
+                            <div class="stat-label">Доставок</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🏪</div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="stat-pickup">0</div>
+                            <div class="stat-label">Самовывозов</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">💰</div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="stat-delivery-revenue">0 BYN</div>
+                            <div class="stat-label">Доход от доставки</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📋</div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="stat-total-orders">0</div>
+                            <div class="stat-label">Всего заказов</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Продажи по категориям -->
+                <div class="section-header" style="margin-top:20px;">
+                    <h2>📂 Продажи по категориям</h2>
+                </div>
+                <div id="stat-categories">
+                    <div class="loading">⏳ Загрузка данных по категориям...</div>
+                </div>
+
+                <!-- Топ товаров -->
+                <div class="section-header" style="margin-top:20px;">
+                    <h2>🏆 Топ товаров</h2>
+                </div>
+                <div id="stat-top-products">
+                    <div class="loading">⏳ Загрузка топ товаров...</div>
                 </div>
             </div>
 
@@ -471,6 +535,66 @@
                 <button class="admin-add-btn" id="admin-add-promotion-btn">➕ Добавить акцию</button>
                 <div id="admin-promotions-list">
                     <div class="loading">⏳ Загрузка акций...</div>
+                </div>
+            </div>
+
+            <!-- ПРИЗЫ (админка) -->
+            <div id="page-admin-prizes" class="page">
+                <div class="app-header">
+                    <h1>🎁 Призы</h1>
+                    <p>Управление призами</p>
+                </div>
+                <button class="admin-reload-btn" onclick="loadAdminPrizes()" style="margin-bottom:10px; padding:8px 16px; background:#667eea; color:white; border:none; border-radius:8px; cursor:pointer; width:100%; font-weight:600;">
+                    🔄 Принудительно загрузить призы
+                </button>
+                <div id="admin-prizes-list">
+                    <div class="loading">⏳ Загрузка призов...</div>
+                </div>
+            </div>
+
+            <!-- ПРОМОКОДЫ (админка) -->
+            <div id="page-admin-promocodes" class="page">
+                <div class="app-header">
+                    <h1>🎫 Промокоды</h1>
+                    <p>Управление промокодами</p>
+                </div>
+                <button class="admin-reload-btn" onclick="loadAdminPromocodes()" style="margin-bottom:10px; padding:8px 16px; background:#667eea; color:white; border:none; border-radius:8px; cursor:pointer; width:100%; font-weight:600;">
+                    🔄 Принудительно загрузить промокоды
+                </button>
+                <div id="admin-promocodes-list">
+                    <div class="loading">⏳ Загрузка промокодов...</div>
+                </div>
+            </div>
+
+            <!-- НАСТРОЙКИ (админка) -->
+            <div id="page-admin-settings" class="page">
+                <div class="app-header">
+                    <h1>⚙️ Настройки</h1>
+                    <p>Управление настройками магазина</p>
+                </div>
+                <div id="admin-settings-container">
+                    <div class="loading">⏳ Загрузка настроек...</div>
+                </div>
+            </div>
+
+            <!-- ИМПОРТ ТОВАРОВ (админка) -->
+            <div id="page-admin-import" class="page">
+                <div class="app-header">
+                    <h1>📥 Импорт товаров</h1>
+                    <p>Массовое добавление товаров</p>
+                </div>
+                <div id="admin-import-container">
+                    <div class="import-info">
+                        <p>📋 Вставьте данные в формате:</p>
+                        <pre>Название | Цена | Категория | Бренд | Модель | Эмодзи | Остаток</pre>
+                        <p>Пример:</p>
+                        <pre>Кислотные червячки | 25 | snus | husky | 50mg | 🍬 | 10
+Xros 5 mini | 55 | pod | vaporesso | xros-5 | 💨 | 5</pre>
+                        <p>💡 Поддерживаются разделители: <code>|</code>, <code>;</code>, <code>Tab</code></p>
+                    </div>
+                    <textarea id="import-textarea" class="import-textarea" placeholder="Вставьте данные для импорта..." rows="10"></textarea>
+                    <button class="admin-import-btn" id="admin-import-btn" onclick="importProducts()">📥 Импортировать товары</button>
+                    <div id="import-status" class="import-status"></div>
                 </div>
             </div>
 

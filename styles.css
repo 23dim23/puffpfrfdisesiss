@@ -80,7 +80,10 @@ button,
 .buy-btn,
 .category-back,
 .section-header a,
-.remove-item-btn {
+.remove-item-btn,
+.promocode-apply-btn,
+.admin-import-btn,
+.admin-save-btn {
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
@@ -108,7 +111,10 @@ button::after,
 .buy-btn::after,
 .category-back::after,
 .section-header a::after,
-.remove-item-btn::after {
+.remove-item-btn::after,
+.promocode-apply-btn::after,
+.admin-import-btn::after,
+.admin-save-btn::after {
     content: '';
     position: absolute;
     top: 50%;
@@ -143,7 +149,10 @@ button:active::after,
 .buy-btn:active::after,
 .category-back:active::after,
 .section-header a:active::after,
-.remove-item-btn:active::after {
+.remove-item-btn:active::after,
+.promocode-apply-btn:active::after,
+.admin-import-btn:active::after,
+.admin-save-btn:active::after {
     width: 300px;
     height: 300px;
 }
@@ -170,7 +179,10 @@ button:hover:not(:disabled):not(.active),
 .buy-btn:hover,
 .category-back:hover,
 .section-header a:hover,
-.remove-item-btn:hover {
+.remove-item-btn:hover,
+.promocode-apply-btn:hover,
+.admin-import-btn:hover,
+.admin-save-btn:hover {
     transform: translateY(-2px) scale(1.02);
     box-shadow: 0 8px 25px rgba(102, 126, 234, 0.25);
 }
@@ -197,7 +209,10 @@ button:active:not(:disabled),
 .buy-btn:active,
 .category-back:active,
 .section-header a:active,
-.remove-item-btn:active {
+.remove-item-btn:active,
+.promocode-apply-btn:active,
+.admin-import-btn:active,
+.admin-save-btn:active {
     transform: scale(0.94) !important;
     transition-duration: 0.05s;
 }
@@ -565,7 +580,7 @@ button:active:not(:disabled),
 }
 
 /* ======================================== */
-/* ===== КАРТОЧКА ТОВАРА ===== */
+/* ===== КАРТОЧКА ТОВАРА (С БРЕНДОМ И МОДЕЛЬЮ) ===== */
 /* ======================================== */
 .product-card {
     background: #ffffff;
@@ -599,6 +614,29 @@ button:active:not(:disabled),
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+}
+
+/* Информация о бренде и модели */
+.product-info {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 4px;
+    flex-wrap: wrap;
+}
+
+.product-brand {
+    background: #f3f4f6;
+    padding: 1px 10px;
+    border-radius: 10px;
+    font-weight: 500;
+    color: #4b5563;
+}
+
+.product-model {
+    color: #9ca3af;
 }
 
 /* --- Кнопка "Купить" --- */
@@ -748,12 +786,15 @@ button:active:not(:disabled),
     font-size: 16px;
     font-weight: 600;
     color: #1f2937;
+    word-break: break-word;
+    overflow-wrap: break-word;
 }
 
 .category-card .category-arrow {
     font-size: 18px;
     color: #9ca3af;
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    flex-shrink: 0;
 }
 
 .category-card:hover .category-arrow {
@@ -781,7 +822,7 @@ button:active:not(:disabled),
 }
 
 /* ======================================== */
-/* ===== КОРЗИНА ===== */
+/* ===== КОРЗИНА (С ПРОМОКОДАМИ И ДОСТАВКОЙ) ===== */
 /* ======================================== */
 #cart-content {
     background: #f9fafb;
@@ -876,6 +917,43 @@ button:active:not(:disabled),
     line-height: 1;
 }
 
+/* --- Промокод --- */
+#promocode-section {
+    margin: 12px 0 8px;
+}
+
+.promocode-group {
+    display: flex;
+    gap: 8px;
+}
+
+.promocode-group .order-input {
+    flex: 1;
+}
+
+.promocode-apply-btn {
+    padding: 10px 16px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.promocode-apply-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.promocode-status {
+    font-size: 13px;
+    margin-top: 6px;
+    min-height: 20px;
+}
+
 /* --- Форма заказа --- */
 #order-form {
     margin-top: 16px;
@@ -939,20 +1017,34 @@ button:active:not(:disabled),
     cursor: pointer;
 }
 
+/* --- Итог корзины --- */
 .cart-total {
+    padding-top: 12px;
+    border-top: 2px solid #e5e7eb;
+    font-size: 15px;
+    color: #1f2937;
+}
+
+.cart-total > div {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-top: 12px;
-    border-top: 2px solid #e5e7eb;
-    font-size: 17px;
-    font-weight: 700;
-    color: #1f2937;
+    padding: 2px 0;
 }
 
 .cart-total .total-price {
     font-size: 22px;
     color: #667eea;
+    font-weight: 700;
+}
+
+#delivery-info {
+    color: #6b7280;
+    font-size: 14px;
+}
+
+#delivery-price-display {
+    color: #6b7280;
 }
 
 #checkout-btn {
@@ -1025,7 +1117,7 @@ button:active:not(:disabled),
 }
 
 /* ======================================== */
-/* ===== СТАТИСТИКА ===== */
+/* ===== РАСШИРЕННАЯ СТАТИСТИКА ===== */
 /* ======================================== */
 .stats-grid {
     display: grid;
@@ -1067,10 +1159,96 @@ button:active:not(:disabled),
     font-weight: 500;
 }
 
+/* --- Продажи по категориям --- */
+#stat-categories {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.stat-category-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    background: #fff;
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    font-size: 13px;
+}
+
+.stat-category-icon {
+    font-size: 24px;
+}
+
+.stat-category-name {
+    flex: 1;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.stat-category-revenue {
+    font-weight: 700;
+    color: #667eea;
+}
+
+.stat-category-orders {
+    color: #6b7280;
+    font-size: 12px;
+}
+
+/* --- Топ товаров --- */
+#stat-top-products {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.stat-top-product {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: #fff;
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    font-size: 13px;
+}
+
+.top-product-rank {
+    font-weight: 700;
+    color: #9ca3af;
+    font-size: 12px;
+    min-width: 24px;
+}
+
+.top-product-emoji {
+    font-size: 20px;
+}
+
+.top-product-name {
+    flex: 1;
+    font-weight: 500;
+    color: #1f2937;
+    word-break: break-word;
+}
+
+.top-product-qty {
+    color: #6b7280;
+    font-size: 12px;
+}
+
+.top-product-revenue {
+    font-weight: 700;
+    color: #667eea;
+}
+
 /* ======================================== */
 /* ===== ПРИЗЫ ===== */
 /* ======================================== */
-.prizes-list {
+#prizes-list {
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -1104,6 +1282,16 @@ button:active:not(:disabled),
     margin: 0;
 }
 
+.prize-promo {
+    font-size: 11px;
+    background: #ede9fe;
+    color: #7c3aed;
+    padding: 1px 10px;
+    border-radius: 10px;
+    display: inline-block;
+    margin-top: 2px;
+}
+
 /* ======================================== */
 /* ===== АДМИН-ПАНЕЛЬ ===== */
 /* ======================================== */
@@ -1123,7 +1311,9 @@ button:active:not(:disabled),
 .admin-add-btn,
 .admin-filter-btn,
 .filter-apply-btn,
-.filter-reset-btn {
+.filter-reset-btn,
+.admin-import-btn,
+.admin-save-btn {
     display: block;
     width: 100%;
     padding: 10px 16px;
@@ -1176,6 +1366,19 @@ button:active:not(:disabled),
 
 .filter-reset-btn:hover {
     background: #f3f4f6;
+}
+
+.admin-import-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.25);
+    margin-top: 10px;
+}
+
+.admin-save-btn {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.25);
 }
 
 /* --- Админ-меню --- */
@@ -1312,6 +1515,213 @@ button:active:not(:disabled),
     display: flex;
     flex-direction: column;
     gap: 8px;
+}
+
+/* --- Настройки --- */
+.admin-settings-form {
+    padding: 16px;
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+}
+
+.admin-settings-form h3 {
+    font-size: 18px;
+    margin-bottom: 16px;
+    color: #1f2937;
+}
+
+.settings-status {
+    margin-top: 12px;
+    font-weight: 600;
+    text-align: center;
+    min-height: 24px;
+}
+
+/* --- Импорт товаров --- */
+.import-info {
+    background: #f0f4ff;
+    padding: 14px 16px;
+    border-radius: 10px;
+    margin-bottom: 12px;
+    font-size: 13px;
+    color: #1f2937;
+}
+
+.import-info pre {
+    background: #fff;
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    font-size: 12px;
+    overflow-x: auto;
+    margin: 6px 0;
+    font-family: monospace;
+    color: #1f2937;
+}
+
+.import-info code {
+    background: #fff;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: monospace;
+    border: 1px solid #e5e7eb;
+}
+
+.import-textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 13px;
+    font-family: monospace;
+    resize: vertical;
+    min-height: 150px;
+    background: #fff;
+    color: #1f2937;
+    transition: border-color 0.2s;
+}
+
+.import-textarea:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.import-status {
+    margin-top: 12px;
+    font-size: 14px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    min-height: 24px;
+}
+
+/* --- Призы в админке --- */
+.admin-prize-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    margin-bottom: 10px;
+    animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.admin-prize-emoji {
+    font-size: 28px;
+}
+
+.admin-prize-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.admin-prize-title {
+    font-weight: 600;
+    color: #1f2937;
+    font-size: 14px;
+    word-break: break-word;
+}
+
+.admin-prize-desc {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.admin-prize-promo {
+    font-size: 10px;
+    background: #ede9fe;
+    color: #7c3aed;
+    padding: 1px 8px;
+    border-radius: 8px;
+    display: inline-block;
+    margin-top: 2px;
+}
+
+.admin-prize-status {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 1px 8px;
+    border-radius: 8px;
+    display: inline-block;
+    margin-top: 2px;
+}
+
+.admin-prize-status.active {
+    background: #d1fae5;
+    color: #059669;
+}
+
+.admin-prize-status.inactive {
+    background: #fee2e2;
+    color: #ef4444;
+}
+
+.admin-prize-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+/* --- Промокоды в админке --- */
+.admin-promocode-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    margin-bottom: 10px;
+    animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    flex-wrap: wrap;
+}
+
+.admin-promocode-code {
+    font-weight: 700;
+    font-size: 16px;
+    color: #667eea;
+    font-family: monospace;
+    background: #f0f4ff;
+    padding: 4px 12px;
+    border-radius: 8px;
+}
+
+.admin-promocode-info {
+    flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.admin-promocode-info span {
+    background: #f3f4f6;
+    padding: 2px 10px;
+    border-radius: 8px;
+}
+
+.admin-promocode-status {
+    font-weight: 500;
+}
+
+.admin-promocode-status.active {
+    background: #d1fae5;
+    color: #059669;
+}
+
+.admin-promocode-status.inactive {
+    background: #fee2e2;
+    color: #ef4444;
+}
+
+.admin-promocode-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
 }
 
 /* ======================================== */
@@ -1576,6 +1986,16 @@ button:active:not(:disabled),
     color: #667eea;
     text-decoration: none;
     font-weight: 500;
+}
+
+.user-link {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.user-link:hover {
+    text-decoration: underline;
 }
 
 .order-actions {
@@ -2196,6 +2616,15 @@ button:active:not(:disabled),
         color: #818cf8;
     }
     
+    .product-info .product-brand {
+        background: #374151;
+        color: #9ca3af;
+    }
+    
+    .product-info .product-model {
+        color: #6b7280;
+    }
+    
     .section-header h2 {
         color: #f3f4f6;
     }
@@ -2280,6 +2709,10 @@ button:active:not(:disabled),
     .cart-total {
         border-top-color: #374151;
         color: #f3f4f6;
+    }
+    
+    .cart-total .total-price {
+        color: #818cf8;
     }
     
     .prize-card {
@@ -2599,6 +3032,78 @@ button:active:not(:disabled),
     
     .my-order-card .cancel-btn {
         background: #dc2626 !important;
+    }
+
+    .admin-prize-card {
+        background: #1f2937;
+        border-color: #374151;
+    }
+    
+    .admin-prize-title {
+        color: #f3f4f6;
+    }
+    
+    .admin-prize-desc {
+        color: #9ca3af;
+    }
+    
+    .admin-promocode-card {
+        background: #1f2937;
+        border-color: #374151;
+    }
+    
+    .admin-promocode-code {
+        background: #312e81;
+        color: #818cf8;
+    }
+    
+    .admin-promocode-info span {
+        background: #374151;
+        color: #9ca3af;
+    }
+    
+    .import-info {
+        background: #1f2937;
+        border-color: #374151;
+    }
+    
+    .import-info pre {
+        background: #111827;
+        border-color: #374151;
+        color: #e5e7eb;
+    }
+    
+    .import-textarea {
+        background: #111827;
+        border-color: #374151;
+        color: #e5e7eb;
+    }
+    
+    .admin-settings-form {
+        background: #1f2937;
+        border-color: #374151;
+    }
+    
+    .admin-settings-form h3 {
+        color: #f3f4f6;
+    }
+    
+    .stat-category-item {
+        background: #1f2937;
+        border-color: #374151;
+    }
+    
+    .stat-category-name {
+        color: #f3f4f6;
+    }
+    
+    .stat-top-product {
+        background: #1f2937;
+        border-color: #374151;
+    }
+    
+    .top-product-name {
+        color: #f3f4f6;
     }
 }
 

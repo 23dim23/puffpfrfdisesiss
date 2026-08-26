@@ -1,5 +1,6 @@
 // ===== ТОКЕН БОТА (для отправки сообщений) =====
 const TOKEN = '8870349321:AAEXFersNinRpHnPETbR_vGFn_TnGWOCums';
+
 // Инициализация Telegram Web App
 const tg = window.Telegram.WebApp;
 tg.expand();
@@ -55,6 +56,9 @@ let productModels = [];
 let productAttributes = [];
 let promotions = [];
 let pickupPoints = [];
+let prizes = [];
+let promocodes = [];
+let settings = {};
 let currentCategorySlug = 'all';
 let currentBrandSlug = 'all';
 let currentModelSlug = 'all';
@@ -67,6 +71,9 @@ let searchQuery = '';
 let ordersFilter = { status: 'all', dateFrom: '', dateTo: '', deliveryType: 'all' };
 let notificationSound = null;
 let lastOrderCheck = 0;
+let appliedPromocode = null;
+let deliveryPrice = 5;
+let deliveryEnabled = true;
 
 // ===== РЕЖИМ РАЗРАБОТКИ =====
 const isDevelopment = !window.Telegram.WebApp.initDataUnsafe?.user;
@@ -75,7 +82,7 @@ if (isDevelopment) {
     console.log('⚠️ Режим разработки: показываем админку для тестирования');
 }
 
-// ===== ПРОВЕРКА АДМИНА (С ОБРАБОТКОЙ ОШИБОК) =====
+// ===== ПРОВЕРКА АДМИНА =====
 async function checkAdmin() {
     try {
         const user = tg.initDataUnsafe?.user;
@@ -109,7 +116,36 @@ async function checkAdmin() {
 }
 
 // ==========================================
-// ===== ЗАГРУЗКА ДАННЫХ (С ОБРАБОТКОЙ ОШИБОК) =====
+// ===== ЗАГРУЗКА НАСТРОЕК =====
+// ==========================================
+async function loadSettings() {
+    try {
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/settings?select=*`, {
+            headers: {
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`
+            }
+        });
+        if (!response.ok) throw new Error('Не удалось загрузить настройки');
+        const data = await response.json();
+        data.forEach(setting => {
+            settings[setting.key] = setting.value;
+        });
+        
+        deliveryEnabled = settings.delivery_enabled === 'true';
+        deliveryPrice = parseFloat(settings.delivery_price) || 5;
+        
+        console.log('✅ Загружены настройки:', settings);
+        return settings;
+    } catch (error) {
+        console.error('❌ Ошибка загрузки настроек:', error);
+        settings = {};
+        return {};
+    }
+}
+
+// ==========================================
+// ===== ЗАГРУЗКА ДАННЫХ =====
 // ==========================================
 
 async function loadMainCategories() {
@@ -246,6 +282,49 @@ async function loadPromotionsFromSupabase() {
     }
 }
 
+// ===== ЗАГРУЗКА ПРИЗОВ =====
+async function loadPrizes() {
+    try {
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/prizes?select=*&order=sort_order.asc`, {
+            headers: {
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`
+            }
+        });
+        if (!response.ok) throw new Error('Не удалось загрузить призы');
+        const data = await response.json();
+        prizes = (data || []).filter(p => p.active !== false);
+        console.log('✅ Загружено призов:', prizes.length);
+        renderPrizes();
+        return prizes;
+    } catch (error) {
+        console.error('❌ Ошибка загрузки призов:', error);
+        prizes = [];
+        return [];
+    }
+}
+
+// ===== ЗАГРУЗКА ПРОМОКОДОВ =====
+async function loadPromocodes() {
+    try {
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/promocodes?select=*`, {
+            headers: {
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`
+            }
+        });
+        if (!response.ok) throw new Error('Не удалось загрузить промокоды');
+        const data = await response.json();
+        promocodes = data || [];
+        console.log('✅ Загружено промокодов:', promocodes.length);
+        return promocodes;
+    } catch (error) {
+        console.error('❌ Ошибка загрузки промокодов:', error);
+        promocodes = [];
+        return [];
+    }
+}
+
 // ===== ЗАГРУЗКА ТОЧЕК САМОВЫВОЗА =====
 async function loadPickupPoints() {
     try {
@@ -269,7 +348,7 @@ async function loadPickupPoints() {
 }
 
 // ==========================================
-// ===== ОТОБРАЖЕНИЕ (С ПРОВЕРКОЙ ЭЛЕМЕНТОВ) =====
+// ===== ОТОБРАЖЕНИЕ =====
 // ==========================================
 
 function renderPromotions() {
@@ -290,6 +369,28 @@ function renderPromotions() {
             <div class="promotion-info">
                 <strong>${p.title || 'Акция'}</strong>
                 <p>${p.description || ''}</p>
+            </div>
+        </div>
+    `).join('');
+}
+
+// ===== ОТОБРАЖЕНИЕ ПРИЗОВ =====
+function renderPrizes() {
+    const container = document.getElementById('prizes-list');
+    if (!container) return;
+    
+    if (!prizes || prizes.length === 0) {
+        container.innerHTML = '<div class="empty-message">🎁 Скоро появятся новые призы!</div>';
+        return;
+    }
+    
+    container.innerHTML = prizes.map(p => `
+        <div class="prize-card">
+            <span>${p.emoji || '🎁'}</span>
+            <div>
+                <h4>${p.title || 'Приз'}</h4>
+                <p>${p.description || ''}</p>
+                ${p.promo_code_id ? `<span class="prize-promo">🎫 Промокод внутри</span>` : ''}
             </div>
         </div>
     `).join('');
@@ -558,6 +659,7 @@ window.resetCatalog = function() {
     renderCatalog();
 };
 
+// ===== КАРТОЧКА ТОВАРА С БРЕНДОМ И МОДЕЛЬЮ =====
 function createProductCard(product) {
     if (!product) return '';
     const discountBadge = product.discountPrice ? 
@@ -571,6 +673,15 @@ function createProductCard(product) {
         `<span class="old-price">${product.price} BYN</span> <span class="price">${product.discountPrice} BYN</span>` :
         `<span class="price">${product.price} BYN</span>`;
     
+    // Находим бренд и модель
+    const brand = (brands || []).find(b => b.slug === product.brandSlug);
+    const model = (productModels || []).find(m => m.slug === product.modelSlug);
+    
+    const brandDisplay = brand ? `<span class="product-brand">${brand.name}</span>` : '';
+    const modelDisplay = model ? `<span class="product-model">${model.name}</span>` : '';
+    const infoDisplay = (brandDisplay || modelDisplay) ? 
+        `<div class="product-info">${brandDisplay} ${modelDisplay}</div>` : '';
+    
     return `
         <div class="product-card" data-id="${product.id}">
             <div class="product-badges">
@@ -581,6 +692,7 @@ function createProductCard(product) {
             </div>
             <span class="emoji">${product.emoji || '📦'}</span>
             <h3>${product.name || 'Без названия'}</h3>
+            ${infoDisplay}
             <div class="price-row">${priceDisplay}</div>
             <button class="buy-btn" data-id="${product.id}">🔥 Купить</button>
         </div>
@@ -631,7 +743,7 @@ function setupSearch() {
 }
 
 // ==========================================
-// ===== КОРЗИНА (С КОЛИЧЕСТВОМ И СОХРАНЕНИЕМ) =====
+// ===== КОРЗИНА =====
 // ==========================================
 function saveCart() {
     localStorage.setItem('puff_cart', JSON.stringify(cart));
@@ -678,6 +790,10 @@ function updateCartUI() {
     const totalPrice = document.getElementById('total-price');
     const checkoutBtn = document.getElementById('checkout-btn');
     const orderForm = document.getElementById('order-form');
+    const deliveryInfo = document.getElementById('delivery-info');
+    const promocodeInput = document.getElementById('promocode-input');
+    const promocodeStatus = document.getElementById('promocode-status');
+    const deliveryPriceEl = document.getElementById('delivery-price-display');
     
     if (!cartItems) return;
     
@@ -686,6 +802,7 @@ function updateCartUI() {
         if (totalPrice) totalPrice.textContent = '0 BYN';
         if (checkoutBtn) checkoutBtn.disabled = true;
         if (orderForm) orderForm.style.display = 'none';
+        if (deliveryInfo) deliveryInfo.style.display = 'none';
         return;
     }
     
@@ -696,9 +813,16 @@ function updateCartUI() {
         const price = item.discountPrice || item.price || 0;
         const qty = item.quantity || 1;
         total += price * qty;
+        
+        const brand = (brands || []).find(b => b.slug === item.brandSlug);
+        const model = (productModels || []).find(m => m.slug === item.modelSlug);
+        const brandDisplay = brand ? ` ${brand.name}` : '';
+        const modelDisplay = model ? ` ${model.name}` : '';
+        const fullName = item.name + brandDisplay + modelDisplay;
+        
         html += `
             <li>
-                <span class="item-name">${item.emoji || '📦'} ${item.name || 'Товар'}</span>
+                <span class="item-name">${item.emoji || '📦'} ${fullName}</span>
                 <div class="item-quantity">
                     <button class="qty-btn" onclick="changeQuantity(${index}, -1)">−</button>
                     <span class="qty-value">${qty}</span>
@@ -711,9 +835,21 @@ function updateCartUI() {
     });
     
     cartItems.innerHTML = html;
-    if (totalPrice) totalPrice.textContent = total.toFixed(2) + ' BYN';
+    
+    let deliveryDisplay = 0;
+    if (deliveryEnabled && document.getElementById('order-delivery-type')?.value === 'delivery') {
+        deliveryDisplay = deliveryPrice;
+    }
+    const totalWithDelivery = total + deliveryDisplay;
+    
+    if (deliveryPriceEl) {
+        deliveryPriceEl.textContent = deliveryDisplay > 0 ? `+ ${deliveryDisplay.toFixed(2)} BYN` : 'Бесплатно';
+    }
+    
+    if (totalPrice) totalPrice.textContent = totalWithDelivery.toFixed(2) + ' BYN';
     if (checkoutBtn) checkoutBtn.disabled = false;
     if (orderForm) orderForm.style.display = 'block';
+    if (deliveryInfo) deliveryInfo.style.display = 'block';
 }
 
 function changeQuantity(index, delta) {
@@ -754,7 +890,80 @@ function updateBadge() {
     badge.classList.toggle('hidden', count === 0);
 }
 
+// ===== ПРОМОКОДЫ =====
+async function applyPromocode() {
+    const input = document.getElementById('promocode-input');
+    const status = document.getElementById('promocode-status');
+    if (!input || !status) return;
+    
+    const code = input.value.trim().toUpperCase();
+    if (!code) {
+        status.textContent = '⚠️ Введите промокод';
+        status.style.color = '#f59e0b';
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/promocodes?select=*&code=eq.${code}`, {
+            headers: {
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`
+            }
+        });
+        if (!response.ok) throw new Error('Ошибка проверки промокода');
+        const data = await response.json();
+        const promocode = data[0];
+        
+        if (!promocode) {
+            status.textContent = '❌ Промокод не найден';
+            status.style.color = '#ef4444';
+            return;
+        }
+        
+        if (!promocode.active) {
+            status.textContent = '❌ Промокод неактивен';
+            status.style.color = '#ef4444';
+            return;
+        }
+        
+        if (promocode.valid_until && new Date(promocode.valid_until) < new Date()) {
+            status.textContent = '❌ Срок действия истёк';
+            status.style.color = '#ef4444';
+            return;
+        }
+        
+        if (promocode.max_uses && promocode.used_count >= promocode.max_uses) {
+            status.textContent = '❌ Лимит использований исчерпан';
+            status.style.color = '#ef4444';
+            return;
+        }
+        
+        const total = cart.reduce((sum, item) => sum + (item.discountPrice || item.price || 0) * (item.quantity || 1), 0);
+        if (promocode.min_order_amount && total < promocode.min_order_amount) {
+            status.textContent = `❌ Минимальная сумма заказа: ${promocode.min_order_amount} BYN`;
+            status.style.color = '#ef4444';
+            return;
+        }
+        
+        appliedPromocode = promocode;
+        status.textContent = `✅ Промокод применён! Скидка ${promocode.discount_value}%`;
+        status.style.color = '#22c55e';
+        input.disabled = true;
+        document.getElementById('promocode-apply-btn').disabled = true;
+        
+        updateCartUI();
+        showMessage('🎫 Промокод применён!', `Скидка ${promocode.discount_value}% на заказ`);
+        
+    } catch (error) {
+        console.error('❌ Ошибка применения промокода:', error);
+        status.textContent = '❌ Ошибка проверки промокода';
+        status.style.color = '#ef4444';
+    }
+}
+
+// ==========================================
 // ===== НАВИГАЦИЯ =====
+// ==========================================
 function navigateTo(pageId) {
     console.log('🔄 ПЕРЕХОД НА СТРАНИЦУ:', pageId);
     
@@ -815,6 +1024,10 @@ function navigateTo(pageId) {
                 'page-admin-categories': 'admin-categories-list',
                 'page-admin-stats': null,
                 'page-admin-pickup-points': 'admin-pickup-points-list',
+                'page-admin-settings': 'admin-settings-container',
+                'page-admin-import': 'admin-import-container',
+                'page-admin-prizes': 'admin-prizes-list',
+                'page-admin-promocodes': 'admin-promocodes-list',
                 'page-my-orders': 'my-orders-list'
             };
             
@@ -859,30 +1072,45 @@ function navigateTo(pageId) {
                 case 'page-admin-pickup-points':
                     loadAdminPickupPoints();
                     break;
+                case 'page-admin-settings':
+                    loadAdminSettings();
+                    break;
+                case 'page-admin-import':
+                    // Импорт загружается автоматически
+                    break;
+                case 'page-admin-prizes':
+                    loadAdminPrizes();
+                    break;
+                case 'page-admin-promocodes':
+                    loadAdminPromocodes();
+                    break;
                 case 'page-my-orders':
                     loadMyOrders();
                     break;
             }
         }, 300);
     }
+    
+    if (pageId === 'page-prizes') {
+        loadPrizes();
+    }
 }
 
 // ==========================================
-// ===== ОФОРМЛЕНИЕ ЗАКАЗА =====
+// ===== ОФОРМЛЕНИЕ ЗАКАЗА (С ДОСТАВКОЙ И ПРОМОКОДАМИ) =====
 // ==========================================
 async function checkout() {
     if (!cart || cart.length === 0) return;
     
     const phone = document.getElementById('order-phone')?.value?.trim() || '';
+    const username = document.getElementById('order-username')?.value?.trim() || '';
     const deliveryType = document.getElementById('order-delivery-type')?.value || 'pickup';
     const pickupPointId = document.getElementById('order-pickup-point')?.value || '';
     const address = document.getElementById('order-address')?.value?.trim() || '';
     const comment = document.getElementById('order-comment')?.value?.trim() || '';
     
-    if (!phone) {
-        showMessage('⚠️ Введите телефон', 'Пожалуйста, укажите номер телефона для связи');
-        return;
-    }
+    // Телефон НЕ ОБЯЗАТЕЛЕН
+    // if (!phone) { ... }
     
     if (deliveryType === 'pickup' && !pickupPointId) {
         showMessage('⚠️ Выберите точку', 'Пожалуйста, выберите точку самовывоза');
@@ -894,7 +1122,25 @@ async function checkout() {
         return;
     }
     
-    const total = cart.reduce((sum, item) => sum + (item.discountPrice || item.price || 0) * (item.quantity || 1), 0);
+    let total = cart.reduce((sum, item) => sum + (item.discountPrice || item.price || 0) * (item.quantity || 1), 0);
+    let deliveryCost = 0;
+    
+    if (deliveryEnabled && deliveryType === 'delivery') {
+        deliveryCost = deliveryPrice;
+    }
+    
+    let discountAmount = 0;
+    if (appliedPromocode) {
+        if (appliedPromocode.discount_type === 'percent') {
+            discountAmount = total * (appliedPromocode.discount_value / 100);
+        } else if (appliedPromocode.discount_type === 'fixed') {
+            discountAmount = Math.min(appliedPromocode.discount_value, total);
+        }
+        total = total - discountAmount;
+    }
+    
+    const finalTotal = total + deliveryCost;
+    
     const items = cart.map(item => ({ 
         id: item.id,
         name: item.name || 'Товар', 
@@ -917,17 +1163,21 @@ async function checkout() {
     
     const orderData = {
         user_id: user?.id || 0,
-        username: user?.username || user?.first_name || 'Гость',
-        total: total,
+        username: username || user?.username || user?.first_name || 'Гость',
+        total: finalTotal,
         status: 'pending',
         currency: 'BYN',
-        phone: phone,
+        phone: phone || 'Не указан',
         delivery_type: deliveryType,
+        delivery_price: deliveryCost,
         delivery_address: deliveryType === 'pickup' ? pickupPointAddress : (address || null),
         pickup_point_id: deliveryType === 'pickup' ? pickupPointId : null,
         pickup_point_name: pickupPointName,
         comment: comment || null,
-        items_json: items
+        items_json: items,
+        promocode_id: appliedPromocode?.id || null,
+        discount_amount: discountAmount,
+        final_total: finalTotal
     };
     
     try {
@@ -961,18 +1211,38 @@ async function checkout() {
         }
         console.log('✅ Заказ сохранен в Supabase:', result);
         
+        if (appliedPromocode) {
+            try {
+                await fetch(`${SUPABASE_URL}/rest/v1/promocodes?id=eq.${appliedPromocode.id}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ used_count: (appliedPromocode.used_count || 0) + 1 })
+                });
+            } catch (e) {
+                console.error('❌ Ошибка обновления промокода:', e);
+            }
+        }
+        
         const botOrderData = {
             action: 'order',
             items: items,
-            total: total,
+            total: finalTotal,
+            subtotal: total + discountAmount,
+            discount: discountAmount,
+            delivery_cost: deliveryCost,
             currency: 'BYN',
-            phone: phone,
+            phone: phone || 'Не указан',
+            username: username || user?.username || user?.first_name || 'Гость',
             delivery_type: deliveryType,
             delivery_address: deliveryType === 'pickup' ? pickupPointAddress : (address || null),
             pickup_point_name: pickupPointName,
             comment: comment || null,
             user_id: user?.id || null,
-            username: user?.username || user?.first_name || 'Гость'
+            promocode: appliedPromocode?.code || null
         };
         
         try {
@@ -1007,6 +1277,7 @@ async function checkout() {
         }
         
         cart = [];
+        appliedPromocode = null;
         saveCart();
         updateCartUI();
         updateBadge();
@@ -1015,11 +1286,19 @@ async function checkout() {
         if (orderForm) orderForm.style.display = 'none';
         
         const phoneInput = document.getElementById('order-phone');
+        const usernameInput = document.getElementById('order-username');
         const addressInput = document.getElementById('order-address');
         const commentInput = document.getElementById('order-comment');
+        const promocodeInput = document.getElementById('promocode-input');
+        const promocodeStatus = document.getElementById('promocode-status');
+        
         if (phoneInput) phoneInput.value = '';
+        if (usernameInput) usernameInput.value = '';
         if (addressInput) addressInput.value = '';
         if (commentInput) commentInput.value = '';
+        if (promocodeInput) { promocodeInput.value = ''; promocodeInput.disabled = false; }
+        if (promocodeStatus) { promocodeStatus.textContent = ''; }
+        document.getElementById('promocode-apply-btn').disabled = false;
         
         showMessage('✅ Заказ оформлен!', 'Спасибо за заказ! Мы свяжемся с вами в ближайшее время.');
         
@@ -1079,6 +1358,14 @@ async function loadMyOrders() {
                 cancelButton = `<button class="order-status-btn cancel-btn" onclick="cancelOrder(${order.id})">❌ Отменить заказ</button>`;
             }
             
+            let priceDetails = `💰 ${order.total || 0} BYN`;
+            if (order.delivery_price > 0) {
+                priceDetails += ` (включая доставку ${order.delivery_price} BYN)`;
+            }
+            if (order.discount_amount > 0) {
+                priceDetails += ` со скидкой ${order.discount_amount} BYN`;
+            }
+            
             return `
             <div class="my-order-card">
                 <div class="order-header">
@@ -1086,10 +1373,11 @@ async function loadMyOrders() {
                     <span class="order-status ${statusClass}">${statusMap[order.status] || order.status}</span>
                 </div>
                 <div class="order-details">
-                    <p>💰 ${order.total || 0} BYN</p>
+                    <p>${priceDetails}</p>
                     <p>📦 ${deliveryText}</p>
                     ${itemsList ? `<p>📋 ${itemsList}</p>` : ''}
                     ${order.comment ? `<p>💬 ${order.comment}</p>` : ''}
+                    ${order.username ? `<p>👤 ${order.username}</p>` : ''}
                     <p>📅 ${new Date(order.created_at).toLocaleString()}</p>
                 </div>
                 <div class="order-actions">${cancelButton}</div>
@@ -1121,7 +1409,7 @@ async function cancelOrder(orderId) {
 }
 
 // ==========================================
-// ===== СТАТИСТИКА =====
+// ===== РАСШИРЕННАЯ СТАТИСТИКА =====
 // ==========================================
 async function loadStats() {
     console.log('🔄 ЗАГРУЗКА СТАТИСТИКИ...');
@@ -1137,6 +1425,11 @@ async function loadStats() {
         if (!response.ok) throw new Error('Не удалось загрузить статистику');
         const orders = await response.json();
         
+        const productsResponse = await fetch(`${SUPABASE_URL}/rest/v1/products?select=*`, {
+            headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+        });
+        const allProducts = await productsResponse.json();
+        
         const now = new Date();
         const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         const weekAgo = new Date(today);
@@ -1150,14 +1443,34 @@ async function loadStats() {
             month: 0,
             total: 0,
             ordersToday: 0,
-            ordersPending: 0
+            ordersPending: 0,
+            deliveryOrders: 0,
+            pickupOrders: 0,
+            deliveryRevenue: 0,
+            categorySales: {},
+            topProducts: [],
+            totalOrders: 0
         };
+        
+        const categoryNames = {
+            'pod': 'Pod-системы',
+            'liquid': 'Жижи',
+            'accessories': 'Комплектующие',
+            'disposable': 'Одноразовые pod',
+            'snus': 'Снюс'
+        };
+        
+        FIXED_CATEGORIES.forEach(cat => {
+            stats.categorySales[cat.slug] = { name: cat.name, revenue: 0, orders: 0, items: 0 };
+        });
         
         (orders || []).forEach(order => {
             const orderDate = new Date(order.created_at);
             const amount = Number(order.total) || 0;
+            const deliveryPrice = Number(order.delivery_price) || 0;
             
             stats.total += amount;
+            stats.totalOrders++;
             
             if (orderDate >= today) {
                 stats.today += amount;
@@ -1169,7 +1482,51 @@ async function loadStats() {
             if (orderDate >= monthAgo) {
                 stats.month += amount;
             }
+            
+            if (order.delivery_type === 'delivery') {
+                stats.deliveryOrders++;
+                stats.deliveryRevenue += deliveryPrice;
+            } else if (order.delivery_type === 'pickup') {
+                stats.pickupOrders++;
+            }
+            
+            if (order.items_json) {
+                order.items_json.forEach(item => {
+                    const product = allProducts.find(p => p.id === item.id);
+                    if (product && product.main_category_slug) {
+                        const slug = product.main_category_slug;
+                        if (stats.categorySales[slug]) {
+                            stats.categorySales[slug].revenue += (item.price || 0) * (item.quantity || 1);
+                            stats.categorySales[slug].orders++;
+                            stats.categorySales[slug].items += (item.quantity || 1);
+                        }
+                    }
+                });
+            }
         });
+        
+        const productSales = {};
+        (orders || []).forEach(order => {
+            if (order.items_json) {
+                order.items_json.forEach(item => {
+                    const key = item.id;
+                    if (!productSales[key]) {
+                        productSales[key] = { 
+                            name: item.name, 
+                            emoji: item.emoji || '📦',
+                            quantity: 0, 
+                            revenue: 0 
+                        };
+                    }
+                    productSales[key].quantity += (item.quantity || 1);
+                    productSales[key].revenue += (item.price || 0) * (item.quantity || 1);
+                });
+            }
+        });
+        
+        stats.topProducts = Object.values(productSales)
+            .sort((a, b) => b.quantity - a.quantity)
+            .slice(0, 5);
         
         const pendingResponse = await fetch(`${SUPABASE_URL}/rest/v1/orders?select=id&status=eq.pending`, {
             headers: {
@@ -1182,21 +1539,62 @@ async function loadStats() {
             stats.ordersPending = pending ? pending.length : 0;
         }
         
-        const statToday = document.getElementById('stat-today');
-        const statWeek = document.getElementById('stat-week');
-        const statMonth = document.getElementById('stat-month');
-        const statTotal = document.getElementById('stat-total');
-        const statOrdersToday = document.getElementById('stat-orders-today');
-        const statOrdersPending = document.getElementById('stat-orders-pending');
+        document.getElementById('stat-today').textContent = stats.today.toFixed(2) + ' BYN';
+        document.getElementById('stat-week').textContent = stats.week.toFixed(2) + ' BYN';
+        document.getElementById('stat-month').textContent = stats.month.toFixed(2) + ' BYN';
+        document.getElementById('stat-total').textContent = stats.total.toFixed(2) + ' BYN';
+        document.getElementById('stat-orders-today').textContent = stats.ordersToday;
+        document.getElementById('stat-orders-pending').textContent = stats.ordersPending;
         
-        if (statToday) statToday.textContent = stats.today.toFixed(2) + ' BYN';
-        if (statWeek) statWeek.textContent = stats.week.toFixed(2) + ' BYN';
-        if (statMonth) statMonth.textContent = stats.month.toFixed(2) + ' BYN';
-        if (statTotal) statTotal.textContent = stats.total.toFixed(2) + ' BYN';
-        if (statOrdersToday) statOrdersToday.textContent = stats.ordersToday;
-        if (statOrdersPending) statOrdersPending.textContent = stats.ordersPending;
+        const deliveryStats = document.getElementById('stat-delivery');
+        const pickupStats = document.getElementById('stat-pickup');
+        const deliveryRevenueStats = document.getElementById('stat-delivery-revenue');
+        const totalOrdersStats = document.getElementById('stat-total-orders');
         
-        console.log('✅ Статистика загружена:', stats);
+        if (deliveryStats) deliveryStats.textContent = stats.deliveryOrders;
+        if (pickupStats) pickupStats.textContent = stats.pickupOrders;
+        if (deliveryRevenueStats) deliveryRevenueStats.textContent = stats.deliveryRevenue.toFixed(2) + ' BYN';
+        if (totalOrdersStats) totalOrdersStats.textContent = stats.totalOrders;
+        
+        const categoryStatsContainer = document.getElementById('stat-categories');
+        if (categoryStatsContainer) {
+            let html = '';
+            FIXED_CATEGORIES.forEach(cat => {
+                const data = stats.categorySales[cat.slug] || { revenue: 0, orders: 0, items: 0 };
+                html += `
+                    <div class="stat-category-item">
+                        <span class="stat-category-icon">${cat.icon || '📂'}</span>
+                        <span class="stat-category-name">${cat.name}</span>
+                        <span class="stat-category-revenue">${data.revenue.toFixed(2)} BYN</span>
+                        <span class="stat-category-orders">${data.orders} заказов</span>
+                    </div>
+                `;
+            });
+            categoryStatsContainer.innerHTML = html;
+        }
+        
+        const topProductsContainer = document.getElementById('stat-top-products');
+        if (topProductsContainer) {
+            if (stats.topProducts.length === 0) {
+                topProductsContainer.innerHTML = '<div class="empty-message">Нет данных о продажах</div>';
+            } else {
+                let html = '';
+                stats.topProducts.forEach((p, i) => {
+                    html += `
+                        <div class="stat-top-product">
+                            <span class="top-product-rank">#${i + 1}</span>
+                            <span class="top-product-emoji">${p.emoji}</span>
+                            <span class="top-product-name">${p.name}</span>
+                            <span class="top-product-qty">${p.quantity} шт.</span>
+                            <span class="top-product-revenue">${p.revenue.toFixed(2)} BYN</span>
+                        </div>
+                    `;
+                });
+                topProductsContainer.innerHTML = html;
+            }
+        }
+        
+        console.log('✅ Расширенная статистика загружена:', stats);
         
     } catch (error) {
         console.error('❌ Ошибка загрузки статистики:', error);
@@ -1238,7 +1636,7 @@ function setupOrderFilters() {
     }
 }
 
-// --- Заказы (с фильтрами) ---
+// --- Заказы (с фильтрами и юзернеймом) ---
 async function loadAdminOrders() {
     console.log('🔄 ЗАГРУЗКА ЗАКАЗОВ...');
     const container = document.getElementById('admin-orders-list');
@@ -1282,14 +1680,25 @@ async function loadAdminOrders() {
         container.innerHTML = orders.map(order => {
             let deliveryText = order.delivery_type === 'pickup' ? `🏪 Самовывоз: ${order.pickup_point_name || 'Точка не указана'}` : `🚚 Доставка: ${order.delivery_address || 'Адрес не указан'}`;
             const itemsList = order.items_json ? order.items_json.map(item => `${item.emoji || '📦'} ${item.name} × ${item.quantity || 1}`).join(', ') : '';
-            const userLink = order.user_id ? `<a href="tg://user?id=${order.user_id}" target="_blank">✉️ Связаться</a>` : '';
+            
+            const userDisplay = order.username || order.user_id ? 
+                `<a href="tg://user?id=${order.user_id}" target="_blank" class="user-link">👤 ${order.username || 'Пользователь'}</a>` : 
+                '👤 Гость';
+            
+            let priceDetails = `💰 ${order.total || 0} BYN`;
+            if (order.delivery_price > 0) {
+                priceDetails += ` (+ доставка ${order.delivery_price} BYN)`;
+            }
+            if (order.discount_amount > 0) {
+                priceDetails += ` (скидка -${order.discount_amount} BYN)`;
+            }
             
             let statusText = '', statusClass = '', actionButtons = '';
             switch(order.status) {
                 case 'pending':
                     statusText = '🔄 В обработке'; statusClass = 'pending';
                     actionButtons = `
-                        <button class="order-status-btn confirm-btn" data-id="${order.id}" data-status="confirmed">✅ Подтвердить заказ</button>
+                        <button class="order-status-btn confirm-btn" data-id="${order.id}" data-status="confirmed">✅ Подтвердить</button>
                         <button class="order-status-btn contact-btn" onclick="openChatWithUser(${order.user_id}, ${order.id})">💬 Написать</button>
                     `;
                     break;
@@ -1325,12 +1734,13 @@ async function loadAdminOrders() {
                     <span class="order-status ${statusClass}">${statusText}</span>
                 </div>
                 <div class="order-details">
-                    <p>👤 ${order.username || 'Не указан'} ${userLink}</p>
+                    <p>${userDisplay}</p>
                     <p>📱 ${order.phone || 'Не указан'}</p>
-                    <p>💰 ${order.total || 0} BYN</p>
+                    <p>${priceDetails}</p>
                     <p>📦 ${deliveryText}</p>
                     ${itemsList ? `<p>📋 ${itemsList}</p>` : ''}
                     ${order.comment ? `<p>💬 ${order.comment}</p>` : ''}
+                    ${order.promocode_id ? `<p>🎫 Промокод применён</p>` : ''}
                     <p>📅 ${new Date(order.created_at).toLocaleString()}</p>
                 </div>
                 <div class="order-actions">${actionButtons}</div>
@@ -1371,10 +1781,17 @@ async function updateOrderStatus(orderId, status) {
                 try {
                     let message = '';
                     switch(status) {
-                        case 'confirmed': message = `✅ Ваш заказ #${orderId} ПОДТВЕРЖДЕН!\n\n📦 Товары: ${order.items_json ? order.items_json.map(item => `${item.name} (${item.price} BYN) × ${item.quantity || 1}`).join(', ') : ''}\n💰 Итого: ${order.total || 0} BYN\n\nСпасибо за заказ! Мы приступили к его обработке.`; break;
-                        case 'shipped': message = `📦 Ваш заказ #${orderId} ОТПРАВЛЕН!\n\nСпасибо за покупку! ❤️`; break;
-                        case 'completed': message = `✅ Ваш заказ #${orderId} ВЫПОЛНЕН!\n\nБлагодарим за покупку! Ждем вас снова! 🙏`; break;
-                        default: message = `Статус заказа #${orderId} изменен на: ${status}`;
+                        case 'confirmed': 
+                            message = `✅ Ваш заказ #${orderId} ПОДТВЕРЖДЕН!\n\n📦 Товары: ${order.items_json ? order.items_json.map(item => `${item.name} (${item.price} BYN) × ${item.quantity || 1}`).join(', ') : ''}\n💰 Итого: ${order.total || 0} BYN\n\nСпасибо за заказ! Мы приступили к его обработке.\n\n📩 По вопросам заказа: @puff_mngr`; 
+                            break;
+                        case 'shipped': 
+                            message = `📦 Ваш заказ #${orderId} ОТПРАВЛЕН!\n\nСпасибо за покупку! ❤️\n\n📩 По вопросам заказа: @puff_mngr`; 
+                            break;
+                        case 'completed': 
+                            message = `✅ Ваш заказ #${orderId} ВЫПОЛНЕН!\n\nБлагодарим за покупку! Ждем вас снова! 🙏\n\n📩 По вопросам заказа: @puff_mngr`; 
+                            break;
+                        default: 
+                            message = `Статус заказа #${orderId} изменен на: ${status}\n\n📩 По вопросам заказа: @puff_mngr`;
                     }
                     fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
                         method: 'POST',
@@ -1391,7 +1808,7 @@ async function updateOrderStatus(orderId, status) {
     }
 }
 
-// ===== ОТПРАВКА СООБЩЕНИЯ ПОКУПАТЕЛЮ =====
+// ===== ОТПРАВКА СООБЩЕНИЯ ПОКУПАТЕЛЮ (С @puff_mngr) =====
 function openChatWithUser(userId, orderId) {
     if (!userId) {
         showMessage('⚠️ Ошибка', 'У пользователя нет ID для связи');
@@ -1407,7 +1824,7 @@ function openChatWithUser(userId, orderId) {
     .then(orders => {
         const order = orders ? orders[0] : null;
         if (!order) { showMessage('❌ Ошибка', 'Заказ не найден'); return; }
-        const fullMessage = `📩 Сообщение от администратора по заказу #${orderId}:\n\n${message}\n\n---\n📦 Заказ: ${order.items_json ? order.items_json.map(i => `${i.name} × ${i.quantity || 1}`).join(', ') : ''}\n💰 Сумма: ${order.total || 0} BYN`;
+        const fullMessage = `📩 Сообщение от администратора по заказу #${orderId}:\n\n${message}\n\n---\n📦 Заказ: ${order.items_json ? order.items_json.map(i => `${i.name} × ${i.quantity || 1}`).join(', ') : ''}\n💰 Сумма: ${order.total || 0} BYN\n\n📩 По вопросам заказа: @puff_mngr`;
         
         fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
             method: 'POST',
@@ -1428,11 +1845,11 @@ function exportOrdersCSV() {
     .then(r => r.json())
     .then(orders => {
         if (!orders || orders.length === 0) { showMessage('⚠️ Нет данных', 'Нет заказов для экспорта'); return; }
-        let csv = 'ID,Покупатель,Телефон,Сумма,Способ получения,Статус,Дата,Товары\n';
+        let csv = 'ID,Покупатель,Телефон,Сумма,Доставка,Скидка,Итого,Способ получения,Статус,Дата,Товары\n';
         orders.forEach(o => {
             const items = o.items_json ? o.items_json.map(i => `${i.name} × ${i.quantity || 1}`).join('; ') : '';
             const delivery = o.delivery_type === 'pickup' ? `Самовывоз: ${o.pickup_point_name || ''}` : `Доставка: ${o.delivery_address || ''}`;
-            csv += `${o.id},"${o.username || ''}","${o.phone || ''}",${o.total || 0},"${delivery}","${o.status || ''}","${new Date(o.created_at).toLocaleString()}","${items}"\n`;
+            csv += `${o.id},"${o.username || ''}","${o.phone || ''}",${o.total || 0},${o.delivery_price || 0},${o.discount_amount || 0},${o.final_total || o.total || 0},"${delivery}","${o.status || ''}","${new Date(o.created_at).toLocaleString()}","${items}"\n`;
         });
         const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
@@ -2184,6 +2601,7 @@ async function addNewModel() {
     const slug = prompt('🔑 Введите slug (уникальный идентификатор на латинице, например: "xros-3"):');
     if (!slug) return;
     
+    // Показываем доступные бренды
     const brandOptions = (brands || []).map((b, i) => `${i+1}. ${b.name} (${b.slug})`).join('\n');
     if (!brands || brands.length === 0) {
         alert('⚠️ Сначала добавьте бренд через админку → Бренды.');
@@ -2224,7 +2642,7 @@ async function addNewModel() {
             await loadAdminModels();
             await loadProductModels();
             renderCatalog();
-            showMessage('✅ Модель добавлена!', `"${name}" успешно добавлена`);
+            showMessage(`✅ Модель добавлена!\n\n📦 Название: ${name}\n🔑 Slug: ${slug}\n🏷️ Бренд: ${brands[brandIndex].name}\n📂 Категория: ${categorySlug}\n\n💡 Используйте этот SLUG для добавления атрибутов: ${slug}`);
         } else {
             const error = await response.json();
             console.error('❌ Ошибка добавления:', error);
@@ -2339,11 +2757,34 @@ async function loadAdminAttributes() {
 }
 
 async function addNewAttribute() {
-    const attrName = prompt('🏷️ Введите название атрибута (например, "Цвет", "Сопротивление"):');
+    // Показываем список доступных моделей с их slug
+    let modelList = '';
+    if (productModels && productModels.length > 0) {
+        modelList = productModels.map(m => `  📦 ${m.name} → slug: "${m.slug}"`).join('\n');
+    } else {
+        modelList = '  ⚠️ Нет моделей. Сначала добавьте модели через админку → Модели.';
+    }
+    
+    const attrName = prompt(
+        `🏷️ Введите название атрибута\n\n` +
+        `Примеры: "Цвет", "Сопротивление", "Вкус", "Крепость"\n\n` +
+        `📝 Название:`
+    );
     if (!attrName) return;
-    const attrValue = prompt('🎨 Введите значение атрибута (например, "Чёрный", "0.8 Ом"):');
+    
+    const attrValue = prompt(
+        `🎨 Введите значение атрибута\n\n` +
+        `Примеры: "Чёрный", "0.8 Ом", "Клубника", "20 мг"\n\n` +
+        `📝 Значение:`
+    );
     if (!attrValue) return;
-    const modelSlug = prompt('📦 Введите slug модели (например, "xros-3"):');
+    
+    const modelSlug = prompt(
+        `📦 Введите slug МОДЕЛИ\n\n` +
+        `Доступные модели:\n${modelList}\n\n` +
+        `💡 Скопируйте slug из списка выше (например: "xros-3")\n\n` +
+        `🔑 Slug модели:`
+    );
     if (!modelSlug) return;
     
     try {
@@ -2369,7 +2810,7 @@ async function addNewAttribute() {
         } else {
             const error = await response.json();
             console.error('❌ Ошибка добавления:', error);
-            showMessage('❌ Ошибка', error.message || 'Не удалось добавить атрибут');
+            showMessage('❌ Ошибка', error.message || 'Не удалось добавить атрибут. Проверьте правильность slug модели.');
         }
     } catch (error) {
         console.error('❌ Ошибка запроса:', error);
@@ -2400,7 +2841,7 @@ async function deleteAttribute(attributeId) {
 }
 
 // ==========================================
-// ===== АКЦИИ (АДМИНКА) =====
+// ===== АКЦИИ (АДМИНКА) С ИСПРАВЛЕННЫМ РЕДАКТИРОВАНИЕМ =====
 // ==========================================
 
 async function loadAdminPromotions() {
@@ -2516,6 +2957,53 @@ async function addNewPromotion() {
     }
 }
 
+// ===== ИСПРАВЛЕННАЯ ФУНКЦИЯ РЕДАКТИРОВАНИЯ АКЦИЙ =====
+async function editPromotion(promotionId) {
+    const promotion = promotions.find(p => p.id === promotionId);
+    if (!promotion) {
+        showMessage('❌ Ошибка', 'Акция не найдена');
+        return;
+    }
+    
+    const title = prompt('📝 Название акции:', promotion.title || '');
+    if (title === null) return;
+    
+    const description = prompt('📝 Описание акции:', promotion.description || '');
+    if (description === null) return;
+    
+    const emoji = prompt('😊 Эмодзи для акции:', promotion.image_emoji || '🎉');
+    if (emoji === null) return;
+    
+    try {
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/promotions?id=eq.${promotionId}`, {
+            method: 'PATCH',
+            headers: {
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                title: title,
+                description: description,
+                image_emoji: emoji
+            })
+        });
+        
+        if (response.ok) {
+            await loadAdminPromotions();
+            await loadPromotionsFromSupabase();
+            showMessage('✅ Акция обновлена!', `"${title}" успешно обновлена`);
+        } else {
+            const error = await response.json();
+            console.error('❌ Ошибка обновления:', error);
+            showMessage('❌ Ошибка', error.message || 'Не удалось обновить акцию');
+        }
+    } catch (error) {
+        console.error('❌ Ошибка запроса:', error);
+        showMessage('❌ Ошибка', 'Ошибка соединения с сервером');
+    }
+}
+
 async function deletePromotion(promotionId) {
     if (!confirm('Удалить эту акцию?')) return;
     
@@ -2539,9 +3027,629 @@ async function deletePromotion(promotionId) {
 }
 
 // ==========================================
+// ===== АДМИН-НАСТРОЙКИ (ДОСТАВКА) =====
+// ==========================================
+async function loadAdminSettings() {
+    console.log('🔄 ЗАГРУЗКА НАСТРОЕК...');
+    const container = document.getElementById('admin-settings-container');
+    if (!container) return;
+    
+    container.style.display = 'block';
+    container.style.visibility = 'visible';
+    
+    try {
+        await loadSettings();
+        
+        container.innerHTML = `
+            <div class="admin-settings-form">
+                <h3>⚙️ Настройки доставки</h3>
+                
+                <div class="form-group">
+                    <label>🚚 Включить платную доставку</label>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="setting-delivery-enabled" ${deliveryEnabled ? 'checked' : ''}>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="form-group">
+                    <label>💰 Стоимость доставки (BYN)</label>
+                    <input type="number" id="setting-delivery-price" value="${deliveryPrice}" class="order-input" step="0.5" min="0">
+                </div>
+                
+                <div class="form-group">
+                    <label>📝 Информация о доставке</label>
+                    <textarea id="setting-delivery-info" class="order-input" rows="2">${settings.delivery_info || '🚚 Доставка по городу в течение 2-3 часов'}</textarea>
+                </div>
+                
+                <button class="admin-save-btn" onclick="saveSettings()">💾 Сохранить настройки</button>
+                
+                <div id="settings-status" class="settings-status"></div>
+            </div>
+        `;
+        
+        document.getElementById('setting-delivery-enabled')?.addEventListener('change', function() {
+            const priceInput = document.getElementById('setting-delivery-price');
+            if (priceInput) {
+                priceInput.disabled = !this.checked;
+            }
+        });
+        
+        const enabled = document.getElementById('setting-delivery-enabled');
+        const priceInput = document.getElementById('setting-delivery-price');
+        if (enabled && priceInput) {
+            priceInput.disabled = !enabled.checked;
+        }
+        
+    } catch (error) {
+        console.error('❌ Ошибка загрузки настроек:', error);
+        container.innerHTML = '<div class="error-message">Ошибка загрузки настроек</div>';
+    }
+}
+
+async function saveSettings() {
+    const enabled = document.getElementById('setting-delivery-enabled')?.checked || false;
+    const price = parseFloat(document.getElementById('setting-delivery-price')?.value) || 0;
+    const info = document.getElementById('setting-delivery-info')?.value || '';
+    
+    try {
+        const settingsData = [
+            { key: 'delivery_enabled', value: String(enabled) },
+            { key: 'delivery_price', value: String(price) },
+            { key: 'delivery_info', value: info }
+        ];
+        
+        for (const setting of settingsData) {
+            await fetch(`${SUPABASE_URL}/rest/v1/settings?key=eq.${setting.key}`, {
+                method: 'PATCH',
+                headers: {
+                    'apikey': SUPABASE_KEY,
+                    'Authorization': `Bearer ${SUPABASE_KEY}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ value: setting.value })
+            });
+        }
+        
+        deliveryEnabled = enabled;
+        deliveryPrice = price;
+        settings.delivery_enabled = String(enabled);
+        settings.delivery_price = String(price);
+        settings.delivery_info = info;
+        
+        const statusEl = document.getElementById('settings-status');
+        if (statusEl) {
+            statusEl.textContent = '✅ Настройки сохранены!';
+            statusEl.style.color = '#22c55e';
+            setTimeout(() => { statusEl.textContent = ''; }, 3000);
+        }
+        
+        showMessage('✅ Настройки сохранены', 'Настройки доставки обновлены');
+        updateCartUI();
+        
+    } catch (error) {
+        console.error('❌ Ошибка сохранения настроек:', error);
+        showMessage('❌ Ошибка', 'Не удалось сохранить настройки');
+    }
+}
+
+// ==========================================
+// ===== АДМИН-ИМПОРТ ТОВАРОВ =====
+// ==========================================
+async function importProducts() {
+    const textarea = document.getElementById('import-textarea');
+    const status = document.getElementById('import-status');
+    if (!textarea || !status) return;
+    
+    const data = textarea.value.trim();
+    if (!data) {
+        status.textContent = '⚠️ Вставьте данные для импорта';
+        status.style.color = '#f59e0b';
+        return;
+    }
+    
+    status.textContent = '⏳ Обработка данных...';
+    status.style.color = '#667eea';
+    
+    try {
+        const lines = data.split('\n').filter(line => line.trim());
+        let successCount = 0;
+        let errorCount = 0;
+        const errors = [];
+        
+        for (const line of lines) {
+            try {
+                let parts = line.split('|');
+                if (parts.length < 4) parts = line.split(';');
+                if (parts.length < 4) parts = line.split('\t');
+                
+                if (parts.length < 4) {
+                    errors.push(`❌ Недостаточно данных: "${line}"`);
+                    errorCount++;
+                    continue;
+                }
+                
+                const name = parts[0].trim();
+                const price = parseFloat(parts[1].trim());
+                const categorySlug = parts[2].trim().toLowerCase();
+                const brandSlug = parts.length > 3 ? parts[3].trim().toLowerCase() : null;
+                const modelSlug = parts.length > 4 ? parts[4].trim().toLowerCase() : null;
+                const emoji = parts.length > 5 ? parts[5].trim() : '📦';
+                const stock = parts.length > 6 ? parseInt(parts[6].trim()) || 0 : 0;
+                
+                if (!name || isNaN(price) || !categorySlug) {
+                    errors.push(`❌ Некорректные данные: "${line}"`);
+                    errorCount++;
+                    continue;
+                }
+                
+                const category = FIXED_CATEGORIES.find(c => c.slug === categorySlug);
+                if (!category) {
+                    errors.push(`❌ Неизвестная категория "${categorySlug}"`);
+                    errorCount++;
+                    continue;
+                }
+                
+                let brand = (brands || []).find(b => b.slug === brandSlug);
+                if (brandSlug && !brand) {
+                    try {
+                        const brandResponse = await fetch(`${SUPABASE_URL}/rest/v1/brands`, {
+                            method: 'POST',
+                            headers: {
+                                'apikey': SUPABASE_KEY,
+                                'Authorization': `Bearer ${SUPABASE_KEY}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                name: brandSlug.charAt(0).toUpperCase() + brandSlug.slice(1),
+                                slug: brandSlug,
+                                main_category_slug: categorySlug,
+                                active: true
+                            })
+                        });
+                        if (brandResponse.ok) {
+                            await loadBrands();
+                            brand = (brands || []).find(b => b.slug === brandSlug);
+                            console.log(`✅ Создан новый бренд: ${brandSlug}`);
+                        }
+                    } catch (e) {
+                        console.error(`❌ Ошибка создания бренда ${brandSlug}:`, e);
+                    }
+                }
+                
+                let model = (productModels || []).find(m => m.slug === modelSlug);
+                if (modelSlug && !model) {
+                    try {
+                        const modelResponse = await fetch(`${SUPABASE_URL}/rest/v1/product_models`, {
+                            method: 'POST',
+                            headers: {
+                                'apikey': SUPABASE_KEY,
+                                'Authorization': `Bearer ${SUPABASE_KEY}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                name: modelSlug.charAt(0).toUpperCase() + modelSlug.slice(1),
+                                slug: modelSlug,
+                                brand_slug: brandSlug || null,
+                                main_category_slug: categorySlug,
+                                active: true
+                            })
+                        });
+                        if (modelResponse.ok) {
+                            await loadProductModels();
+                            model = (productModels || []).find(m => m.slug === modelSlug);
+                            console.log(`✅ Создана новая модель: ${modelSlug}`);
+                        }
+                    } catch (e) {
+                        console.error(`❌ Ошибка создания модели ${modelSlug}:`, e);
+                    }
+                }
+                
+                const productResponse = await fetch(`${SUPABASE_URL}/rest/v1/products`, {
+                    method: 'POST',
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        price: price,
+                        emoji: emoji || '📦',
+                        main_category_slug: categorySlug,
+                        brand_slug: brandSlug || null,
+                        product_model_slug: modelSlug || null,
+                        stock_quantity: stock,
+                        in_stock: stock > 0,
+                        is_hit: false,
+                        is_new: true
+                    })
+                });
+                
+                if (productResponse.ok) {
+                    successCount++;
+                    console.log(`✅ Импортирован товар: ${name}`);
+                } else {
+                    const error = await productResponse.json();
+                    errors.push(`❌ Ошибка импорта "${name}": ${error.message || 'Неизвестная ошибка'}`);
+                    errorCount++;
+                }
+                
+            } catch (e) {
+                errors.push(`❌ Ошибка обработки строки: "${line}" — ${e.message}`);
+                errorCount++;
+            }
+        }
+        
+        await loadProductsFromSupabase();
+        await loadBrands();
+        await loadProductModels();
+        
+        let resultText = `✅ Импорт завершён!\n📦 Успешно: ${successCount} товаров\n❌ Ошибок: ${errorCount}`;
+        if (errors.length > 0) {
+            resultText += `\n\nОшибки:\n${errors.slice(0, 10).join('\n')}`;
+            if (errors.length > 10) {
+                resultText += `\n... и ещё ${errors.length - 10} ошибок`;
+            }
+        }
+        
+        status.textContent = resultText;
+        status.style.color = errorCount > 0 ? '#f59e0b' : '#22c55e';
+        textarea.value = '';
+        
+        if (successCount > 0) {
+            showMessage('✅ Импорт завершён!', `Импортировано ${successCount} товаров`);
+        }
+        
+    } catch (error) {
+        console.error('❌ Ошибка импорта:', error);
+        status.textContent = '❌ Ошибка импорта: ' + error.message;
+        status.style.color = '#ef4444';
+    }
+}
+
+// ==========================================
+// ===== АДМИН-ПРИЗЫ =====
+// ==========================================
+async function loadAdminPrizes() {
+    console.log('🔄 ЗАГРУЗКА ПРИЗОВ...');
+    const container = document.getElementById('admin-prizes-list');
+    if (!container) return;
+    
+    container.style.display = 'block';
+    container.style.visibility = 'visible';
+    
+    try {
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/prizes?select=*&order=sort_order.asc`, {
+            headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+        });
+        if (!response.ok) throw new Error('Не удалось загрузить призы');
+        const data = await response.json();
+        console.log('📦 Загружено призов в админке:', data ? data.length : 0);
+        
+        if (!data || data.length === 0) {
+            container.innerHTML = `
+                <div class="empty-message">Призов пока нет</div>
+                <button class="admin-add-btn" onclick="addNewPrize()">➕ Добавить приз</button>
+            `;
+            return;
+        }
+        
+        container.innerHTML = `
+            <button class="admin-add-btn" onclick="addNewPrize()">➕ Добавить приз</button>
+            ${data.map(p => `
+                <div class="admin-prize-card" data-id="${p.id}">
+                    <span class="admin-prize-emoji">${p.emoji || '🎁'}</span>
+                    <div class="admin-prize-info">
+                        <div class="admin-prize-title">${p.title || 'Без названия'}</div>
+                        <div class="admin-prize-desc">${p.description || ''}</div>
+                        ${p.promo_code_id ? '<span class="admin-prize-promo">🎫 С промокодом</span>' : ''}
+                        <span class="admin-prize-status ${p.active !== false ? 'active' : 'inactive'}">
+                            ${p.active !== false ? '✅ Активен' : '❌ Неактивен'}
+                        </span>
+                    </div>
+                    <div class="admin-prize-actions">
+                        <button class="admin-edit-btn" onclick="editPrize(${p.id})">✏️</button>
+                        <button class="admin-delete-btn" onclick="deletePrize(${p.id})">🗑️</button>
+                    </div>
+                </div>
+            `).join('')}
+        `;
+        
+    } catch (error) {
+        console.error('❌ Ошибка загрузки призов:', error);
+        container.innerHTML = '<div class="error-message">Ошибка загрузки призов</div>';
+    }
+}
+
+async function addNewPrize() {
+    const title = prompt('🎁 Введите название приза:');
+    if (!title) return;
+    const description = prompt('📝 Введите описание приза:') || '';
+    const emoji = prompt('😊 Выберите эмодзи для приза (по умолчанию 🎁):', '🎁') || '🎁';
+    
+    try {
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/prizes`, {
+            method: 'POST',
+            headers: {
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                title,
+                description,
+                emoji,
+                type: 'info',
+                active: true,
+                sort_order: 0
+            })
+        });
+        
+        if (response.ok) {
+            await loadAdminPrizes();
+            await loadPrizes();
+            showMessage('✅ Приз добавлен!', `"${title}" успешно добавлен`);
+        } else {
+            const error = await response.json();
+            console.error('❌ Ошибка добавления:', error);
+            showMessage('❌ Ошибка', error.message || 'Не удалось добавить приз');
+        }
+    } catch (error) {
+        console.error('❌ Ошибка запроса:', error);
+        showMessage('❌ Ошибка', 'Ошибка соединения с сервером');
+    }
+}
+
+async function editPrize(prizeId) {
+    const prize = prizes.find(p => p.id === prizeId);
+    if (!prize) return;
+    
+    const title = prompt('Название приза:', prize.title || '');
+    if (title === null) return;
+    const description = prompt('Описание:', prize.description || '') || '';
+    const emoji = prompt('Эмодзи:', prize.emoji || '🎁') || '🎁';
+    
+    try {
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/prizes?id=eq.${prizeId}`, {
+            method: 'PATCH',
+            headers: {
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ title, description, emoji })
+        });
+        
+        if (response.ok) {
+            await loadAdminPrizes();
+            await loadPrizes();
+            showMessage('✅ Приз обновлён!', `"${title}" успешно обновлён`);
+        }
+    } catch (error) {
+        console.error('❌ Ошибка обновления:', error);
+        showMessage('❌ Ошибка', 'Не удалось обновить приз');
+    }
+}
+
+async function deletePrize(prizeId) {
+    if (!confirm('Удалить этот приз?')) return;
+    
+    try {
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/prizes?id=eq.${prizeId}`, {
+            method: 'DELETE',
+            headers: {
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`
+            }
+        });
+        
+        if (response.ok) {
+            await loadAdminPrizes();
+            await loadPrizes();
+            showMessage('✅ Приз удалён', 'Приз успешно удалён');
+        }
+    } catch (error) {
+        console.error('❌ Ошибка удаления приза:', error);
+    }
+}
+
+// ==========================================
+// ===== АДМИН-ПРОМОКОДЫ =====
+// ==========================================
+async function loadAdminPromocodes() {
+    console.log('🔄 ЗАГРУЗКА ПРОМОКОДОВ...');
+    const container = document.getElementById('admin-promocodes-list');
+    if (!container) return;
+    
+    container.style.display = 'block';
+    container.style.visibility = 'visible';
+    
+    try {
+        await loadPromocodes();
+        
+        if (!promocodes || promocodes.length === 0) {
+            container.innerHTML = `
+                <div class="empty-message">Промокодов пока нет</div>
+                <button class="admin-add-btn" onclick="generatePromocode()">🎫 Сгенерировать промокод</button>
+            `;
+            return;
+        }
+        
+        container.innerHTML = `
+            <button class="admin-add-btn" onclick="generatePromocode()">🎫 Сгенерировать промокод</button>
+            ${promocodes.map(p => `
+                <div class="admin-promocode-card" data-id="${p.id}">
+                    <div class="admin-promocode-code">🎫 ${p.code}</div>
+                    <div class="admin-promocode-info">
+                        <span>Скидка: ${p.discount_value}${p.discount_type === 'percent' ? '%' : ' BYN'}</span>
+                        <span>Использован: ${p.used_count || 0}/${p.max_uses || '∞'}</span>
+                        <span>Мин. сумма: ${p.min_order_amount || 0} BYN</span>
+                        ${p.valid_until ? `<span>До: ${new Date(p.valid_until).toLocaleDateString()}</span>` : ''}
+                        <span class="admin-promocode-status ${p.active !== false ? 'active' : 'inactive'}">
+                            ${p.active !== false ? '✅ Активен' : '❌ Неактивен'}
+                        </span>
+                    </div>
+                    <div class="admin-promocode-actions">
+                        <button class="admin-edit-btn" onclick="togglePromocode(${p.id})">${p.active !== false ? '🔒' : '🔓'}</button>
+                        <button class="admin-delete-btn" onclick="deletePromocode(${p.id})">🗑️</button>
+                    </div>
+                </div>
+            `).join('')}
+        `;
+        
+    } catch (error) {
+        console.error('❌ Ошибка загрузки промокодов:', error);
+        container.innerHTML = '<div class="error-message">Ошибка загрузки промокодов</div>';
+    }
+}
+
+async function generatePromocode() {
+    const discountType = confirm('Процентная скидка? (OK - %, Отмена - фиксированная сумма)') ? 'percent' : 'fixed';
+    const discountValue = prompt(`Введите значение скидки (${discountType === 'percent' ? '%' : 'BYN'}):`);
+    if (!discountValue) return;
+    
+    const minOrder = prompt('Минимальная сумма заказа (0 - без ограничений):', '0') || '0';
+    const maxUses = prompt('Максимальное количество использований (1-999, 0 - без ограничений):', '0') || '0';
+    
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let code = '';
+    for (let i = 0; i < 8; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    
+    const fullCode = 'PUFF' + code;
+    
+    try {
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/promocodes`, {
+            method: 'POST',
+            headers: {
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                code: fullCode,
+                discount_type: discountType,
+                discount_value: parseFloat(discountValue),
+                min_order_amount: parseFloat(minOrder),
+                max_uses: parseInt(maxUses) || 999,
+                used_count: 0,
+                active: true
+            })
+        });
+        
+        if (response.ok) {
+            await loadAdminPromocodes();
+            await loadPromocodes();
+            showMessage('🎫 Промокод создан!', `Код: ${fullCode}\nСкидка: ${discountValue}${discountType === 'percent' ? '%' : ' BYN'}`);
+            try {
+                await navigator.clipboard.writeText(fullCode);
+                showMessage('📋 Скопировано!', 'Промокод скопирован в буфер обмена');
+            } catch (e) {}
+        } else {
+            const error = await response.json();
+            console.error('❌ Ошибка создания:', error);
+            showMessage('❌ Ошибка', error.message || 'Не удалось создать промокод');
+        }
+    } catch (error) {
+        console.error('❌ Ошибка запроса:', error);
+        showMessage('❌ Ошибка', 'Ошибка соединения с сервером');
+    }
+}
+
+async function togglePromocode(promocodeId) {
+    const promocode = promocodes.find(p => p.id === promocodeId);
+    if (!promocode) return;
+    
+    try {
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/promocodes?id=eq.${promocodeId}`, {
+            method: 'PATCH',
+            headers: {
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ active: !promocode.active })
+        });
+        
+        if (response.ok) {
+            await loadAdminPromocodes();
+            await loadPromocodes();
+            showMessage('✅ Статус изменён', `Промокод ${promocode.active ? 'деактивирован' : 'активирован'}`);
+        }
+    } catch (error) {
+        console.error('❌ Ошибка изменения статуса:', error);
+        showMessage('❌ Ошибка', 'Не удалось изменить статус');
+    }
+}
+
+async function deletePromocode(promocodeId) {
+    if (!confirm('Удалить этот промокод?')) return;
+    
+    try {
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/promocodes?id=eq.${promocodeId}`, {
+            method: 'DELETE',
+            headers: {
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`
+            }
+        });
+        
+        if (response.ok) {
+            await loadAdminPromocodes();
+            await loadPromocodes();
+            showMessage('✅ Промокод удалён', 'Промокод успешно удалён');
+        }
+    } catch (error) {
+        console.error('❌ Ошибка удаления:', error);
+    }
+}
+
+// ==========================================
+// ===== КАТЕГОРИИ (АДМИНКА) =====
+// ==========================================
+async function loadAdminCategories() {
+    console.log('🔄 ЗАГРУЗКА КАТЕГОРИЙ...');
+    const container = document.getElementById('admin-categories-list');
+    if (!container) return;
+    
+    container.style.display = 'block';
+    container.style.visibility = 'visible';
+    
+    container.innerHTML = `
+        <div class="admin-categories-fixed">
+            <div class="admin-categories-header">
+                <h3>📂 Основные категории (фиксированные)</h3>
+                <p class="admin-categories-hint">Категории нельзя удалить, но вы можете управлять брендами и моделями</p>
+            </div>
+            ${FIXED_CATEGORIES.map(cat => `
+                <div class="admin-category-card fixed">
+                    <span class="admin-category-icon">${cat.icon || '📂'}</span>
+                    <div class="admin-category-info">
+                        <div class="admin-category-name">${cat.name}</div>
+                        <div class="admin-category-slug">${cat.slug}</div>
+                        <div class="admin-category-stats">
+                            Брендов: ${(brands || []).filter(b => b.main_category_slug === cat.slug).length} | 
+                            Моделей: ${(productModels || []).filter(m => m.main_category_slug === cat.slug).length}
+                        </div>
+                    </div>
+                    <div class="admin-category-actions">
+                        <span class="admin-category-badge">🔒 Фиксированная</span>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+}
+
+async function addNewCategory() {
+    showMessage('ℹ️ Фиксированные категории', 'Основные категории (Pod-системы, Жижи, Комплектующие, Одноразовые, Снюс) зафиксированы в коде.\n\nДля добавления новых категорий обратитесь к разработчику.');
+}
+
+// ==========================================
 // ===== МОДЕРАТОРЫ (АДМИНКА) =====
 // ==========================================
-
 async function loadAdmins() {
     console.log('🔄 ЗАГРУЗКА МОДЕРАТОРОВ...');
     
@@ -2675,45 +3783,6 @@ async function removeAdmin(adminId) {
     }
 }
 
-// --- Категории (админка) ---
-async function loadAdminCategories() {
-    console.log('🔄 ЗАГРУЗКА КАТЕГОРИЙ...');
-    const container = document.getElementById('admin-categories-list');
-    if (!container) return;
-    
-    container.style.display = 'block';
-    container.style.visibility = 'visible';
-    
-    container.innerHTML = `
-        <div class="admin-categories-fixed">
-            <div class="admin-categories-header">
-                <h3>📂 Основные категории (фиксированные)</h3>
-                <p class="admin-categories-hint">Категории нельзя удалить, но вы можете управлять брендами и моделями</p>
-            </div>
-            ${FIXED_CATEGORIES.map(cat => `
-                <div class="admin-category-card fixed">
-                    <span class="admin-category-icon">${cat.icon || '📂'}</span>
-                    <div class="admin-category-info">
-                        <div class="admin-category-name">${cat.name}</div>
-                        <div class="admin-category-slug">${cat.slug}</div>
-                        <div class="admin-category-stats">
-                            Брендов: ${(brands || []).filter(b => b.main_category_slug === cat.slug).length} | 
-                            Моделей: ${(productModels || []).filter(m => m.main_category_slug === cat.slug).length}
-                        </div>
-                    </div>
-                    <div class="admin-category-actions">
-                        <span class="admin-category-badge">🔒 Фиксированная</span>
-                    </div>
-                </div>
-            `).join('')}
-        </div>
-    `;
-}
-
-async function addNewCategory() {
-    showMessage('ℹ️ Фиксированные категории', 'Основные категории (Pod-системы, Жижи, Комплектующие, Одноразовые, Снюс) зафиксированы в коде.\n\nДля добавления новых категорий обратитесь к разработчику.');
-}
-
 // ==========================================
 // ===== ИНИЦИАЛИЗАЦИЯ =====
 // ==========================================
@@ -2725,7 +3794,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.log('👤 initDataUnsafe:', window.Telegram.WebApp.initDataUnsafe || 'empty');
         console.log('📱 platform:', window.Telegram.WebApp.platform || 'unknown');
         
-        // Проверяем наличие основных страниц
         const pages = document.querySelectorAll('.page');
         if (pages.length === 0) {
             console.error('❌ КРИТИЧЕСКАЯ ОШИБКА: Страницы не найдены! Проверьте HTML.');
@@ -2751,12 +3819,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         
         try {
+            await loadSettings();
             await loadMainCategories();
             await loadBrands();
             await loadProductModels();
             await loadProductAttributes();
             await loadPickupPoints();
             await loadPromotionsFromSupabase();
+            await loadPrizes();
+            await loadPromocodes();
             await loadProductsFromSupabase();
         } catch (loadError) {
             console.error('❌ Ошибка загрузки данных:', loadError);
@@ -2789,6 +3860,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     if (addressGroup) addressGroup.style.display = 'none';
                     if (pickupGroup) pickupGroup.style.display = 'none';
                 }
+                updateCartUI();
             });
             if (pickupGroup) {
                 const pickupSelect = document.getElementById('order-pickup-point');
@@ -2800,6 +3872,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             }
         }
+        
+        document.getElementById('promocode-apply-btn')?.addEventListener('click', applyPromocode);
+        document.getElementById('promocode-input')?.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                applyPromocode();
+            }
+        });
         
         document.querySelectorAll('.nav-btn').forEach(btn => {
             btn.addEventListener('click', () => {
@@ -2836,6 +3915,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('admin-add-btn')?.addEventListener('click', addAdmin);
             document.getElementById('admin-add-pickup-point-btn')?.addEventListener('click', addNewPickupPoint);
             document.getElementById('admin-export-orders-btn')?.addEventListener('click', exportOrdersCSV);
+            document.getElementById('admin-import-btn')?.addEventListener('click', importProducts);
         }
         
         updateCartUI();
