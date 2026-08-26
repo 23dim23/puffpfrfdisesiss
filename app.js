@@ -2851,7 +2851,6 @@ async function deleteAttribute(attributeId) {
 // ===== АКЦИИ (АДМИНКА) =====
 // ==========================================
 // ... (все функции для акций остаются без изменений)
-
 // ==========================================
 // ===== ИНИЦИАЛИЗАЦИЯ =====
 // ==========================================
@@ -2981,6 +2980,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             // document.getElementById('admin-add-promotion-btn')?.addEventListener('click', addNewPromotion);
             // document.getElementById('admin-add-btn')?.addEventListener('click', addAdmin);
             // document.getElementById('admin-add-pickup-point-btn')?.addEventListener('click', addNewPickupPoint);
+            // document.getElementById('admin-import-btn')?.addEventListener('click', importProducts);
             
             // РАБОТАЮТ
             document.getElementById('admin-add-product-btn')?.addEventListener('click', addNewProduct);
@@ -2988,7 +2988,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('admin-add-model-btn')?.addEventListener('click', addNewModel);
             document.getElementById('admin-add-attribute-btn')?.addEventListener('click', addNewAttribute);
             document.getElementById('admin-export-orders-btn')?.addEventListener('click', exportOrdersCSV);
-            document.getElementById('admin-import-btn')?.addEventListener('click', importProducts);
         }
         
         updateCartUI();
