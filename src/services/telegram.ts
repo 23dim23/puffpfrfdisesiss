@@ -20,9 +20,15 @@ declare global {
         viewportStableHeight: number;
         headerColor: string;
         backgroundColor: string;
+        isClosingConfirmationEnabled?: boolean;
+        isVerticalSwipesEnabled?: boolean;
         expand: () => void;
         close: () => void;
         ready: () => void;
+        enableClosingConfirmation?: () => void;
+        disableClosingConfirmation?: () => void;
+        disableVerticalSwipes?: () => void;
+        enableVerticalSwipes?: () => void;
         sendData: (data: string) => void;
         openTelegramLink: (url: string) => void;
         openLink: (url: string) => void;
@@ -70,6 +76,20 @@ export const initTelegramApp = () => {
     try {
       tg.ready();
       tg.expand();
+
+      // Prevent closing on swipe down (Telegram Mini Apps API 7.7+)
+      if (typeof tg.disableVerticalSwipes === 'function') {
+        tg.disableVerticalSwipes();
+      }
+      if ('isVerticalSwipesEnabled' in tg) {
+        tg.isVerticalSwipesEnabled = false;
+      }
+
+      // Enable closing confirmation to prevent accidental closing
+      if (typeof tg.enableClosingConfirmation === 'function') {
+        tg.enableClosingConfirmation();
+      }
+
       if (tg.backgroundColor) {
         tg.backgroundColor = '#0a0a0f';
       }

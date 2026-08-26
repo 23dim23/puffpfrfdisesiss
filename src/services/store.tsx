@@ -90,6 +90,8 @@ interface StoreContextType {
   deleteCategory: (id: number) => Promise<boolean>;
   addBrand: (brand: Omit<Brand, 'id'>) => Promise<boolean>;
   deleteBrand: (id: number) => Promise<boolean>;
+  addBrandLine: (attributeGroupSlug: string, lineName: string) => Promise<boolean>;
+  deleteBrandLine: (id: number) => Promise<boolean>;
   addModel: (model: Omit<ProductModel, 'id'>) => Promise<boolean>;
   deleteModel: (id: number) => Promise<boolean>;
   addPromotion: (promo: Omit<Promotion, 'id'>) => Promise<boolean>;
@@ -236,10 +238,41 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     localStorage.setItem('puff_admins_v2', JSON.stringify(admins));
   }, [admins]);
 
+  // Supabase REST helper
+  const supabaseRequest = useCallback(
+    async (path: string, method: string = 'GET', body?: unknown, headers: Record<string, string> = {}) => {
+      try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+          method,
+          headers: {
+            apikey: SUPABASE_KEY,
+            Authorization: `Bearer ${SUPABASE_KEY}`,
+            'Content-Type': 'application/json',
+            Prefer: method === 'POST' ? 'return=representation' : undefined,
+            ...headers,
+          } as HeadersInit,
+          body: body ? JSON.stringify(body) : undefined,
+        });
+        if (!res.ok) {
+          const errText = await res.text();
+          console.warn(`Supabase ${method} ${path} error:`, res.status, errText);
+          return null;
+        }
+        if (res.status === 204) return true;
+        const text = await res.text();
+        return text ? JSON.parse(text) : true;
+      } catch (e) {
+        console.warn(`Supabase network exception for ${path}:`, e);
+        return null;
+      }
+    },
+    []
+  );
+
   // Supabase REST fetch helper
   const fetchSupabase = useCallback(async (table: string, filters: Record<string, unknown> = {}, order?: { by: string; direction?: string }) => {
     try {
-      let url = `${SUPABASE_URL}/rest/v1/${table}?select=*`;
+      let url = `${table}?select=*`;
       Object.keys(filters).forEach((key) => {
         if (filters[key] !== undefined && filters[key] !== null && filters[key] !== '') {
           url += `&${key}=eq.${filters[key]}`;
@@ -248,19 +281,12 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       if (order?.by) {
         url += `&order=${order.by}.${order.direction || 'asc'}`;
       }
-      const response = await fetch(url, {
-        headers: {
-          apikey: SUPABASE_KEY,
-          Authorization: `Bearer ${SUPABASE_KEY}`,
-        },
-      });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      return await response.json();
+      return await supabaseRequest(url, 'GET');
     } catch (e) {
       console.warn(`Supabase fetch warning for ${table}:`, e);
       return null;
     }
-  }, []);
+  }, [supabaseRequest]);
 
   // Check admin status
   const checkAdminPrivileges = useCallback((user: TelegramUser | null, adminList: AdminUser[]) => {
@@ -718,8 +744,16 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Admin handlers
   const saveSettings = async (newSettings: Partial<ShopSettings>) => {
-    setSettings((prev) => ({ ...prev, ...newSettings }));
+    const updated = { ...settings, ...newSettings };
+    setSettings(updated);
     hapticNotification('success');
+    
+    // Save to Supabase settings table
+    try {
+      await supabaseRequest('settings?id=eq.1', 'PATCH', updated);
+    } catch (e) {
+      console.warn('Supabase saveSettings warning:', e);
+    }
     return true;
   };
 
@@ -734,15 +768,10 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     hapticNotification('success');
 
     try {
-      await fetch(`${SUPABASE_URL}/rest/v1/products`, {
-        method: 'POST',
-        headers: {
-          apikey: SUPABASE_KEY,
-          Authorization: `Bearer ${SUPABASE_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newProd),
-      });
+      const res = await supabaseRequest('products', 'POST', newProd);
+      if (res && Array.isArray(res) && res[0]?.id) {
+        setProducts((prev) => prev.map((p) => (p.id === newProd.id ? { ...p, id: res[0].id } : p)));
+      }
     } catch (e) {
       console.warn('Supabase add product error:', e);
     }
@@ -754,15 +783,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     hapticNotification('success');
 
     try {
-      await fetch(`${SUPABASE_URL}/rest/v1/products?id=eq.${id}`, {
-        method: 'PATCH',
-        headers: {
-          apikey: SUPABASE_KEY,
-          Authorization: `Bearer ${SUPABASE_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(productData),
-      });
+      await supabaseRequest(`products?id=eq.${id}`, 'PATCH', productData);
     } catch (e) {
       console.warn('Supabase update product error:', e);
     }
@@ -774,13 +795,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     hapticImpact('medium');
 
     try {
-      await fetch(`${SUPABASE_URL}/rest/v1/products?id=eq.${id}`, {
-        method: 'DELETE',
-        headers: {
-          apikey: SUPABASE_KEY,
-          Authorization: `Bearer ${SUPABASE_KEY}`,
-        },
-      });
+      await supabaseRequest(`products?id=eq.${id}`, 'DELETE');
     } catch (e) {
       console.warn('Supabase delete product error:', e);
     }
@@ -794,12 +809,24 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     };
     setCategories((prev) => [...prev, newCat]);
     hapticNotification('success');
+
+    try {
+      await supabaseRequest('categories', 'POST', newCat);
+    } catch (e) {
+      console.warn('Supabase addCategory warning:', e);
+    }
     return true;
   };
 
   const deleteCategory = async (id: number) => {
     setCategories((prev) => prev.filter((c) => c.id !== id));
     hapticImpact('medium');
+
+    try {
+      await supabaseRequest(`categories?id=eq.${id}`, 'DELETE');
+    } catch (e) {
+      console.warn('Supabase deleteCategory warning:', e);
+    }
     return true;
   };
 
@@ -810,12 +837,77 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     };
     setBrands((prev) => [...prev, newBrand]);
     hapticNotification('success');
+
+    try {
+      const res = await supabaseRequest('brands', 'POST', newBrand);
+      if (res && Array.isArray(res) && res[0]?.id) {
+        setBrands((prev) => prev.map((b) => (b.id === newBrand.id ? { ...b, id: res[0].id } : b)));
+      }
+    } catch (e) {
+      console.warn('Supabase addBrand warning:', e);
+    }
     return true;
   };
 
   const deleteBrand = async (id: number) => {
     setBrands((prev) => prev.filter((b) => b.id !== id));
     hapticImpact('medium');
+
+    try {
+      await supabaseRequest(`brands?id=eq.${id}`, 'DELETE');
+    } catch (e) {
+      console.warn('Supabase deleteBrand warning:', e);
+    }
+    return true;
+  };
+
+  const addBrandLine = async (attributeGroupSlug: string, lineName: string) => {
+    let group = attributeGroups.find((g) => g.slug === attributeGroupSlug);
+    if (!group) {
+      const newGroup: AttributeGroup = {
+        id: Date.now() % 10000,
+        name: lineName,
+        slug: attributeGroupSlug,
+        category_slug: 'liquid',
+        sort_order: 1,
+        is_active: true,
+      };
+      setAttributeGroups((prev) => [...prev, newGroup]);
+      group = newGroup;
+      try {
+        await supabaseRequest('attribute_groups', 'POST', newGroup);
+      } catch (e) {
+        console.warn('Supabase add group warning:', e);
+      }
+    }
+
+    const newVal: AttributeValue = {
+      id: Date.now() % 10000 + Math.floor(Math.random() * 50),
+      attribute_group_slug: attributeGroupSlug,
+      value: lineName,
+      sort_order: 1,
+      is_active: true,
+    };
+    setAttributeValues((prev) => [...prev, newVal]);
+    hapticNotification('success');
+
+    try {
+      await supabaseRequest('attribute_values', 'POST', newVal);
+    } catch (e) {
+      console.warn('Supabase add attribute value warning:', e);
+    }
+    return true;
+  };
+
+  const deleteBrandLine = async (id: number) => {
+    setAttributeValues((prev) => prev.filter((v) => v.id !== id));
+    hapticImpact('medium');
+
+    try {
+      await supabaseRequest(`attribute_values?id=eq.${id}`, 'DELETE');
+    } catch (e) {
+      console.warn('Supabase delete attribute value warning:', e);
+    }
     return true;
   };
 
@@ -826,12 +918,27 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     };
     setModels((prev) => [...prev, newModel]);
     hapticNotification('success');
+
+    try {
+      const res = await supabaseRequest('product_models', 'POST', newModel);
+      if (res && Array.isArray(res) && res[0]?.id) {
+        setModels((prev) => prev.map((m) => (m.id === newModel.id ? { ...m, id: res[0].id } : m)));
+      }
+    } catch (e) {
+      console.warn('Supabase addModel warning:', e);
+    }
     return true;
   };
 
   const deleteModel = async (id: number) => {
     setModels((prev) => prev.filter((m) => m.id !== id));
     hapticImpact('medium');
+
+    try {
+      await supabaseRequest(`product_models?id=eq.${id}`, 'DELETE');
+    } catch (e) {
+      console.warn('Supabase deleteModel warning:', e);
+    }
     return true;
   };
 
@@ -843,12 +950,24 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     };
     setPromotions((prev) => [newPromo, ...prev]);
     hapticNotification('success');
+
+    try {
+      await supabaseRequest('promotions', 'POST', newPromo);
+    } catch (e) {
+      console.warn('Supabase addPromotion warning:', e);
+    }
     return true;
   };
 
   const deletePromotion = async (id: number) => {
     setPromotions((prev) => prev.filter((p) => p.id !== id));
     hapticImpact('medium');
+
+    try {
+      await supabaseRequest(`promotions?id=eq.${id}`, 'DELETE');
+    } catch (e) {
+      console.warn('Supabase deletePromotion warning:', e);
+    }
     return true;
   };
 
@@ -861,12 +980,24 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     };
     setPromocodes((prev) => [newCode, ...prev]);
     hapticNotification('success');
+
+    try {
+      await supabaseRequest('promocodes', 'POST', newCode);
+    } catch (e) {
+      console.warn('Supabase addPromocode warning:', e);
+    }
     return true;
   };
 
   const deletePromocode = async (id: number) => {
     setPromocodes((prev) => prev.filter((p) => p.id !== id));
     hapticImpact('medium');
+
+    try {
+      await supabaseRequest(`promocodes?id=eq.${id}`, 'DELETE');
+    } catch (e) {
+      console.warn('Supabase deletePromocode warning:', e);
+    }
     return true;
   };
 
@@ -877,12 +1008,24 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     };
     setPickupPoints((prev) => [...prev, newPoint]);
     hapticNotification('success');
+
+    try {
+      await supabaseRequest('pickup_points', 'POST', newPoint);
+    } catch (e) {
+      console.warn('Supabase addPickupPoint warning:', e);
+    }
     return true;
   };
 
   const deletePickupPoint = async (id: number) => {
     setPickupPoints((prev) => prev.filter((p) => p.id !== id));
     hapticImpact('medium');
+
+    try {
+      await supabaseRequest(`pickup_points?id=eq.${id}`, 'DELETE');
+    } catch (e) {
+      console.warn('Supabase deletePickupPoint warning:', e);
+    }
     return true;
   };
 
@@ -897,12 +1040,24 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     };
     setAdmins((prev) => [...prev, newAdmin]);
     hapticNotification('success');
+
+    try {
+      await supabaseRequest('admins', 'POST', newAdmin);
+    } catch (e) {
+      console.warn('Supabase addAdminUser warning:', e);
+    }
     return true;
   };
 
   const deleteAdminUser = async (id: number) => {
     setAdmins((prev) => prev.filter((a) => a.id !== id));
     hapticImpact('medium');
+
+    try {
+      await supabaseRequest(`admins?id=eq.${id}`, 'DELETE');
+    } catch (e) {
+      console.warn('Supabase deleteAdminUser warning:', e);
+    }
     return true;
   };
 

@@ -43,9 +43,24 @@ const MainContent: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0d0c14] text-zinc-100 flex justify-center selection:bg-purple-500 selection:text-white">
+    <div className="min-h-screen bg-[#07060c] text-zinc-100 flex justify-center selection:bg-purple-500 selection:text-white relative overflow-hidden">
+      {/* Background Dynamic Violet & Deep Purple Eclipses */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        {/* Deep Violet Eclipse Orb 1 */}
+        <div className="absolute top-[-80px] left-[-60px] w-[340px] h-[340px] rounded-full bg-gradient-to-br from-purple-600/35 via-violet-800/25 to-transparent blur-[85px] animate-eclipse-1" />
+        
+        {/* Dark Purple Eclipse Orb 2 */}
+        <div className="absolute bottom-[10%] right-[-70px] w-[380px] h-[380px] rounded-full bg-gradient-to-tl from-fuchsia-700/25 via-purple-950/40 to-transparent blur-[100px] animate-eclipse-2" />
+        
+        {/* Midnight Violet Center Eclipse Orb 3 */}
+        <div className="absolute top-[42%] left-[15%] w-[320px] h-[320px] rounded-full bg-gradient-to-tr from-indigo-900/30 via-purple-900/20 to-transparent blur-[90px] animate-eclipse-3" />
+
+        {/* Ambient Dark Overlay Mesh */}
+        <div className="absolute inset-0 bg-radial-vignette opacity-80" />
+      </div>
+
       {/* Maximum mobile-width frame */}
-      <div className="w-full max-w-[480px] min-h-screen flex flex-col relative px-4 pt-3 pb-24 shadow-2xl">
+      <div className="w-full max-w-[480px] min-h-screen flex flex-col relative px-4 pt-3 pb-24 shadow-2xl z-10">
         {/* Top Header */}
         <Header
           activeTab={activeTab}

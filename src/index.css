@@ -6,14 +6,83 @@
     -webkit-tap-highlight-color: transparent;
   }
 
-  body {
-    background-color: #0a0a0f;
+  html, body {
+    background-color: #06050a;
     color: #f4f4f5;
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     overflow-x: hidden;
     margin: 0;
     padding: 0;
+    overscroll-behavior-y: none;
+    overscroll-behavior-x: none;
+    touch-action: pan-x pan-y;
   }
+}
+
+/* Dynamic Purple Eclipse Animations */
+@keyframes eclipseSlow1 {
+  0% {
+    transform: translate(0px, 0px) scale(1) rotate(0deg);
+    opacity: 0.75;
+  }
+  33% {
+    transform: translate(45px, 60px) scale(1.25) rotate(120deg);
+    opacity: 0.95;
+  }
+  66% {
+    transform: translate(-35px, 80px) scale(0.9) rotate(240deg);
+    opacity: 0.6;
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1) rotate(360deg);
+    opacity: 0.75;
+  }
+}
+
+@keyframes eclipseSlow2 {
+  0% {
+    transform: translate(0px, 0px) scale(1.15) rotate(0deg);
+    opacity: 0.65;
+  }
+  40% {
+    transform: translate(-50px, -40px) scale(0.85) rotate(-140deg);
+    opacity: 0.9;
+  }
+  80% {
+    transform: translate(40px, -20px) scale(1.3) rotate(-280deg);
+    opacity: 0.55;
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1.15) rotate(-360deg);
+    opacity: 0.65;
+  }
+}
+
+@keyframes eclipseSlow3 {
+  0% {
+    transform: translate(0px, 0px) scale(0.9) rotate(0deg);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translate(60px, -50px) scale(1.35) rotate(180deg);
+    opacity: 0.85;
+  }
+  100% {
+    transform: translate(0px, 0px) scale(0.9) rotate(360deg);
+    opacity: 0.5;
+  }
+}
+
+.animate-eclipse-1 {
+  animation: eclipseSlow1 22s ease-in-out infinite alternate;
+}
+
+.animate-eclipse-2 {
+  animation: eclipseSlow2 28s ease-in-out infinite alternate;
+}
+
+.animate-eclipse-3 {
+  animation: eclipseSlow3 20s ease-in-out infinite alternate;
 }
 
 /* Background animated gradient */

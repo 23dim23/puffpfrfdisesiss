@@ -30,12 +30,8 @@ export const Header: React.FC<HeaderProps> = ({ subtitle, onOpenAdmin }) => {
 
           <div>
             <h1 className="text-xl font-extrabold tracking-tight bg-gradient-to-r from-purple-400 via-fuchsia-300 to-orange-400 bg-clip-text text-transparent leading-none">
-              Puff Paradise Shop
+              Puff Paradise
             </h1>
-            <p className="text-[11px] text-zinc-400 font-medium tracking-wide uppercase mt-0.5 flex items-center gap-1">
-              <span>🇧🇾 Вейп Шоп Беларусь</span>
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            </p>
           </div>
         </div>
 

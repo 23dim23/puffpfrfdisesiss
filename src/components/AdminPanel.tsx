@@ -74,6 +74,8 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
     deleteCategory,
     addBrand,
     deleteBrand,
+    addBrandLine,
+    deleteBrandLine,
     addModel,
     deleteModel,
     addPromotion,
@@ -93,6 +95,20 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
   const [orderStatusFilter, setOrderStatusFilter] = useState<string>('all');
   const [orderDeliveryFilter, setOrderDeliveryFilter] = useState<string>('all');
   const [orderSearch, setOrderSearch] = useState<string>('');
+
+  // Brand & Model forms
+  const [brandForm, setBrandForm] = useState({
+    name: '',
+    category_slug: 'liquid',
+  });
+  const [brandLineForm, setBrandLineForm] = useState({
+    group_slug: 'liquid_brand_line',
+    line_name: '',
+  });
+  const [modelForm, setModelForm] = useState({
+    name: '',
+    brand_slug: 'vaporesso',
+  });
 
   // Product form modal state
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -893,21 +909,21 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
               type="text"
               value={pickupForm.name}
               onChange={(e) => setPickupForm((prev) => ({ ...prev, name: e.target.value }))}
-              placeholder="Название (напр. ст.м. Немига)"
+              placeholder="Название (напр. Атриум)"
               className="w-full py-2 px-3 rounded-xl bg-white/5 border border-white/10 text-white text-xs"
             />
             <input
               type="text"
               value={pickupForm.address}
               onChange={(e) => setPickupForm((prev) => ({ ...prev, address: e.target.value }))}
-              placeholder="Адрес (ул. Немига, 3)"
+              placeholder="Адрес (ул. Ленинская)"
               className="w-full py-2 px-3 rounded-xl bg-white/5 border border-white/10 text-white text-xs"
             />
             <input
               type="text"
               value={pickupForm.working_hours}
               onChange={(e) => setPickupForm((prev) => ({ ...prev, working_hours: e.target.value }))}
-              placeholder="Время работы (напр. 12:00 - 22:00)"
+              placeholder="Время работы (напр. 10:00 - 22:00)"
               className="w-full py-2 px-3 rounded-xl bg-white/5 border border-white/10 text-white text-xs"
             />
             <button
@@ -920,7 +936,7 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
                   comment: pickupForm.comment,
                   is_active: true,
                 });
-                setPickupForm({ name: '', address: '', working_hours: '11:00 - 21:00', comment: '' });
+                setPickupForm({ name: '', address: '', working_hours: '10:00 - 22:00', comment: '' });
               }}
               className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-purple-600 to-orange-500 text-white text-xs font-bold tap-active"
             >
@@ -1111,43 +1127,209 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
         </div>
       )}
 
-      {/* SUBPAGE: BRANDS */}
+      {/* SUBPAGE: BRANDS & LINES */}
       {activeSubpage === 'brands' && (
-        <div className="space-y-2">
-          {brands.map((b) => (
-            <div
-              key={b.id}
-              className="flex items-center justify-between p-3 rounded-2xl bg-white/[0.03] border border-white/[0.06]"
-            >
-              <div>
-                <h4 className="text-xs font-bold text-white">{b.name}</h4>
-                <p className="text-[10px] text-zinc-400">Категория: {b.category_slug}</p>
-              </div>
-              <button onClick={() => deleteBrand(b.id)} className="p-1.5 rounded-lg text-red-400 hover:bg-red-500/10">
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
+        <div className="space-y-4">
+          {/* Form: Add Brand */}
+          <div className="p-4 rounded-2xl bg-white/[0.03] border border-purple-500/20 space-y-3">
+            <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+              <span>🏷️ Добавить бренд</span>
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <input
+                type="text"
+                value={brandForm.name}
+                onChange={(e) => setBrandForm((prev) => ({ ...prev, name: e.target.value }))}
+                placeholder="Название бренда (напр. Husky, Vaporesso)"
+                className="w-full py-2 px-3 rounded-xl bg-white/5 border border-white/10 text-white text-xs"
+              />
+              <select
+                value={brandForm.category_slug}
+                onChange={(e) => setBrandForm((prev) => ({ ...prev, category_slug: e.target.value }))}
+                className="w-full py-2 px-2 rounded-xl bg-[#181628] border border-white/10 text-white text-xs"
+              >
+                {categories.map((c) => (
+                  <option key={c.slug} value={c.slug}>{c.name}</option>
+                ))}
+              </select>
             </div>
-          ))}
+            <button
+              onClick={() => {
+                if (!brandForm.name.trim()) return;
+                const slug = brandForm.name.toLowerCase().replace(/[^a-z0-9а-яё]/gi, '-');
+                addBrand({
+                  name: brandForm.name.trim(),
+                  slug,
+                  category_slug: brandForm.category_slug,
+                  sort_order: brands.length + 1,
+                });
+                setBrandForm({ name: '', category_slug: 'liquid' });
+              }}
+              className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-purple-600 to-orange-500 text-white text-xs font-bold tap-active"
+            >
+              Добавить бренд
+            </button>
+          </div>
+
+          {/* Form: Add Brand Line (Линейка вкусов) */}
+          <div className="p-4 rounded-2xl bg-white/[0.03] border border-blue-500/20 space-y-3">
+            <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+              <span>✨ Добавить линейку вкусов / серию</span>
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <input
+                type="text"
+                value={brandLineForm.line_name}
+                onChange={(e) => setBrandLineForm((prev) => ({ ...prev, line_name: e.target.value }))}
+                placeholder="Название линейки (напр. White (Холодок))"
+                className="w-full py-2 px-3 rounded-xl bg-white/5 border border-white/10 text-white text-xs"
+              />
+              <select
+                value={brandLineForm.group_slug}
+                onChange={(e) => setBrandLineForm((prev) => ({ ...prev, group_slug: e.target.value }))}
+                className="w-full py-2 px-2 rounded-xl bg-[#181628] border border-white/10 text-white text-xs"
+              >
+                <option value="liquid_brand_line">Линейка жидкостей</option>
+                <option value="disposable_puffs">Линейка затяжек одноразок</option>
+                <option value="snus_brand_line">Линейка снюса</option>
+              </select>
+            </div>
+            <button
+              onClick={() => {
+                if (!brandLineForm.line_name.trim()) return;
+                addBrandLine(brandLineForm.group_slug, brandLineForm.line_name.trim());
+                setBrandLineForm((prev) => ({ ...prev, line_name: '' }));
+              }}
+              className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-500 text-white text-xs font-bold tap-active"
+            >
+              Добавить линейку вкусов
+            </button>
+          </div>
+
+          {/* List of Brands */}
+          <div className="space-y-2">
+            <h5 className="text-xs font-bold text-zinc-400 uppercase tracking-wider px-1">Список брендов</h5>
+            {brands.map((b) => {
+              const brandProductsCount = products.filter((p) => p.brand_slug === b.slug).length;
+              return (
+                <div
+                  key={b.id}
+                  className="flex items-center justify-between p-3 rounded-2xl bg-white/[0.03] border border-white/[0.06]"
+                >
+                  <div>
+                    <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
+                      <span>{b.name}</span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-semibold">
+                        {brandProductsCount} тов.
+                      </span>
+                    </h4>
+                    <p className="text-[10px] text-zinc-400">Категория: {b.category_slug}</p>
+                  </div>
+                  <button onClick={() => deleteBrand(b.id)} className="p-1.5 rounded-lg text-red-400 hover:bg-red-500/10">
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* List of Flavor Lines */}
+          <div className="space-y-2 pt-2">
+            <h5 className="text-xs font-bold text-zinc-400 uppercase tracking-wider px-1">Линейки вкусов / Серии</h5>
+            <div className="flex flex-wrap gap-1.5">
+              {attributeValues
+                .filter((v) => {
+                  return (
+                    v.attribute_group_slug === 'liquid_brand_line' ||
+                    v.attribute_group_slug === 'disposable_puffs' ||
+                    v.attribute_group_slug === 'snus_brand_line'
+                  );
+                })
+                .map((val) => (
+                  <div
+                    key={val.id}
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-purple-500/15 border border-purple-500/30 text-xs text-purple-200"
+                  >
+                    <span>{val.value}</span>
+                    <button
+                      onClick={() => deleteBrandLine(val.id)}
+                      className="text-purple-400 hover:text-red-400"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+            </div>
+          </div>
         </div>
       )}
 
       {/* SUBPAGE: MODELS */}
       {activeSubpage === 'models' && (
-        <div className="space-y-2">
-          {models.map((m) => (
-            <div
-              key={m.id}
-              className="flex items-center justify-between p-3 rounded-2xl bg-white/[0.03] border border-white/[0.06]"
-            >
-              <div>
-                <h4 className="text-xs font-bold text-white">{m.name}</h4>
-                <p className="text-[10px] text-zinc-400">Бренд: {m.brand_slug}</p>
-              </div>
-              <button onClick={() => deleteModel(m.id)} className="p-1.5 rounded-lg text-red-400 hover:bg-red-500/10">
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
+        <div className="space-y-4">
+          {/* Form: Add Model */}
+          <div className="p-4 rounded-2xl bg-white/[0.03] border border-purple-500/20 space-y-3">
+            <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+              <span>📱 Добавить модель устройства</span>
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <input
+                type="text"
+                value={modelForm.name}
+                onChange={(e) => setModelForm((prev) => ({ ...prev, name: e.target.value }))}
+                placeholder="Название модели (напр. XROS 4, Aegis Hero 2)"
+                className="w-full py-2 px-3 rounded-xl bg-white/5 border border-white/10 text-white text-xs"
+              />
+              <select
+                value={modelForm.brand_slug}
+                onChange={(e) => setModelForm((prev) => ({ ...prev, brand_slug: e.target.value }))}
+                className="w-full py-2 px-2 rounded-xl bg-[#181628] border border-white/10 text-white text-xs"
+              >
+                {brands.map((b) => (
+                  <option key={b.slug} value={b.slug}>{b.name} ({b.category_slug})</option>
+                ))}
+              </select>
             </div>
-          ))}
+            <button
+              onClick={() => {
+                if (!modelForm.name.trim()) return;
+                const slug = modelForm.name.toLowerCase().replace(/[^a-z0-9а-яё]/gi, '-');
+                addModel({
+                  name: modelForm.name.trim(),
+                  slug,
+                  brand_slug: modelForm.brand_slug,
+                  category_slug: 'pod',
+                  sort_order: models.length + 1,
+                });
+                setModelForm((prev) => ({ ...prev, name: '' }));
+              }}
+              className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-purple-600 to-orange-500 text-white text-xs font-bold tap-active"
+            >
+              Добавить модель
+            </button>
+          </div>
+
+          {/* List of Models */}
+          <div className="space-y-2">
+            <h5 className="text-xs font-bold text-zinc-400 uppercase tracking-wider px-1">Список моделей устройств</h5>
+            {models.map((m) => {
+              const brandObj = brands.find((b) => b.slug === m.brand_slug);
+              return (
+                <div
+                  key={m.id}
+                  className="flex items-center justify-between p-3 rounded-2xl bg-white/[0.03] border border-white/[0.06]"
+                >
+                  <div>
+                    <h4 className="text-xs font-bold text-white">{m.name}</h4>
+                    <p className="text-[10px] text-zinc-400">Бренд: {brandObj?.name || m.brand_slug}</p>
+                  </div>
+                  <button onClick={() => deleteModel(m.id)} className="p-1.5 rounded-lg text-red-400 hover:bg-red-500/10">
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
 
