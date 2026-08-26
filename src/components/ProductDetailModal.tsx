@@ -32,7 +32,8 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product,
   const handleAddToCart = () => {
     if (!product.in_stock || product.stock_quantity <= 0) return;
     hapticImpact('heavy');
-    addToCart(product, quantity, selectedColorId);
+    const selColor = availableColors.find((c) => c.id === selectedColorId);
+    addToCart(product, quantity, selectedColorId, selColor?.color_name);
     if (onAddedToCart) onAddedToCart();
     onClose();
   };

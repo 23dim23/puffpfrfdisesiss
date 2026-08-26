@@ -33,19 +33,19 @@ import {
 export const HARDCODED_ADMIN_IDS = [5659638424, 8161417737];
 
 const DB_KEYS = {
-  SETTINGS: 'puff_db_settings_v3',
-  PRODUCTS: 'puff_db_products_v3',
-  CATEGORIES: 'puff_db_categories_v3',
-  BRANDS: 'puff_db_brands_v3',
-  MODELS: 'puff_db_models_v3',
-  ATTR_GROUPS: 'puff_db_attr_groups_v3',
-  ATTR_VALUES: 'puff_db_attr_values_v3',
-  COLORS: 'puff_db_colors_v3',
-  ORDERS: 'puff_db_orders_v3',
-  PROMOTIONS: 'puff_db_promotions_v3',
-  PROMOCODES: 'puff_db_promocodes_v3',
-  PICKUP_POINTS: 'puff_db_pickup_points_v3',
-  ADMINS: 'puff_db_admins_v3',
+  SETTINGS: 'puff_db_settings_v4',
+  PRODUCTS: 'puff_db_products_v4',
+  CATEGORIES: 'puff_db_categories_v4',
+  BRANDS: 'puff_db_brands_v4',
+  MODELS: 'puff_db_models_v4',
+  ATTR_GROUPS: 'puff_db_attr_groups_v4',
+  ATTR_VALUES: 'puff_db_attr_values_v4',
+  COLORS: 'puff_db_colors_v4',
+  ORDERS: 'puff_db_orders_v4',
+  PROMOTIONS: 'puff_db_promotions_v4',
+  PROMOCODES: 'puff_db_promocodes_v4',
+  PICKUP_POINTS: 'puff_db_pickup_points_v4',
+  ADMINS: 'puff_db_admins_v4',
 };
 
 // Database Schema
@@ -105,7 +105,13 @@ class LocalDatabase {
   }
 
   private notify() {
-    this.listeners.forEach((fn) => fn());
+    this.listeners.forEach((fn) => {
+      try {
+        fn();
+      } catch (err) {
+        console.error('Error notifying DB listener:', err);
+      }
+    });
   }
 
   // Initialize Tables
@@ -259,11 +265,11 @@ class LocalDatabase {
   public addCategory(cat: Omit<Category, 'id'>): Category {
     const categories = this.getCategories();
     const nextId = categories.length > 0 ? Math.max(...categories.map((c) => c.id)) + 1 : 1;
-    const newCategory: Category = { ...cat, id: nextId };
-    const updated = [...categories, newCategory];
+    const newCat: Category = { ...cat, id: nextId };
+    const updated = [...categories, newCat];
     setStoredItem(DB_KEYS.CATEGORIES, updated);
     this.notify();
-    return newCategory;
+    return newCat;
   }
 
   public deleteCategory(id: number): boolean {
@@ -320,7 +326,7 @@ class LocalDatabase {
     return true;
   }
 
-  // ================= ATTRIBUTES & LINES =================
+  // ================= ATTRIBUTES =================
   public getAttributeGroups(): AttributeGroup[] {
     return getStoredItem<AttributeGroup[]>(DB_KEYS.ATTR_GROUPS, INITIAL_ATTRIBUTE_GROUPS);
   }
@@ -329,42 +335,24 @@ class LocalDatabase {
     return getStoredItem<AttributeValue[]>(DB_KEYS.ATTR_VALUES, INITIAL_ATTRIBUTE_VALUES);
   }
 
-  public addBrandLine(attributeGroupSlug: string, lineName: string): AttributeValue {
+  public addAttributeGroup(group: Omit<AttributeGroup, 'id'>): AttributeGroup {
     const groups = this.getAttributeGroups();
-    let group = groups.find((g) => g.slug === attributeGroupSlug);
-    if (!group) {
-      const nextGroupId = groups.length > 0 ? Math.max(...groups.map((g) => g.id)) + 1 : 1;
-      group = {
-        id: nextGroupId,
-        name: lineName,
-        slug: attributeGroupSlug,
-        category_slug: 'liquid',
-        sort_order: groups.length + 1,
-        is_active: true,
-      };
-      setStoredItem(DB_KEYS.ATTR_GROUPS, [...groups, group]);
-    }
-
-    const values = this.getAttributeValues();
-    const nextValId = values.length > 0 ? Math.max(...values.map((v) => v.id)) + 1 : 1;
-    const newValue: AttributeValue = {
-      id: nextValId,
-      attribute_group_slug: attributeGroupSlug,
-      value: lineName,
-      sort_order: values.length + 1,
-      is_active: true,
-    };
-    setStoredItem(DB_KEYS.ATTR_VALUES, [...values, newValue]);
+    const nextId = groups.length > 0 ? Math.max(...groups.map((g) => g.id)) + 1 : 1;
+    const newGroup: AttributeGroup = { ...group, id: nextId };
+    const updated = [...groups, newGroup];
+    setStoredItem(DB_KEYS.ATTR_GROUPS, updated);
     this.notify();
-    return newValue;
+    return newGroup;
   }
 
-  public deleteBrandLine(id: number): boolean {
+  public addAttributeValue(val: Omit<AttributeValue, 'id'>): AttributeValue {
     const values = this.getAttributeValues();
-    const filtered = values.filter((v) => v.id !== id);
-    setStoredItem(DB_KEYS.ATTR_VALUES, filtered);
+    const nextId = values.length > 0 ? Math.max(...values.map((v) => v.id)) + 1 : 1;
+    const newVal: AttributeValue = { ...val, id: nextId };
+    const updated = [...values, newVal];
+    setStoredItem(DB_KEYS.ATTR_VALUES, updated);
     this.notify();
-    return true;
+    return newVal;
   }
 
   // ================= PROMOTIONS =================
@@ -469,26 +457,62 @@ class LocalDatabase {
     return this.updateOrderStatus(orderId, 'cancelled');
   }
 
-  // ================= ADMINS =================
+  // ================= ADMINS & MODERATORS =================
   public getAdmins(): AdminUser[] {
     return getStoredItem<AdminUser[]>(DB_KEYS.ADMINS, INITIAL_ADMINS);
   }
 
-  public addAdminUser(userId: number, username: string, role: 'admin' | 'moderator'): AdminUser {
+  public addAdminUser(
+    userIdInput?: number | string | null,
+    usernameInput?: string | null,
+    role: 'admin' | 'moderator' = 'moderator'
+  ): AdminUser {
     const admins = this.getAdmins();
-    const existing = admins.find((a) => a.user_id === userId);
-    if (existing) {
-      existing.role = role;
-      existing.is_active = true;
+    const cleanUsername = (usernameInput || '').replace(/^@/, '').trim();
+    const parsedId = userIdInput ? parseInt(String(userIdInput), 10) : 0;
+
+    // Generate fallback user_id if only username is provided
+    let finalUserId = !isNaN(parsedId) && parsedId > 0 ? parsedId : 0;
+    if (finalUserId === 0 && cleanUsername) {
+      // Deterministic hash for username so it stays consistent
+      let hash = 0;
+      for (let i = 0; i < cleanUsername.length; i++) {
+        hash = (hash << 5) - hash + cleanUsername.charCodeAt(i);
+        hash |= 0;
+      }
+      finalUserId = Math.abs(hash) || Math.floor(Math.random() * 899999999 + 100000000);
+    }
+
+    const finalUsername = cleanUsername || (finalUserId > 0 ? `user_${finalUserId}` : 'moderator');
+
+    // Check if user already exists in admins list by ID or username
+    const existingIndex = admins.findIndex((a) => {
+      const matchId = finalUserId > 0 && Number(a.user_id) === finalUserId;
+      const matchUsername =
+        cleanUsername &&
+        a.username &&
+        a.username.replace(/^@/, '').toLowerCase().trim() === cleanUsername.toLowerCase();
+      return Boolean(matchId || matchUsername);
+    });
+
+    if (existingIndex > -1) {
+      admins[existingIndex] = {
+        ...admins[existingIndex],
+        user_id: finalUserId > 0 ? finalUserId : admins[existingIndex].user_id,
+        username: finalUsername,
+        role,
+        is_active: true,
+      };
       setStoredItem(DB_KEYS.ADMINS, [...admins]);
       this.notify();
-      return existing;
+      return admins[existingIndex];
     }
+
     const nextId = admins.length > 0 ? Math.max(...admins.map((a) => a.id)) + 1 : 1;
     const newAdmin: AdminUser = {
       id: nextId,
-      user_id: userId,
-      username,
+      user_id: finalUserId,
+      username: finalUsername,
       role,
       is_active: true,
       created_at: new Date().toISOString(),
@@ -507,13 +531,42 @@ class LocalDatabase {
     return true;
   }
 
-  // Strict Admin Check
-  public isUserAdmin(userId: number | undefined | null): boolean {
-    if (!userId) return false;
-    const numId = Number(userId);
-    if (HARDCODED_ADMIN_IDS.includes(numId)) return true;
+  // Strict Admin/Moderator Check
+  public isUserAdmin(userId?: number | string | null, username?: string | null): boolean {
+    const numId = userId ? parseInt(String(userId), 10) : 0;
+    if (!isNaN(numId) && numId > 0 && HARDCODED_ADMIN_IDS.includes(numId)) {
+      return true;
+    }
+
+    const cleanUsername = username ? username.replace(/^@/, '').toLowerCase().trim() : '';
     const admins = this.getAdmins();
-    return admins.some((a) => Number(a.user_id) === numId && a.is_active && (a.role === 'admin' || a.role === 'moderator'));
+
+    return admins.some((a) => {
+      if (!a.is_active) return false;
+      const matchId = numId > 0 && Number(a.user_id) === numId;
+      const matchUsername =
+        cleanUsername &&
+        a.username &&
+        a.username.replace(/^@/, '').toLowerCase().trim() === cleanUsername;
+      return Boolean(matchId || matchUsername);
+    });
+  }
+
+  // ================= RESET / RESTORE TO INVOICE DATA =================
+  public resetToInvoiceData(): void {
+    setStoredItem(DB_KEYS.SETTINGS, INITIAL_SETTINGS);
+    setStoredItem(DB_KEYS.PRODUCTS, INITIAL_PRODUCTS);
+    setStoredItem(DB_KEYS.CATEGORIES, INITIAL_CATEGORIES);
+    setStoredItem(DB_KEYS.BRANDS, INITIAL_BRANDS);
+    setStoredItem(DB_KEYS.MODELS, INITIAL_MODELS);
+    setStoredItem(DB_KEYS.ATTR_GROUPS, INITIAL_ATTRIBUTE_GROUPS);
+    setStoredItem(DB_KEYS.ATTR_VALUES, INITIAL_ATTRIBUTE_VALUES);
+    setStoredItem(DB_KEYS.COLORS, INITIAL_PRODUCT_COLORS);
+    setStoredItem(DB_KEYS.PROMOTIONS, INITIAL_PROMOTIONS);
+    setStoredItem(DB_KEYS.PROMOCODES, INITIAL_PROMOCODES);
+    setStoredItem(DB_KEYS.PICKUP_POINTS, INITIAL_PICKUP_POINTS);
+    setStoredItem(DB_KEYS.ADMINS, INITIAL_ADMINS);
+    this.notify();
   }
 
   // ================= EXPORT & IMPORT =================
@@ -549,33 +602,15 @@ class LocalDatabase {
       if (data.promotions) setStoredItem(DB_KEYS.PROMOTIONS, data.promotions);
       if (data.promocodes) setStoredItem(DB_KEYS.PROMOCODES, data.promocodes);
       if (data.pickupPoints) setStoredItem(DB_KEYS.PICKUP_POINTS, data.pickupPoints);
-      if (data.orders) setStoredItem(DB_KEYS.ORDERS, data.orders);
       if (data.admins) setStoredItem(DB_KEYS.ADMINS, data.admins);
+      if (data.orders) setStoredItem(DB_KEYS.ORDERS, data.orders);
       this.notify();
       return true;
     } catch (e) {
-      console.error('Failed to import database JSON:', e);
+      console.error('Error importing database:', e);
       return false;
     }
   }
-
-  public resetToDefaults(): void {
-    setStoredItem(DB_KEYS.SETTINGS, INITIAL_SETTINGS);
-    setStoredItem(DB_KEYS.PRODUCTS, INITIAL_PRODUCTS);
-    setStoredItem(DB_KEYS.CATEGORIES, INITIAL_CATEGORIES);
-    setStoredItem(DB_KEYS.BRANDS, INITIAL_BRANDS);
-    setStoredItem(DB_KEYS.MODELS, INITIAL_MODELS);
-    setStoredItem(DB_KEYS.ATTR_GROUPS, INITIAL_ATTRIBUTE_GROUPS);
-    setStoredItem(DB_KEYS.ATTR_VALUES, INITIAL_ATTRIBUTE_VALUES);
-    setStoredItem(DB_KEYS.COLORS, INITIAL_PRODUCT_COLORS);
-    setStoredItem(DB_KEYS.PROMOTIONS, INITIAL_PROMOTIONS);
-    setStoredItem(DB_KEYS.PROMOCODES, INITIAL_PROMOCODES);
-    setStoredItem(DB_KEYS.PICKUP_POINTS, INITIAL_PICKUP_POINTS);
-    setStoredItem(DB_KEYS.ADMINS, INITIAL_ADMINS);
-    setStoredItem(DB_KEYS.ORDERS, []);
-    this.notify();
-  }
 }
 
-// Global Singleton Instance
 export const db = new LocalDatabase();

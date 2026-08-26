@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useStore } from '../services/store';
-import { ShoppingBag, Trash2, Plus, Minus, Tag, AlertTriangle, Truck, MapPin, CheckCircle2, ArrowRight } from 'lucide-react';
+import { ShoppingBag, Trash2, Plus, Minus, AlertTriangle, Truck, MapPin, CheckCircle2, ArrowRight } from 'lucide-react';
 import { DeliveryType } from '../types';
 import { hapticImpact } from '../services/telegram';
 
@@ -32,12 +32,15 @@ export const CartTab: React.FC<CartTabProps> = ({ onGoToCatalog, onOrderComplete
   const [promocodeMsg, setPromocodeMsg] = useState<{ text: string; isError: boolean } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-  const totalItemsCount = cart.reduce((sum, item) => sum + item.quantity, 0);
-  const subtotal = cart.reduce((sum, item) => sum + (item.discount_price || item.price) * item.quantity, 0);
+  const totalItemsCount = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+  const subtotal = cart.reduce((sum, item) => {
+    const price = item.discount_price && item.discount_price > 0 ? item.discount_price : item.price;
+    return sum + (price || 0) * (item.quantity || 1);
+  }, 0);
 
   let deliveryCost = 0;
   if (deliveryType === 'delivery') {
-    deliveryCost = totalItemsCount >= settings.free_delivery_min_items ? 0 : settings.delivery_price;
+    deliveryCost = totalItemsCount >= (settings.free_delivery_min_items || 4) ? 0 : (settings.delivery_price || 5);
   }
 
   let discountAmount = 0;
@@ -61,13 +64,13 @@ export const CartTab: React.FC<CartTabProps> = ({ onGoToCatalog, onOrderComplete
   const handleCheckout = async () => {
     if (cart.length === 0) return;
 
-    if (deliveryType === 'pickup' && !selectedPickupId) {
-      alert('Пожалуйста, выберите точку самовывоза');
+    if (deliveryType === 'pickup' && !selectedPickupId && pickupPoints.length > 0) {
+      alert('Пожалуйста, выберите точку самовывоза в Могилеве');
       return;
     }
 
     if (deliveryType === 'delivery' && !deliveryAddress.trim()) {
-      alert('Пожалуйста, введите адрес доставки в Минске / Беларуси');
+      alert('Пожалуйста, введите адрес доставки в Могилеве');
       return;
     }
 
@@ -76,7 +79,7 @@ export const CartTab: React.FC<CartTabProps> = ({ onGoToCatalog, onOrderComplete
 
     const result = await placeOrder({
       deliveryType,
-      pickupPointId: deliveryType === 'pickup' ? selectedPickupId : null,
+      pickupPointId: deliveryType === 'pickup' ? (selectedPickupId || pickupPoints[0]?.id || null) : null,
       deliveryAddress: deliveryType === 'delivery' ? deliveryAddress : null,
       comment,
     });
@@ -92,13 +95,13 @@ export const CartTab: React.FC<CartTabProps> = ({ onGoToCatalog, onOrderComplete
 
   if (cart.length === 0) {
     return (
-      <div className="py-16 px-4 text-center pb-24">
+      <div className="py-16 px-4 text-center pb-28">
         <div className="w-20 h-20 mx-auto rounded-3xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-4xl mb-4 shadow-[0_0_25px_rgba(168,85,247,0.2)]">
           🛒
         </div>
         <h3 className="text-lg font-bold text-white mb-1.5">Корзина пуста</h3>
-        <p className="text-xs text-zinc-400 max-w-[260px] mx-auto mb-6 leading-relaxed">
-          У нас огромный выбор жидкостей, одноразок и подов. Добавьте понравившиеся товары из каталога!
+        <p className="text-xs text-zinc-400 max-w-[280px] mx-auto mb-6 leading-relaxed">
+          В каталоге представлен полный ассортимент оригинальных жидкостей, подов Vaporesso, картриджей и снюса в Могилеве.
         </p>
         <button
           onClick={() => {
@@ -124,12 +127,12 @@ export const CartTab: React.FC<CartTabProps> = ({ onGoToCatalog, onOrderComplete
         </div>
 
         {cart.map((item, index) => {
-          const effectivePrice = item.discount_price || item.price;
-          const lineTotal = (effectivePrice * item.quantity).toFixed(2);
+          const effectivePrice = item.discount_price && item.discount_price > 0 ? item.discount_price : item.price;
+          const lineTotal = ((effectivePrice || 0) * (item.quantity || 1)).toFixed(2);
 
           return (
             <div
-              key={`${item.id}-${item.color_id || 'default'}`}
+              key={`${item.id}-${item.color_id || 'default'}-${index}`}
               className="flex items-center gap-3 p-3 rounded-2xl bg-white/[0.03] border border-white/[0.06] shadow-sm"
             >
               {/* Item Thumbnail */}
@@ -145,7 +148,7 @@ export const CartTab: React.FC<CartTabProps> = ({ onGoToCatalog, onOrderComplete
               <div className="flex-1 min-w-0">
                 <h4 className="text-xs font-bold text-white truncate">{item.name}</h4>
                 <p className="text-[11px] text-zinc-400 truncate">
-                  {item.selected_color_name ? `Цвет: ${item.selected_color_name}` : `${effectivePrice.toFixed(2)} BYN / шт.`}
+                  {item.selected_color_name ? `Цвет: ${item.selected_color_name}` : `${(effectivePrice || 0).toFixed(2)} BYN / шт.`}
                 </p>
                 <div className="text-xs font-extrabold text-purple-300 mt-0.5">{lineTotal} BYN</div>
               </div>
@@ -199,7 +202,7 @@ export const CartTab: React.FC<CartTabProps> = ({ onGoToCatalog, onOrderComplete
             }`}
           >
             <MapPin className="w-3.5 h-3.5" />
-            <span>Личная встреча (Самовывоз)</span>
+            <span>Самовывоз (Могилев)</span>
           </button>
 
           <button
@@ -221,9 +224,9 @@ export const CartTab: React.FC<CartTabProps> = ({ onGoToCatalog, onOrderComplete
         {/* Pickup Details */}
         {deliveryType === 'pickup' && (
           <div className="space-y-2">
-            <label className="block text-xs font-semibold text-zinc-300">Выберите точку самовывоза:</label>
+            <label className="block text-xs font-semibold text-zinc-300">Выберите точку самовывоза в Могилеве:</label>
             <select
-              value={selectedPickupId || ''}
+              value={selectedPickupId || (pickupPoints[0]?.id ?? '')}
               onChange={(e) => setSelectedPickupId(Number(e.target.value))}
               className="w-full py-2.5 px-3 rounded-xl bg-white/[0.05] border border-white/10 text-white text-xs focus:outline-none focus:border-purple-500"
             >
@@ -234,14 +237,16 @@ export const CartTab: React.FC<CartTabProps> = ({ onGoToCatalog, onOrderComplete
               ))}
             </select>
 
-            {selectedPickupId && (
+            {(selectedPickupId || pickupPoints[0]) && (
               <div className="p-3 rounded-xl bg-purple-500/10 border border-purple-500/20 text-xs text-zinc-300">
                 {(() => {
-                  const p = pickupPoints.find((item) => item.id === selectedPickupId);
+                  const p = pickupPoints.find((item) => item.id === (selectedPickupId || pickupPoints[0]?.id));
+                  if (!p) return null;
                   return (
                     <>
-                      <div className="font-semibold text-purple-300 mb-0.5">Время работы: {p?.working_hours}</div>
-                      <div className="text-[11px] text-zinc-400">{p?.comment}</div>
+                      <div className="font-semibold text-purple-300 mb-0.5">Адрес: {p.address}</div>
+                      <div className="text-[11px] text-zinc-300">Время работы: {p.working_hours}</div>
+                      {p.comment && <div className="text-[11px] text-zinc-400 mt-1">{p.comment}</div>}
                     </>
                   );
                 })()}
@@ -257,7 +262,7 @@ export const CartTab: React.FC<CartTabProps> = ({ onGoToCatalog, onOrderComplete
             <div className="p-3 rounded-2xl bg-orange-500/10 border border-orange-500/20 text-xs text-orange-200 leading-relaxed">
               <p className="font-semibold text-white mb-1 flex items-center gap-1.5">
                 <Truck className="w-4 h-4 text-orange-400" />
-                Доставка курьером по Минску и Беларуси
+                Доставка курьером по Могилеву и области
               </p>
               По будням и выходным с 13:00. Стоимость 5.0 BYN; от 4 позиций в заказе — бесплатно. Итоговая стоимость
               может измениться в зависимости от района.
@@ -266,17 +271,17 @@ export const CartTab: React.FC<CartTabProps> = ({ onGoToCatalog, onOrderComplete
             {/* Warning card */}
             <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center gap-2 text-[11px] text-amber-300">
               <AlertTriangle className="w-4 h-4 shrink-0 text-amber-400" />
-              <span>Стоимость доставки может измениться в зависимости от района.</span>
+              <span>Стоимость доставки может измениться в зависимости от района Могилева.</span>
             </div>
 
             {/* Address input */}
             <div>
-              <label className="block text-xs font-semibold text-zinc-300 mb-1">Адрес доставки:</label>
+              <label className="block text-xs font-semibold text-zinc-300 mb-1">Адрес доставки в Могилеве:</label>
               <input
                 type="text"
                 value={deliveryAddress}
                 onChange={(e) => setDeliveryAddress(e.target.value)}
-                placeholder="Город, улица, дом, кв./подъезд"
+                placeholder="г. Могилев, улица, дом, кв./подъезд"
                 className="w-full py-2.5 px-3 rounded-xl bg-white/[0.05] border border-white/10 text-white placeholder-zinc-400 text-xs focus:outline-none focus:border-purple-500"
               />
             </div>
@@ -290,7 +295,7 @@ export const CartTab: React.FC<CartTabProps> = ({ onGoToCatalog, onOrderComplete
             type="text"
             value={comment}
             onChange={(e) => setComment(e.target.value)}
-            placeholder="Удобное время, ориентиры, пожелания..."
+            placeholder="Удобное время встречи в Могилеве, пожелания..."
             className="w-full py-2.5 px-3 rounded-xl bg-white/[0.05] border border-white/10 text-white placeholder-zinc-400 text-xs focus:outline-none focus:border-purple-500"
           />
         </div>
@@ -303,7 +308,7 @@ export const CartTab: React.FC<CartTabProps> = ({ onGoToCatalog, onOrderComplete
               type="text"
               value={promocodeInput}
               onChange={(e) => setPromocodeInput(e.target.value.toUpperCase())}
-              placeholder="Например: PUFF2026"
+              placeholder="Например: PUFF2026 или MOGILEV5"
               className="flex-1 py-2.5 px-3 rounded-xl bg-white/[0.05] border border-white/10 text-white placeholder-zinc-400 text-xs uppercase font-mono tracking-wider focus:outline-none focus:border-purple-500"
             />
             <button
@@ -373,7 +378,7 @@ export const CartTab: React.FC<CartTabProps> = ({ onGoToCatalog, onOrderComplete
             <div className="pt-2 text-[11px] text-zinc-400 flex items-center gap-1.5">
               <span className="inline-block w-1.5 h-1.5 rounded-full bg-orange-400" />
               <span>
-                Бесплатная доставка от {settings.free_delivery_min_items} позиций в заказе · сейчас {totalItemsCount}
+                Бесплатная доставка по Могилеву от {settings.free_delivery_min_items || 4} позиций в заказе · сейчас {totalItemsCount}
               </span>
             </div>
           )}

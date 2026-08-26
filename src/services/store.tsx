@@ -54,7 +54,7 @@ interface StoreContextType {
 
   // Cart & Order Actions
   loadAllData: () => Promise<void>;
-  addToCart: (product: Product, quantity?: number, colorId?: number | null) => void;
+  addToCart: (product: Product, quantity?: number, colorId?: number | null, selectedColorName?: string) => void;
   removeFromCart: (index: number) => void;
   updateCartQuantity: (index: number, delta: number) => void;
   clearCart: () => void;
@@ -88,7 +88,7 @@ interface StoreContextType {
   deletePromocode: (id: number) => Promise<boolean>;
   addPickupPoint: (point: Omit<PickupPoint, 'id'>) => Promise<boolean>;
   deletePickupPoint: (id: number) => Promise<boolean>;
-  addAdminUser: (userId: number, username: string, role: 'admin' | 'moderator') => Promise<boolean>;
+  addAdminUser: (userId: number | string | null, username: string, role: 'admin' | 'moderator') => Promise<boolean>;
   deleteAdminUser: (id: number) => Promise<boolean>;
   importProducts: (
     items: Array<{
@@ -125,10 +125,9 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [attributeValues, setAttributeValues] = useState<AttributeValue[]>(() => db.getAttributeValues());
   const [products, setProducts] = useState<Product[]>(() => db.getProducts());
   const [productColors] = useState<ProductColor[]>([
-    { id: 1, name: 'Черный матовый', hex: '#18181b', is_in_stock: true },
-    { id: 2, name: 'Неоновый фиолет', hex: '#a855f7', is_in_stock: true },
-    { id: 3, name: 'Градиент Закат', hex: '#f97316', is_in_stock: true },
-    { id: 4, name: 'Космический серый', hex: '#52525b', is_in_stock: true },
+    { id: 1, name: 'Mist White (Белая кожа)', hex: '#f8fafc', is_in_stock: true },
+    { id: 2, name: 'Mist Black (Черная кожа)', hex: '#18181b', is_in_stock: true },
+    { id: 3, name: 'Jelly Green (Ярко-зеленый)', hex: '#22c55e', is_in_stock: true },
   ]);
   const [orders, setOrders] = useState<Order[]>(() => db.getOrders());
   const [promotions, setPromotions] = useState<Promotion[]>(() => db.getPromotions());
@@ -138,7 +137,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const [cart, setCart] = useState<CartItem[]>(() => {
     try {
-      const saved = localStorage.getItem('puff_cart_items_v3');
+      const saved = localStorage.getItem('puff_cart_items_v4');
       return saved ? JSON.parse(saved) : [];
     } catch {
       return [];
@@ -172,16 +171,16 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Persist cart
   useEffect(() => {
-    localStorage.setItem('puff_cart_items_v3', JSON.stringify(cart));
+    localStorage.setItem('puff_cart_items_v4', JSON.stringify(cart));
   }, [cart]);
 
-  // Check admin privileges strictly
+  // Check admin privileges strictly by ID or username
   const verifyAdmin = useCallback((user: TelegramUser | null) => {
-    if (!user || !user.id) {
+    if (!user) {
       setIsAuthorizedAdmin(false);
       return false;
     }
-    const authorized = db.isUserAdmin(user.id);
+    const authorized = db.isUserAdmin(user.id, user.username);
     setIsAuthorizedAdmin(authorized);
     return authorized;
   }, []);
@@ -202,7 +201,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       verifyAdmin(user);
     } else {
       // In browser preview, check if last user was saved or simulate guest
-      const savedUser = localStorage.getItem('puff_current_user_v3');
+      const savedUser = localStorage.getItem('puff_current_user_v4');
       if (savedUser) {
         try {
           const parsed = JSON.parse(savedUser);
@@ -220,9 +219,9 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const setCurrentUser = (user: TelegramUser | null) => {
     setCurrentUserState(user);
     if (user) {
-      localStorage.setItem('puff_current_user_v3', JSON.stringify(user));
+      localStorage.setItem('puff_current_user_v4', JSON.stringify(user));
     } else {
-      localStorage.removeItem('puff_current_user_v3');
+      localStorage.removeItem('puff_current_user_v4');
     }
     verifyAdmin(user);
   };
@@ -230,7 +229,6 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // Toggle Admin Mode - STRICT: ONLY works if user is an authorized admin!
   const toggleAdminMode = () => {
     if (!isAuthorizedAdmin) {
-      // Non-admin cannot switch to admin mode under any circumstances
       console.warn('Access denied: user is not an authorized administrator.');
       return;
     }
@@ -248,18 +246,29 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setIsLoading(false);
   };
 
-  // Cart Operations
-  const addToCart = (product: Product, quantity = 1, colorId: number | null = null) => {
+  // Cart Operations - Stores standard CartItem extends Product
+  const addToCart = (
+    product: Product,
+    quantity = 1,
+    colorId: number | null = null,
+    selectedColorName?: string
+  ) => {
     setCart((prev) => {
       const existingIndex = prev.findIndex(
-        (item) => item.product.id === product.id && item.selectedColorId === colorId
+        (item) => item.id === product.id && (item.color_id || null) === (colorId || null)
       );
       if (existingIndex > -1) {
         const copy = [...prev];
         copy[existingIndex].quantity += quantity;
         return copy;
       }
-      return [...prev, { product, quantity, selectedColorId: colorId }];
+      const newItem: CartItem = {
+        ...product,
+        quantity,
+        color_id: colorId,
+        selected_color_name: selectedColorName,
+      };
+      return [...prev, newItem];
     });
     hapticNotification('success');
   };
@@ -272,6 +281,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const updateCartQuantity = (index: number, delta: number) => {
     setCart((prev) => {
       const copy = [...prev];
+      if (!copy[index]) return prev;
       const newQty = copy[index].quantity + delta;
       if (newQty <= 0) {
         return copy.filter((_, i) => i !== index);
@@ -300,19 +310,25 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       return { success: false, message: 'Лимит использования промокода исчерпан' };
     }
 
-    const subtotal = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+    const subtotal = cart.reduce((sum, item) => {
+      const price = item.discount_price && item.discount_price > 0 ? item.discount_price : item.price;
+      return sum + price * item.quantity;
+    }, 0);
+
     if (found.min_order_amount && subtotal < found.min_order_amount) {
       return {
         success: false,
-        message: `Минимальная сумма заказа для этого промокода: ${found.min_order_amount} BYN`,
+        message: `Минимальная сумма заказа для промокода: ${found.min_order_amount} BYN`,
       };
     }
 
     setAppliedPromocode(found);
     hapticNotification('success');
+    const discountText =
+      found.discount_type === 'percent' ? `${found.discount_value}%` : `${found.discount_value} BYN`;
     return {
       success: true,
-      message: `Промокод применен! Скидка ${found.discount_percent}%`,
+      message: `Промокод применен! Скидка ${discountText}`,
     };
   };
 
@@ -331,19 +347,28 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       return { success: false, error: 'Корзина пуста' };
     }
 
-    const subtotal = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+    const subtotal = cart.reduce((sum, item) => {
+      const price = item.discount_price && item.discount_price > 0 ? item.discount_price : item.price;
+      return sum + price * item.quantity;
+    }, 0);
+
     let discountAmount = 0;
     if (appliedPromocode) {
-      discountAmount = Math.round((subtotal * appliedPromocode.discount_percent) / 100);
+      if (appliedPromocode.discount_type === 'percent') {
+        discountAmount = Math.round((subtotal * appliedPromocode.discount_value) / 100);
+      } else {
+        discountAmount = appliedPromocode.discount_value;
+      }
     }
 
+    const totalItemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
     let deliveryPrice = 0;
     if (params.deliveryType === 'delivery') {
-      deliveryPrice = subtotal >= settings.free_delivery_from ? 0 : settings.delivery_price;
+      const isFree = totalItemCount >= (settings.free_delivery_min_items || 4);
+      deliveryPrice = isFree ? 0 : settings.delivery_price;
     }
 
     const total = Math.max(0, subtotal - discountAmount + deliveryPrice);
-
     const selectedPickup = pickupPoints.find((p) => p.id === params.pickupPointId);
 
     const newOrder = db.createOrder({
@@ -353,11 +378,11 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       last_name: currentUser?.last_name || '',
       phone: currentUser?.username ? `@${currentUser.username}` : 'Не указан',
       items_json: cart.map((c) => ({
-        id: c.product.id,
-        name: c.product.name,
-        price: c.product.price,
+        id: c.id,
+        name: c.name,
+        price: c.discount_price && c.discount_price > 0 ? c.discount_price : c.price,
         quantity: c.quantity,
-        emoji: c.product.emoji,
+        emoji: c.emoji,
       })),
       total,
       subtotal,
@@ -410,8 +435,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
       const deliveryInfo =
         newOrder.delivery_type === 'pickup'
-          ? `🏪 <b>Самовывоз:</b> ${newOrder.pickup_point_name || 'Точка не указана'}`
-          : `🚚 <b>Доставка:</b> ${newOrder.delivery_address || 'Адрес не указан'} (+${newOrder.delivery_price} BYN)`;
+          ? `🏪 <b>Самовывоз (Могилев):</b> ${newOrder.pickup_point_name || 'Точка не указана'}`
+          : `🚚 <b>Доставка (Могилев):</b> ${newOrder.delivery_address || 'Адрес не указан'} (+${newOrder.delivery_price} BYN)`;
 
       let priceInfo = `💰 <b>Итого:</b> ${newOrder.total} BYN`;
       if (newOrder.discount_amount > 0) {
@@ -435,7 +460,7 @@ ${deliveryInfo}
 💬 <b>Комментарий:</b> ${newOrder.comment || 'Нет'}
 
 🔗 <a href="tg://user?id=${newOrder.user_id}">✉️ Связаться с покупателем</a>
-📩 Менеджер: @puff_mngr`;
+📩 Менеджер: @${settings.manager_username || 'puff_mngr'}`;
 
       for (const adminId of HARDCODED_ADMINS) {
         fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
@@ -466,12 +491,12 @@ ${deliveryInfo}
         const statusTitles: Record<OrderStatus, string> = {
           pending: 'В обработке ⏳',
           confirmed: 'Подтвержден ✅',
-          shipped: 'Отправлен / Передан курьеру 🚚',
+          shipped: 'Передан курьеру / В пути 🚚',
           completed: 'Выполнен 🎉',
           cancelled: 'Отменен ❌',
         };
 
-        const msg = `🔔 <b>Статус заказа #${orderId} изменен!</b>\n\nТекущий статус: <b>${statusTitles[newStatus] || newStatus}</b>\n\n📩 По всем вопросам: @puff_mngr`;
+        const msg = `🔔 <b>Статус заказа #${orderId} изменен!</b>\n\nТекущий статус: <b>${statusTitles[newStatus] || newStatus}</b>\n\n📩 Менеджер в Могилеве: @${settings.manager_username || 'puff_mngr'}`;
 
         fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
           method: 'POST',
@@ -543,13 +568,21 @@ ${deliveryInfo}
   };
 
   const addBrandLine = async (attributeGroupSlug: string, lineName: string) => {
-    db.addBrandLine(attributeGroupSlug, lineName);
+    db.addAttributeValue({
+      attribute_group_slug: attributeGroupSlug,
+      value: lineName,
+      sort_order: 99,
+      is_active: true,
+    });
     hapticNotification('success');
     return true;
   };
 
   const deleteBrandLine = async (id: number) => {
-    db.deleteBrandLine(id);
+    // Delete attribute value by ID
+    const values = db.getAttributeValues().filter((v) => v.id !== id);
+    localStorage.setItem('puff_db_attr_values_v4', JSON.stringify(values));
+    syncFromDb();
     hapticImpact('medium');
     return true;
   };
@@ -602,7 +635,11 @@ ${deliveryInfo}
     return true;
   };
 
-  const addAdminUser = async (userId: number, username: string, role: 'admin' | 'moderator') => {
+  const addAdminUser = async (
+    userId: number | string | null,
+    username: string,
+    role: 'admin' | 'moderator'
+  ) => {
     db.addAdminUser(userId, username, role);
     hapticNotification('success');
     return true;
@@ -645,7 +682,7 @@ ${deliveryInfo}
   };
 
   const resetDatabaseDefaults = () => {
-    db.resetToDefaults();
+    db.resetToInvoiceData();
     hapticNotification('warning');
   };
 

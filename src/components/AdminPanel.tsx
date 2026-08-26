@@ -982,19 +982,19 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
       {activeSubpage === 'pickup' && (
         <div className="space-y-4">
           <div className="p-4 rounded-2xl bg-white/[0.03] border border-purple-500/20 space-y-3">
-            <h4 className="text-xs font-bold text-white uppercase tracking-wider">Добавить точку выдачи</h4>
+            <h4 className="text-xs font-bold text-white uppercase tracking-wider">Добавить точку выдачи (Могилев)</h4>
             <input
               type="text"
               value={pickupForm.name}
               onChange={(e) => setPickupForm((prev) => ({ ...prev, name: e.target.value }))}
-              placeholder="Название (напр. Атриум)"
+              placeholder="Название (напр. ТЦ Атриум / Центр)"
               className="w-full py-2 px-3 rounded-xl bg-white/5 border border-white/10 text-white text-xs"
             />
             <input
               type="text"
               value={pickupForm.address}
               onChange={(e) => setPickupForm((prev) => ({ ...prev, address: e.target.value }))}
-              placeholder="Адрес (ул. Ленинская)"
+              placeholder="Адрес (г. Могилев, ул. Первомайская, 57)"
               className="w-full py-2 px-3 rounded-xl bg-white/5 border border-white/10 text-white text-xs"
             />
             <input
@@ -1049,18 +1049,21 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
         <div className="space-y-4">
           <div className="p-4 rounded-2xl bg-white/[0.03] border border-purple-500/20 space-y-3">
             <h4 className="text-xs font-bold text-white uppercase tracking-wider">Назначить сотрудника</h4>
+            <p className="text-[11px] text-zinc-400">
+              Можно указать <b>Telegram ID</b> (числовой), либо <b>Username</b> (с @ или без).
+            </p>
             <input
-              type="number"
+              type="text"
               value={moderatorForm.user_id}
               onChange={(e) => setModeratorForm((prev) => ({ ...prev, user_id: e.target.value }))}
-              placeholder="Telegram ID пользователя"
+              placeholder="Telegram ID пользователя (например: 5659638424)"
               className="w-full py-2 px-3 rounded-xl bg-white/5 border border-white/10 text-white text-xs"
             />
             <input
               type="text"
               value={moderatorForm.username}
               onChange={(e) => setModeratorForm((prev) => ({ ...prev, username: e.target.value }))}
-              placeholder="Username (@username)"
+              placeholder="Username в Telegram (например: @manager_mogilev)"
               className="w-full py-2 px-3 rounded-xl bg-white/5 border border-white/10 text-white text-xs"
             />
             <select
@@ -1073,8 +1076,17 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
             </select>
             <button
               onClick={() => {
-                if (!moderatorForm.user_id) return;
-                addAdminUser(parseInt(moderatorForm.user_id), moderatorForm.username || 'staff', moderatorForm.role);
+                const uid = moderatorForm.user_id.trim();
+                const uname = moderatorForm.username.trim();
+                if (!uid && !uname) {
+                  alert('Пожалуйста, укажите Telegram ID или @username сотрудника');
+                  return;
+                }
+                addAdminUser(
+                  uid ? parseInt(uid, 10) : null,
+                  uname,
+                  moderatorForm.role
+                );
                 setModeratorForm({ user_id: '', username: '', role: 'moderator' });
               }}
               className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-purple-600 to-orange-500 text-white text-xs font-bold tap-active"
@@ -1084,20 +1096,27 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
           </div>
 
           <div className="space-y-2">
+            <div className="text-[11px] font-bold text-zinc-400 uppercase px-1">
+              Активные сотрудники ({admins.length})
+            </div>
             {admins.map((adm) => (
               <div
                 key={adm.id}
                 className="flex items-center justify-between p-3 rounded-2xl bg-white/[0.03] border border-white/[0.06]"
               >
                 <div>
-                  <h4 className="text-xs font-bold text-white">@{adm.username || 'user'} (ID: {adm.user_id})</h4>
+                  <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
+                    <span>@{adm.username ? adm.username.replace(/^@/, '') : 'пользователь'}</span>
+                    {adm.user_id > 0 && <span className="text-zinc-500 font-normal text-[11px]">(ID: {adm.user_id})</span>}
+                  </h4>
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300">
-                    {adm.role}
+                    {adm.role === 'admin' ? 'Администратор' : 'Модератор'}
                   </span>
                 </div>
                 <button
                   onClick={() => deleteAdminUser(adm.id)}
                   className="p-1.5 rounded-lg text-red-400 hover:bg-red-500/10"
+                  title="Удалить доступ"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
