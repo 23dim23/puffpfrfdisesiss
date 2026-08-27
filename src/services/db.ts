@@ -1,4 +1,16 @@
 import {
+  collection,
+  doc,
+  getDocs,
+  setDoc,
+  updateDoc,
+  deleteDoc,
+  onSnapshot,
+  query,
+  orderBy,
+} from 'firebase/firestore';
+import { firestore } from './firebase';
+import {
   Category,
   Brand,
   ProductModel,
@@ -27,45 +39,45 @@ import {
   INITIAL_PROMOCODES,
   INITIAL_SETTINGS,
   INITIAL_ADMINS,
-} from '../services/mockData';
+} from './mockData';
 
 // Hardcoded Master Admins
 export const HARDCODED_ADMIN_IDS = [5659638424, 8161417737];
 
 const DB_KEYS = {
-  SETTINGS: 'puff_db_settings_v4',
-  PRODUCTS: 'puff_db_products_v4',
-  CATEGORIES: 'puff_db_categories_v4',
-  BRANDS: 'puff_db_brands_v4',
-  MODELS: 'puff_db_models_v4',
-  ATTR_GROUPS: 'puff_db_attr_groups_v4',
-  ATTR_VALUES: 'puff_db_attr_values_v4',
-  COLORS: 'puff_db_colors_v4',
-  ORDERS: 'puff_db_orders_v4',
-  PROMOTIONS: 'puff_db_promotions_v4',
-  PROMOCODES: 'puff_db_promocodes_v4',
-  PICKUP_POINTS: 'puff_db_pickup_points_v4',
-  ADMINS: 'puff_db_admins_v4',
+  SETTINGS: 'puff_db_settings_v5',
+  PRODUCTS: 'puff_db_products_v5',
+  CATEGORIES: 'puff_db_categories_v5',
+  BRANDS: 'puff_db_brands_v5',
+  MODELS: 'puff_db_models_v5',
+  ATTR_GROUPS: 'puff_db_attr_groups_v5',
+  ATTR_VALUES: 'puff_db_attr_values_v5',
+  COLORS: 'puff_db_colors_v5',
+  ORDERS: 'puff_db_orders_v5',
+  PROMOTIONS: 'puff_db_promotions_v5',
+  PROMOCODES: 'puff_db_promocodes_v5',
+  PICKUP_POINTS: 'puff_db_pickup_points_v5',
+  ADMINS: 'puff_db_admins_v5',
 };
 
-// Database Schema
-export interface DatabaseSchema {
-  settings: ShopSettings;
-  products: Product[];
-  categories: Category[];
-  brands: Brand[];
-  models: ProductModel[];
-  attributeGroups: AttributeGroup[];
-  attributeValues: AttributeValue[];
-  productColors: ProductColor[];
-  orders: Order[];
-  promotions: Promotion[];
-  promocodes: Promocode[];
-  pickupPoints: PickupPoint[];
-  admins: AdminUser[];
-}
+// Firestore Collection Names
+const FS_COLS = {
+  SETTINGS: 'shop_settings',
+  PRODUCTS: 'shop_products',
+  CATEGORIES: 'shop_categories',
+  BRANDS: 'shop_brands',
+  MODELS: 'shop_models',
+  ATTR_GROUPS: 'shop_attr_groups',
+  ATTR_VALUES: 'shop_attr_values',
+  COLORS: 'shop_colors',
+  ORDERS: 'shop_orders',
+  PROMOTIONS: 'shop_promotions',
+  PROMOCODES: 'shop_promocodes',
+  PICKUP_POINTS: 'shop_pickup_points',
+  ADMINS: 'shop_admins',
+};
 
-// Local Storage Helper with Fallbacks
+// Local Storage Helper
 function getStoredItem<T>(key: string, defaultValue: T): T {
   try {
     const data = localStorage.getItem(key);
@@ -89,13 +101,15 @@ function setStoredItem<T>(key: string, value: T): void {
 }
 
 /**
- * Self-contained In-Root Local Database Engine
+ * Unified Cloud Database Engine (Firestore + Realtime Sync + Local Offline Fallback)
  */
-class LocalDatabase {
+class CloudDatabase {
   private listeners: Set<() => void> = new Set();
+  private isInitialized = false;
 
   constructor() {
     this.initDatabase();
+    this.setupFirestoreRealtimeSync();
   }
 
   // Subscribe to database change events
@@ -104,7 +118,7 @@ class LocalDatabase {
     return () => this.listeners.delete(listener);
   }
 
-  private notify() {
+  public notify() {
     this.listeners.forEach((fn) => {
       try {
         fn();
@@ -114,7 +128,7 @@ class LocalDatabase {
     });
   }
 
-  // Initialize Tables
+  // Local fallback storage initialization
   public initDatabase(): void {
     if (!localStorage.getItem(DB_KEYS.SETTINGS)) {
       setStoredItem(DB_KEYS.SETTINGS, INITIAL_SETTINGS);
@@ -157,6 +171,231 @@ class LocalDatabase {
     }
   }
 
+  // Set up realtime Firestore subscribers for multi-device sync
+  private setupFirestoreRealtimeSync(): void {
+    try {
+      // 1. Settings Listener
+      onSnapshot(
+        doc(firestore, FS_COLS.SETTINGS, 'global'),
+        (snapshot) => {
+          if (snapshot.exists()) {
+            const data = snapshot.data() as ShopSettings;
+            setStoredItem(DB_KEYS.SETTINGS, data);
+            this.notify();
+          } else {
+            // Seed settings to Firestore
+            setDoc(doc(firestore, FS_COLS.SETTINGS, 'global'), INITIAL_SETTINGS).catch(() => {});
+          }
+        },
+        (err) => console.warn('Firestore settings listener:', err)
+      );
+
+      // 2. Orders Listener (Realtime!)
+      onSnapshot(
+        collection(firestore, FS_COLS.ORDERS),
+        (snapshot) => {
+          if (!snapshot.empty) {
+            const list = snapshot.docs.map((d) => d.data() as Order);
+            // Sort by id descending
+            list.sort((a, b) => (b.id || 0) - (a.id || 0));
+            setStoredItem(DB_KEYS.ORDERS, list);
+            this.notify();
+          }
+        },
+        (err) => console.warn('Firestore orders listener:', err)
+      );
+
+      // 3. Products Listener
+      onSnapshot(
+        collection(firestore, FS_COLS.PRODUCTS),
+        (snapshot) => {
+          if (!snapshot.empty) {
+            const list = snapshot.docs.map((d) => d.data() as Product);
+            setStoredItem(DB_KEYS.PRODUCTS, list);
+            this.notify();
+          } else if (!this.isInitialized) {
+            this.seedInitialProductsToFirestore();
+          }
+        },
+        (err) => console.warn('Firestore products listener:', err)
+      );
+
+      // 4. Admins & Moderators Listener (Realtime!)
+      onSnapshot(
+        collection(firestore, FS_COLS.ADMINS),
+        (snapshot) => {
+          if (!snapshot.empty) {
+            const list = snapshot.docs.map((d) => d.data() as AdminUser);
+            setStoredItem(DB_KEYS.ADMINS, list);
+            this.notify();
+          } else {
+            this.seedInitialAdminsToFirestore();
+          }
+        },
+        (err) => console.warn('Firestore admins listener:', err)
+      );
+
+      // 5. Pickup Points Listener
+      onSnapshot(
+        collection(firestore, FS_COLS.PICKUP_POINTS),
+        (snapshot) => {
+          if (!snapshot.empty) {
+            const list = snapshot.docs.map((d) => d.data() as PickupPoint);
+            setStoredItem(DB_KEYS.PICKUP_POINTS, list);
+            this.notify();
+          } else {
+            this.seedInitialPickupPointsToFirestore();
+          }
+        },
+        (err) => console.warn('Firestore pickup points listener:', err)
+      );
+
+      // 6. Promotions Listener
+      onSnapshot(
+        collection(firestore, FS_COLS.PROMOTIONS),
+        (snapshot) => {
+          if (!snapshot.empty) {
+            const list = snapshot.docs.map((d) => d.data() as Promotion);
+            setStoredItem(DB_KEYS.PROMOTIONS, list);
+            this.notify();
+          } else {
+            this.seedInitialPromotionsToFirestore();
+          }
+        },
+        (err) => console.warn('Firestore promotions listener:', err)
+      );
+
+      // 7. Promocodes Listener
+      onSnapshot(
+        collection(firestore, FS_COLS.PROMOCODES),
+        (snapshot) => {
+          if (!snapshot.empty) {
+            const list = snapshot.docs.map((d) => d.data() as Promocode);
+            setStoredItem(DB_KEYS.PROMOCODES, list);
+            this.notify();
+          } else {
+            this.seedInitialPromocodesToFirestore();
+          }
+        },
+        (err) => console.warn('Firestore promocodes listener:', err)
+      );
+
+      // 8. Categories Listener
+      onSnapshot(
+        collection(firestore, FS_COLS.CATEGORIES),
+        (snapshot) => {
+          if (!snapshot.empty) {
+            const list = snapshot.docs.map((d) => d.data() as Category);
+            setStoredItem(DB_KEYS.CATEGORIES, list);
+            this.notify();
+          } else {
+            this.seedInitialCategoriesToFirestore();
+          }
+        },
+        (err) => console.warn('Firestore categories listener:', err)
+      );
+
+      // 9. Brands & Models Listener
+      onSnapshot(
+        collection(firestore, FS_COLS.BRANDS),
+        (snapshot) => {
+          if (!snapshot.empty) {
+            const list = snapshot.docs.map((d) => d.data() as Brand);
+            setStoredItem(DB_KEYS.BRANDS, list);
+            this.notify();
+          }
+        },
+        (err) => console.warn('Firestore brands listener:', err)
+      );
+
+      onSnapshot(
+        collection(firestore, FS_COLS.MODELS),
+        (snapshot) => {
+          if (!snapshot.empty) {
+            const list = snapshot.docs.map((d) => d.data() as ProductModel);
+            setStoredItem(DB_KEYS.MODELS, list);
+            this.notify();
+          }
+        },
+        (err) => console.warn('Firestore models listener:', err)
+      );
+
+      this.isInitialized = true;
+    } catch (e) {
+      console.warn('Firestore realtime sync setup notice:', e);
+    }
+  }
+
+  // Seeding helpers to populate Firestore from invoice mock data on clean DB
+  private async seedInitialProductsToFirestore(): Promise<void> {
+    try {
+      const snap = await getDocs(collection(firestore, FS_COLS.PRODUCTS));
+      if (snap.empty) {
+        for (const p of INITIAL_PRODUCTS) {
+          await setDoc(doc(firestore, FS_COLS.PRODUCTS, String(p.id)), p);
+        }
+      }
+    } catch (e) {
+      console.warn('Product seeding notice:', e);
+    }
+  }
+
+  private async seedInitialAdminsToFirestore(): Promise<void> {
+    try {
+      for (const a of INITIAL_ADMINS) {
+        await setDoc(doc(firestore, FS_COLS.ADMINS, String(a.id)), a);
+      }
+    } catch (e) {
+      console.warn('Admin seeding notice:', e);
+    }
+  }
+
+  private async seedInitialPickupPointsToFirestore(): Promise<void> {
+    try {
+      for (const p of INITIAL_PICKUP_POINTS) {
+        await setDoc(doc(firestore, FS_COLS.PICKUP_POINTS, String(p.id)), p);
+      }
+    } catch (e) {
+      console.warn('Pickup point seeding notice:', e);
+    }
+  }
+
+  private async seedInitialPromotionsToFirestore(): Promise<void> {
+    try {
+      for (const p of INITIAL_PROMOTIONS) {
+        await setDoc(doc(firestore, FS_COLS.PROMOTIONS, String(p.id)), p);
+      }
+    } catch (e) {
+      console.warn('Promotion seeding notice:', e);
+    }
+  }
+
+  private async seedInitialPromocodesToFirestore(): Promise<void> {
+    try {
+      for (const p of INITIAL_PROMOCODES) {
+        await setDoc(doc(firestore, FS_COLS.PROMOCODES, String(p.id)), p);
+      }
+    } catch (e) {
+      console.warn('Promocode seeding notice:', e);
+    }
+  }
+
+  private async seedInitialCategoriesToFirestore(): Promise<void> {
+    try {
+      for (const c of INITIAL_CATEGORIES) {
+        await setDoc(doc(firestore, FS_COLS.CATEGORIES, String(c.id)), c);
+      }
+      for (const b of INITIAL_BRANDS) {
+        await setDoc(doc(firestore, FS_COLS.BRANDS, String(b.id)), b);
+      }
+      for (const m of INITIAL_MODELS) {
+        await setDoc(doc(firestore, FS_COLS.MODELS, String(m.id)), m);
+      }
+    } catch (e) {
+      console.warn('Category seeding notice:', e);
+    }
+  }
+
   // ================= SETTINGS =================
   public getSettings(): ShopSettings {
     const s = getStoredItem<ShopSettings>(DB_KEYS.SETTINGS, INITIAL_SETTINGS);
@@ -171,6 +410,12 @@ class LocalDatabase {
     const updated = { ...current, ...partial };
     setStoredItem(DB_KEYS.SETTINGS, updated);
     this.notify();
+
+    // Async write to Cloud Firestore
+    setDoc(doc(firestore, FS_COLS.SETTINGS, 'global'), updated).catch((err) => {
+      console.error('Error saving settings to Firestore:', err);
+    });
+
     return updated;
   }
 
@@ -190,6 +435,12 @@ class LocalDatabase {
     const updated = [newProduct, ...products];
     setStoredItem(DB_KEYS.PRODUCTS, updated);
     this.notify();
+
+    // Async write to Cloud Firestore
+    setDoc(doc(firestore, FS_COLS.PRODUCTS, String(nextId)), newProduct).catch((err) => {
+      console.error('Error adding product to Firestore:', err);
+    });
+
     return newProduct;
   }
 
@@ -201,6 +452,12 @@ class LocalDatabase {
     products[index] = updatedProduct;
     setStoredItem(DB_KEYS.PRODUCTS, products);
     this.notify();
+
+    // Async write to Cloud Firestore
+    setDoc(doc(firestore, FS_COLS.PRODUCTS, String(id)), updatedProduct, { merge: true }).catch((err) => {
+      console.error('Error updating product in Firestore:', err);
+    });
+
     return updatedProduct;
   }
 
@@ -210,6 +467,12 @@ class LocalDatabase {
     if (filtered.length === products.length) return false;
     setStoredItem(DB_KEYS.PRODUCTS, filtered);
     this.notify();
+
+    // Async delete from Cloud Firestore
+    deleteDoc(doc(firestore, FS_COLS.PRODUCTS, String(id))).catch((err) => {
+      console.error('Error deleting product from Firestore:', err);
+    });
+
     return true;
   }
 
@@ -236,7 +499,7 @@ class LocalDatabase {
         errors.push(`Некорректный товар: ${item.name || 'без названия'}`);
         continue;
       }
-      newItems.push({
+      const prod: Product = {
         id: nextId++,
         name: item.name,
         price: Number(item.price),
@@ -249,7 +512,11 @@ class LocalDatabase {
         is_hit: false,
         is_new: true,
         created_at: new Date().toISOString(),
-      });
+      };
+      newItems.push(prod);
+
+      // Save each to Firestore
+      setDoc(doc(firestore, FS_COLS.PRODUCTS, String(prod.id)), prod).catch(() => {});
     }
 
     if (newItems.length > 0) {
@@ -273,6 +540,8 @@ class LocalDatabase {
     const updated = [...categories, newCat];
     setStoredItem(DB_KEYS.CATEGORIES, updated);
     this.notify();
+
+    setDoc(doc(firestore, FS_COLS.CATEGORIES, String(nextId)), newCat).catch(() => {});
     return newCat;
   }
 
@@ -281,10 +550,12 @@ class LocalDatabase {
     const filtered = categories.filter((c) => c.id !== id);
     setStoredItem(DB_KEYS.CATEGORIES, filtered);
     this.notify();
+
+    deleteDoc(doc(firestore, FS_COLS.CATEGORIES, String(id))).catch(() => {});
     return true;
   }
 
-  // ================= BRANDS =================
+  // ================= BRANDS & MODELS =================
   public getBrands(): Brand[] {
     return getStoredItem<Brand[]>(DB_KEYS.BRANDS, INITIAL_BRANDS);
   }
@@ -296,6 +567,8 @@ class LocalDatabase {
     const updated = [...brands, newBrand];
     setStoredItem(DB_KEYS.BRANDS, updated);
     this.notify();
+
+    setDoc(doc(firestore, FS_COLS.BRANDS, String(nextId)), newBrand).catch(() => {});
     return newBrand;
   }
 
@@ -304,10 +577,11 @@ class LocalDatabase {
     const filtered = brands.filter((b) => b.id !== id);
     setStoredItem(DB_KEYS.BRANDS, filtered);
     this.notify();
+
+    deleteDoc(doc(firestore, FS_COLS.BRANDS, String(id))).catch(() => {});
     return true;
   }
 
-  // ================= MODELS =================
   public getModels(): ProductModel[] {
     return getStoredItem<ProductModel[]>(DB_KEYS.MODELS, INITIAL_MODELS);
   }
@@ -319,6 +593,8 @@ class LocalDatabase {
     const updated = [...models, newModel];
     setStoredItem(DB_KEYS.MODELS, updated);
     this.notify();
+
+    setDoc(doc(firestore, FS_COLS.MODELS, String(nextId)), newModel).catch(() => {});
     return newModel;
   }
 
@@ -327,6 +603,8 @@ class LocalDatabase {
     const filtered = models.filter((m) => m.id !== id);
     setStoredItem(DB_KEYS.MODELS, filtered);
     this.notify();
+
+    deleteDoc(doc(firestore, FS_COLS.MODELS, String(id))).catch(() => {});
     return true;
   }
 
@@ -346,6 +624,8 @@ class LocalDatabase {
     const updated = [...groups, newGroup];
     setStoredItem(DB_KEYS.ATTR_GROUPS, updated);
     this.notify();
+
+    setDoc(doc(firestore, FS_COLS.ATTR_GROUPS, String(nextId)), newGroup).catch(() => {});
     return newGroup;
   }
 
@@ -356,6 +636,8 @@ class LocalDatabase {
     const updated = [...values, newVal];
     setStoredItem(DB_KEYS.ATTR_VALUES, updated);
     this.notify();
+
+    setDoc(doc(firestore, FS_COLS.ATTR_VALUES, String(nextId)), newVal).catch(() => {});
     return newVal;
   }
 
@@ -371,6 +653,8 @@ class LocalDatabase {
     const updated = [newPromo, ...promos];
     setStoredItem(DB_KEYS.PROMOTIONS, updated);
     this.notify();
+
+    setDoc(doc(firestore, FS_COLS.PROMOTIONS, String(nextId)), newPromo).catch(() => {});
     return newPromo;
   }
 
@@ -379,6 +663,8 @@ class LocalDatabase {
     const filtered = promos.filter((p) => p.id !== id);
     setStoredItem(DB_KEYS.PROMOTIONS, filtered);
     this.notify();
+
+    deleteDoc(doc(firestore, FS_COLS.PROMOTIONS, String(id))).catch(() => {});
     return true;
   }
 
@@ -394,6 +680,8 @@ class LocalDatabase {
     const updated = [newCode, ...codes];
     setStoredItem(DB_KEYS.PROMOCODES, updated);
     this.notify();
+
+    setDoc(doc(firestore, FS_COLS.PROMOCODES, String(nextId)), newCode).catch(() => {});
     return newCode;
   }
 
@@ -402,6 +690,8 @@ class LocalDatabase {
     const filtered = codes.filter((c) => c.id !== id);
     setStoredItem(DB_KEYS.PROMOCODES, filtered);
     this.notify();
+
+    deleteDoc(doc(firestore, FS_COLS.PROMOCODES, String(id))).catch(() => {});
     return true;
   }
 
@@ -417,6 +707,8 @@ class LocalDatabase {
     const updated = [...points, newPoint];
     setStoredItem(DB_KEYS.PICKUP_POINTS, updated);
     this.notify();
+
+    setDoc(doc(firestore, FS_COLS.PICKUP_POINTS, String(nextId)), newPoint).catch(() => {});
     return newPoint;
   }
 
@@ -425,6 +717,8 @@ class LocalDatabase {
     const filtered = points.filter((p) => p.id !== id);
     setStoredItem(DB_KEYS.PICKUP_POINTS, filtered);
     this.notify();
+
+    deleteDoc(doc(firestore, FS_COLS.PICKUP_POINTS, String(id))).catch(() => {});
     return true;
   }
 
@@ -444,6 +738,12 @@ class LocalDatabase {
     const updated = [newOrder, ...orders];
     setStoredItem(DB_KEYS.ORDERS, updated);
     this.notify();
+
+    // Persist immediately to Cloud Firestore
+    setDoc(doc(firestore, FS_COLS.ORDERS, String(nextId)), newOrder).catch((err) => {
+      console.error('Error saving order to Firestore:', err);
+    });
+
     return newOrder;
   }
 
@@ -454,6 +754,12 @@ class LocalDatabase {
     orders[index] = { ...orders[index], status };
     setStoredItem(DB_KEYS.ORDERS, orders);
     this.notify();
+
+    // Update in Cloud Firestore
+    updateDoc(doc(firestore, FS_COLS.ORDERS, String(orderId)), { status }).catch((err) => {
+      console.error('Error updating order status in Firestore:', err);
+    });
+
     return true;
   }
 
@@ -475,10 +781,8 @@ class LocalDatabase {
     const cleanUsername = (usernameInput || '').replace(/^@/, '').trim();
     const parsedId = userIdInput ? parseInt(String(userIdInput), 10) : 0;
 
-    // Generate fallback user_id if only username is provided
     let finalUserId = !isNaN(parsedId) && parsedId > 0 ? parsedId : 0;
     if (finalUserId === 0 && cleanUsername) {
-      // Deterministic hash for username so it stays consistent
       let hash = 0;
       for (let i = 0; i < cleanUsername.length; i++) {
         hash = (hash << 5) - hash + cleanUsername.charCodeAt(i);
@@ -489,7 +793,6 @@ class LocalDatabase {
 
     const finalUsername = cleanUsername || (finalUserId > 0 ? `user_${finalUserId}` : 'moderator');
 
-    // Check if user already exists in admins list by ID or username
     const existingIndex = admins.findIndex((a) => {
       const matchId = finalUserId > 0 && Number(a.user_id) === finalUserId;
       const matchUsername =
@@ -500,16 +803,19 @@ class LocalDatabase {
     });
 
     if (existingIndex > -1) {
-      admins[existingIndex] = {
+      const updatedAdmin = {
         ...admins[existingIndex],
         user_id: finalUserId > 0 ? finalUserId : admins[existingIndex].user_id,
         username: finalUsername,
         role,
         is_active: true,
       };
+      admins[existingIndex] = updatedAdmin;
       setStoredItem(DB_KEYS.ADMINS, [...admins]);
       this.notify();
-      return admins[existingIndex];
+
+      setDoc(doc(firestore, FS_COLS.ADMINS, String(updatedAdmin.id)), updatedAdmin).catch(() => {});
+      return updatedAdmin;
     }
 
     const nextId = admins.length > 0 ? Math.max(...admins.map((a) => a.id)) + 1 : 1;
@@ -524,6 +830,12 @@ class LocalDatabase {
     const updated = [...admins, newAdmin];
     setStoredItem(DB_KEYS.ADMINS, updated);
     this.notify();
+
+    // Persist to Cloud Firestore
+    setDoc(doc(firestore, FS_COLS.ADMINS, String(nextId)), newAdmin).catch((err) => {
+      console.error('Error saving admin to Firestore:', err);
+    });
+
     return newAdmin;
   }
 
@@ -532,6 +844,11 @@ class LocalDatabase {
     const filtered = admins.filter((a) => a.id !== id);
     setStoredItem(DB_KEYS.ADMINS, filtered);
     this.notify();
+
+    deleteDoc(doc(firestore, FS_COLS.ADMINS, String(id))).catch((err) => {
+      console.error('Error deleting admin from Firestore:', err);
+    });
+
     return true;
   }
 
@@ -556,8 +873,8 @@ class LocalDatabase {
     });
   }
 
-  // ================= RESET / RESTORE TO INVOICE DATA =================
-  public resetToInvoiceData(): void {
+  // Reset / Restore to Invoice Data (Cloud & Local)
+  public async resetToInvoiceData(): Promise<void> {
     setStoredItem(DB_KEYS.SETTINGS, INITIAL_SETTINGS);
     setStoredItem(DB_KEYS.PRODUCTS, INITIAL_PRODUCTS);
     setStoredItem(DB_KEYS.CATEGORIES, INITIAL_CATEGORIES);
@@ -571,11 +888,27 @@ class LocalDatabase {
     setStoredItem(DB_KEYS.PICKUP_POINTS, INITIAL_PICKUP_POINTS);
     setStoredItem(DB_KEYS.ADMINS, INITIAL_ADMINS);
     this.notify();
+
+    // Re-seed to Firestore
+    try {
+      await setDoc(doc(firestore, FS_COLS.SETTINGS, 'global'), INITIAL_SETTINGS);
+      for (const p of INITIAL_PRODUCTS) {
+        await setDoc(doc(firestore, FS_COLS.PRODUCTS, String(p.id)), p);
+      }
+      for (const a of INITIAL_ADMINS) {
+        await setDoc(doc(firestore, FS_COLS.ADMINS, String(a.id)), a);
+      }
+      for (const pt of INITIAL_PICKUP_POINTS) {
+        await setDoc(doc(firestore, FS_COLS.PICKUP_POINTS, String(pt.id)), pt);
+      }
+    } catch (e) {
+      console.warn('Error resetting cloud DB:', e);
+    }
   }
 
-  // ================= EXPORT & IMPORT =================
+  // Export & Import
   public exportDatabase(): string {
-    const dump: DatabaseSchema = {
+    const dump = {
       settings: this.getSettings(),
       products: this.getProducts(),
       categories: this.getCategories(),
@@ -595,19 +928,26 @@ class LocalDatabase {
 
   public importDatabase(jsonString: string): boolean {
     try {
-      const data = JSON.parse(jsonString) as Partial<DatabaseSchema>;
-      if (data.settings) setStoredItem(DB_KEYS.SETTINGS, data.settings);
-      if (data.products) setStoredItem(DB_KEYS.PRODUCTS, data.products);
-      if (data.categories) setStoredItem(DB_KEYS.CATEGORIES, data.categories);
-      if (data.brands) setStoredItem(DB_KEYS.BRANDS, data.brands);
-      if (data.models) setStoredItem(DB_KEYS.MODELS, data.models);
-      if (data.attributeGroups) setStoredItem(DB_KEYS.ATTR_GROUPS, data.attributeGroups);
-      if (data.attributeValues) setStoredItem(DB_KEYS.ATTR_VALUES, data.attributeValues);
-      if (data.promotions) setStoredItem(DB_KEYS.PROMOTIONS, data.promotions);
-      if (data.promocodes) setStoredItem(DB_KEYS.PROMOCODES, data.promocodes);
-      if (data.pickupPoints) setStoredItem(DB_KEYS.PICKUP_POINTS, data.pickupPoints);
-      if (data.admins) setStoredItem(DB_KEYS.ADMINS, data.admins);
-      if (data.orders) setStoredItem(DB_KEYS.ORDERS, data.orders);
+      const data = JSON.parse(jsonString);
+      if (data.settings) this.updateSettings(data.settings);
+      if (data.products && Array.isArray(data.products)) {
+        setStoredItem(DB_KEYS.PRODUCTS, data.products);
+        data.products.forEach((p: Product) => {
+          setDoc(doc(firestore, FS_COLS.PRODUCTS, String(p.id)), p).catch(() => {});
+        });
+      }
+      if (data.orders && Array.isArray(data.orders)) {
+        setStoredItem(DB_KEYS.ORDERS, data.orders);
+        data.orders.forEach((o: Order) => {
+          setDoc(doc(firestore, FS_COLS.ORDERS, String(o.id)), o).catch(() => {});
+        });
+      }
+      if (data.admins && Array.isArray(data.admins)) {
+        setStoredItem(DB_KEYS.ADMINS, data.admins);
+        data.admins.forEach((a: AdminUser) => {
+          setDoc(doc(firestore, FS_COLS.ADMINS, String(a.id)), a).catch(() => {});
+        });
+      }
       this.notify();
       return true;
     } catch (e) {
@@ -617,4 +957,4 @@ class LocalDatabase {
   }
 }
 
-export const db = new LocalDatabase();
+export const db = new CloudDatabase();

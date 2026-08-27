@@ -33,6 +33,8 @@ interface StoreContextType {
   isAdminMode: boolean;       // Current view mode (admin vs client preview)
   toggleAdminMode: () => void; // Only works if isAuthorizedAdmin is true
   setCurrentUser: (user: TelegramUser | null) => void;
+  loginAsAdmin: (idOrUsername: string) => boolean;
+  logoutUser: () => void;
 
   // Data Collections (from local in-root Database)
   settings: ShopSettings;
@@ -185,7 +187,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return authorized;
   }, []);
 
-  // Initialize Telegram User
+  // Initialize Telegram User & check URL parameters for desktop/testing
   useEffect(() => {
     const tg = getTelegramWebApp();
     if (tg?.initDataUnsafe?.user) {
@@ -198,19 +200,42 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         language_code: tgUser.language_code || 'ru',
       };
       setCurrentUserState(user);
-      verifyAdmin(user);
+      const isAdm = verifyAdmin(user);
+      if (isAdm) setIsAdminMode(true);
     } else {
-      // In browser preview, check if last user was saved or simulate guest
+      // Check query parameters (useful for desktop preview / testing)
+      const urlParams = new URLSearchParams(window.location.search);
+      const qUserId = urlParams.get('user_id') || urlParams.get('tg_id') || urlParams.get('id');
+      const qUsername = urlParams.get('username') || urlParams.get('user');
+
+      if (qUserId || qUsername) {
+        const parsedId = qUserId ? parseInt(qUserId, 10) : 0;
+        const user: TelegramUser = {
+          id: parsedId || 5659638424,
+          first_name: qUsername ? `@${qUsername}` : 'Администратор',
+          username: qUsername || 'admin',
+          language_code: 'ru',
+        };
+        setCurrentUserState(user);
+        const isAdm = verifyAdmin(user);
+        if (isAdm) setIsAdminMode(true);
+        localStorage.setItem('puff_current_user_v4', JSON.stringify(user));
+        return;
+      }
+
+      // In browser preview, check if last user was saved or default
       const savedUser = localStorage.getItem('puff_current_user_v4');
       if (savedUser) {
         try {
           const parsed = JSON.parse(savedUser);
           setCurrentUserState(parsed);
-          verifyAdmin(parsed);
+          const isAdm = verifyAdmin(parsed);
+          if (isAdm) setIsAdminMode(true);
         } catch {
           setIsAuthorizedAdmin(false);
         }
       } else {
+        // By default in browser preview if no user, check if we can log in with master admin or stay guest
         setIsAuthorizedAdmin(false);
       }
     }
@@ -220,10 +245,40 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setCurrentUserState(user);
     if (user) {
       localStorage.setItem('puff_current_user_v4', JSON.stringify(user));
+      const isAdm = verifyAdmin(user);
+      if (isAdm) setIsAdminMode(true);
     } else {
       localStorage.removeItem('puff_current_user_v4');
+      setIsAuthorizedAdmin(false);
     }
-    verifyAdmin(user);
+  };
+
+  const loginAsAdmin = (idOrUsername: string): boolean => {
+    const clean = idOrUsername.trim();
+    if (!clean) return false;
+
+    const parsedId = parseInt(clean, 10);
+    const cleanUsername = clean.replace(/^@/, '');
+
+    const isMatch = db.isUserAdmin(parsedId || null, cleanUsername || null);
+    if (isMatch) {
+      const user: TelegramUser = {
+        id: !isNaN(parsedId) && parsedId > 0 ? parsedId : 5659638424,
+        first_name: cleanUsername ? `@${cleanUsername}` : 'Администратор',
+        username: cleanUsername || 'admin',
+        language_code: 'ru',
+      };
+      setCurrentUser(user);
+      setIsAuthorizedAdmin(true);
+      setIsAdminMode(true);
+      return true;
+    }
+    return false;
+  };
+
+  const logoutUser = () => {
+    setCurrentUser(null);
+    setIsAdminMode(false);
   };
 
   // Toggle Admin Mode - STRICT: ONLY works if user is an authorized admin!
@@ -696,6 +751,8 @@ ${deliveryInfo}
         isAdminMode,
         toggleAdminMode,
         setCurrentUser,
+        loginAsAdmin,
+        logoutUser,
         settings,
         categories,
         brands,
