@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useStore } from '../services/store';
 import {
   X,
@@ -18,6 +18,8 @@ import {
   Edit3,
   RefreshCw,
   Layers,
+  Smartphone,
+  Monitor,
 } from 'lucide-react';
 import { hapticImpact, hapticNotification } from '../services/telegram';
 
@@ -70,6 +72,27 @@ export const MassImportModal: React.FC<MassImportModalProps> = ({ isOpen, onClos
   const [reviewSearch, setReviewSearch] = useState('');
   const [bulkCategory, setBulkCategory] = useState<string>('');
   const [bulkStock, setBulkStock] = useState<string>('');
+
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Lock background body scroll when modal is open (Fix for PC Telegram Desktop wheel issue)
+  useEffect(() => {
+    if (!isOpen) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [isOpen]);
+
+  // Helper to ensure focused input is visible above mobile keyboard on iPhone
+  const handleInputFocus = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const target = e.target;
+    setTimeout(() => {
+      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 150);
+  };
 
   // Helper to map category name or slug to valid slug
   const resolveCategorySlug = (catRaw: string): string => {
@@ -180,7 +203,6 @@ export const MassImportModal: React.FC<MassImportModalProps> = ({ isOpen, onClos
         parts = [line];
       }
 
-      // Default values
       let name = parts[0] || '';
       let price = 0;
       let costPrice: number | undefined = undefined;
@@ -460,30 +482,37 @@ Vaporesso XROS 4 Mini\t75.00\t40.00\tpods\tVaporesso\tЧерный\t—\t8`;
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 animate-in fade-in duration-200">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 overscroll-contain animate-in fade-in duration-200"
+      onWheel={(e) => e.stopPropagation()}
+    >
+      {/* Dark backdrop */}
       <div className="fixed inset-0 bg-black/85 backdrop-blur-md" onClick={onClose} />
 
-      <div className="relative w-full max-w-4xl max-h-[92vh] bg-[#141221] border border-purple-500/30 rounded-3xl p-4 sm:p-5 shadow-2xl flex flex-col z-10 overflow-hidden">
+      {/* Main Modal Card */}
+      <div
+        className="relative w-full max-w-4xl h-[92dvh] sm:h-auto sm:max-h-[92vh] bg-[#141221] border border-purple-500/30 rounded-3xl p-3 sm:p-5 shadow-2xl flex flex-col z-10 overscroll-contain overflow-hidden"
+        onWheel={(e) => e.stopPropagation()}
+      >
         {/* Header with Steps */}
         <div className="flex items-center justify-between pb-3 border-b border-white/10 shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-2xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-400">
-              <FileSpreadsheet className="w-5 h-5" />
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-2xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-400 shrink-0">
+              <FileSpreadsheet className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-sm font-bold text-white leading-tight">Импорт и модерация товаров</h3>
-                {/* Step indicator badge */}
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="text-xs sm:text-sm font-bold text-white leading-tight">Импорт и модерация товаров</h3>
                 {!resultSummary && (
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">
-                    Шаг {currentStep === 'input' ? '1 из 2: Ввод данных' : '2 из 2: Проверка и правка'}
+                  <span className="px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30 shrink-0">
+                    Шаг {currentStep === 'input' ? '1/2: Ввод' : '2/2: Правка'}
                   </span>
                 )}
               </div>
-              <p className="text-[11px] text-zinc-400">
+              <p className="text-[10px] sm:text-[11px] text-zinc-400 truncate">
                 {currentStep === 'input'
-                  ? 'Вставьте ответ нейросети, скопированные ячейки Excel или сгенерируйте по вкусам'
-                  : 'Проверьте распознанные поля, исправьте цены и категории перед добавлением в каталог'}
+                  ? 'Вставьте ответ нейросети или скопированные строки'
+                  : 'Проверьте распознанные поля перед добавлением в каталог'}
               </p>
             </div>
           </div>
@@ -492,7 +521,7 @@ Vaporesso XROS 4 Mini\t75.00\t40.00\tpods\tVaporesso\tЧерный\t—\t8`;
               hapticImpact('light');
               onClose();
             }}
-            className="p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-white/5"
+            className="p-1.5 sm:p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-white/5 shrink-0"
           >
             <X className="w-4 h-4" />
           </button>
@@ -502,20 +531,20 @@ Vaporesso XROS 4 Mini\t75.00\t40.00\tpods\tVaporesso\tЧерный\t—\t8`;
         {currentStep === 'input' && !resultSummary && (
           <>
             {/* Import Mode Tabs */}
-            <div className="grid grid-cols-3 gap-1.5 p-1 bg-black/40 rounded-2xl border border-white/5 my-3 shrink-0">
+            <div className="grid grid-cols-3 gap-1 p-1 bg-black/40 rounded-2xl border border-white/5 my-2.5 sm:my-3 shrink-0">
               <button
                 onClick={() => {
                   hapticImpact('light');
                   setActiveMode('table');
                 }}
-                className={`py-2 px-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                className={`py-1.5 sm:py-2 px-1.5 rounded-xl text-[11px] sm:text-xs font-bold transition-all flex items-center justify-center gap-1 sm:gap-1.5 ${
                   activeMode === 'table'
                     ? 'bg-purple-600 text-white shadow-[0_0_12px_rgba(168,85,247,0.4)]'
                     : 'text-zinc-400 hover:text-white'
                 }`}
               >
-                <FileText className="w-3.5 h-3.5" />
-                <span>Ответ ИИ / Таблица</span>
+                <FileText className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate">Ответ ИИ / Текст</span>
               </button>
 
               <button
@@ -523,14 +552,14 @@ Vaporesso XROS 4 Mini\t75.00\t40.00\tpods\tVaporesso\tЧерный\t—\t8`;
                   hapticImpact('light');
                   setActiveMode('generator');
                 }}
-                className={`py-2 px-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                className={`py-1.5 sm:py-2 px-1.5 rounded-xl text-[11px] sm:text-xs font-bold transition-all flex items-center justify-center gap-1 sm:gap-1.5 ${
                   activeMode === 'generator'
                     ? 'bg-purple-600 text-white shadow-[0_0_12px_rgba(168,85,247,0.4)]'
                     : 'text-zinc-400 hover:text-white'
                 }`}
               >
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Генератор вкусов</span>
+                <Sparkles className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate">Генератор вкусов</span>
               </button>
 
               <button
@@ -538,46 +567,47 @@ Vaporesso XROS 4 Mini\t75.00\t40.00\tpods\tVaporesso\tЧерный\t—\t8`;
                   hapticImpact('light');
                   setActiveMode('file');
                 }}
-                className={`py-2 px-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                className={`py-1.5 sm:py-2 px-1.5 rounded-xl text-[11px] sm:text-xs font-bold transition-all flex items-center justify-center gap-1 sm:gap-1.5 ${
                   activeMode === 'file'
                     ? 'bg-purple-600 text-white shadow-[0_0_12px_rgba(168,85,247,0.4)]'
                     : 'text-zinc-400 hover:text-white'
                 }`}
               >
-                <Upload className="w-3.5 h-3.5" />
-                <span>Файл (.csv / .tsv)</span>
+                <Upload className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate">Файл (.tsv / .csv)</span>
               </button>
             </div>
 
             {/* Input Content Area */}
-            <div className="flex-1 overflow-y-auto space-y-3 no-scrollbar pr-0.5">
+            <div className="flex-1 custom-modal-scroll space-y-3 pr-1 pb-16 sm:pb-4">
               {/* MODE 1: AI / TABLE TEXT INPUT */}
               {activeMode === 'table' && (
                 <div className="space-y-2.5">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-2">
                     <span className="text-xs font-bold text-zinc-300">
-                      Вставьте ответ нейросети (с разделителем "|") или ячейки из Excel:
+                      Вставьте ответ нейросети (с разделителем "|") или строки:
                     </span>
                     <button
                       onClick={handleDownloadSample}
-                      className="text-[11px] text-purple-400 hover:text-purple-300 flex items-center gap-1 font-semibold"
+                      className="text-[11px] text-purple-400 hover:text-purple-300 flex items-center gap-1 font-semibold shrink-0"
                     >
                       <Download className="w-3 h-3" />
-                      <span>Скачать образец TSV</span>
+                      <span className="hidden sm:inline">Скачать TSV</span>
                     </button>
                   </div>
 
                   <textarea
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
+                    onFocus={handleInputFocus}
                     placeholder="HQD Cuvie Plus 1200 - Черника | 22.00 | Одноразовые ЭС | HQD | Cuvie Plus 1200 | Черника | 20 мг | 15 | 12.50&#10;Lost Mary BM5000 - Клубника Банан | 35.00 | Одноразовые ЭС | Lost Mary | BM5000 | Клубника Банан | 20 мг Hard | 10 | 19.00&#10;Жидкость Brusko Salt 30ml - Ягодный микс | 18.00 | Жидкости | Brusko | Salt 30ml | Ягодный микс | 20 мг | 20 | 9.00"
-                    rows={8}
-                    className="w-full p-3.5 rounded-2xl bg-black/40 border border-white/10 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500 font-mono resize-none leading-relaxed"
+                    rows={7}
+                    className="w-full p-3 rounded-2xl bg-black/40 border border-white/10 text-xs sm:text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500 font-mono resize-none leading-relaxed"
                   />
 
-                  <div className="p-3 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-[11px] text-zinc-300 flex items-center justify-between gap-2">
+                  <div className="p-2.5 sm:p-3 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-[11px] text-zinc-300 flex items-center justify-between gap-2 flex-wrap sm:flex-nowrap">
                     <div>
-                      💡 Поддерживает разделители <code className="text-purple-300 font-mono font-bold">|</code>, табуляцию (Excel), точку с запятой <code className="text-purple-300 font-mono">;</code> и запятую.
+                      💡 Разделители: <code className="text-purple-300 font-mono font-bold">|</code>, Tab (Excel), <code className="text-purple-300 font-mono">;</code> или запятая.
                     </div>
                     {inputText.length === 0 && (
                       <button
@@ -599,7 +629,7 @@ Vaporesso XROS 4 Mini\t75.00\t40.00\tpods\tVaporesso\tЧерный\t—\t8`;
               {activeMode === 'generator' && (
                 <div className="space-y-3">
                   <div className="p-3 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-xs text-zinc-300 leading-relaxed">
-                    💡 <b>Быстрый генератор:</b> Задайте бренд, категорию и цены, затем вставьте список вкусов с новой строки — карточки сформируются автоматически для модерации.
+                    💡 <b>Быстрый генератор:</b> Задайте бренд, категорию и цены, затем вставьте список вкусов — карточки сформируются автоматически.
                   </div>
 
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -608,6 +638,7 @@ Vaporesso XROS 4 Mini\t75.00\t40.00\tpods\tVaporesso\tЧерный\t—\t8`;
                       <select
                         value={defaultCategory}
                         onChange={(e) => setDefaultCategory(e.target.value)}
+                        onFocus={handleInputFocus}
                         className="w-full p-2 rounded-xl bg-black/40 border border-white/10 text-xs text-white"
                       >
                         {categories.map((c) => (
@@ -624,6 +655,7 @@ Vaporesso XROS 4 Mini\t75.00\t40.00\tpods\tVaporesso\tЧерный\t—\t8`;
                         type="text"
                         value={defaultBrand}
                         onChange={(e) => setDefaultBrand(e.target.value)}
+                        onFocus={handleInputFocus}
                         placeholder="Husky / Podonki"
                         className="w-full p-2 rounded-xl bg-black/40 border border-white/10 text-xs text-white"
                       />
@@ -635,6 +667,7 @@ Vaporesso XROS 4 Mini\t75.00\t40.00\tpods\tVaporesso\tЧерный\t—\t8`;
                         type="number"
                         value={defaultPrice}
                         onChange={(e) => setDefaultPrice(e.target.value)}
+                        onFocus={handleInputFocus}
                         className="w-full p-2 rounded-xl bg-black/40 border border-white/10 text-xs text-white"
                       />
                     </div>
@@ -647,6 +680,7 @@ Vaporesso XROS 4 Mini\t75.00\t40.00\tpods\tVaporesso\tЧерный\t—\t8`;
                         type="number"
                         value={defaultCostPrice}
                         onChange={(e) => setDefaultCostPrice(e.target.value)}
+                        onFocus={handleInputFocus}
                         className="w-full p-2 rounded-xl bg-black/40 border border-emerald-500/30 text-xs text-emerald-300"
                       />
                     </div>
@@ -659,8 +693,9 @@ Vaporesso XROS 4 Mini\t75.00\t40.00\tpods\tVaporesso\tЧерный\t—\t8`;
                     <textarea
                       value={flavorsList}
                       onChange={(e) => setFlavorsList(e.target.value)}
+                      onFocus={handleInputFocus}
                       placeholder="Кислое зеленое яблоко&#10;Мятная черника со льдом&#10;Тропический манго-маракуйя&#10;Лесные ягоды с хвоей"
-                      rows={6}
+                      rows={5}
                       className="w-full p-3 rounded-2xl bg-black/40 border border-white/10 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500 font-mono resize-none leading-relaxed"
                     />
                   </div>
@@ -675,8 +710,8 @@ Vaporesso XROS 4 Mini\t75.00\t40.00\tpods\tVaporesso\tЧерный\t—\t8`;
                       <Upload className="w-6 h-6" />
                     </div>
                     <div>
-                      <span className="text-xs font-bold text-white block">Выберите файл .csv или .tsv</span>
-                      <span className="text-[11px] text-zinc-400">Разделители: табуляция, запятая или точка с запятой</span>
+                      <span className="text-xs font-bold text-white block">Выберите файл .tsv или .csv</span>
+                      <span className="text-[11px] text-zinc-400">Разделители: табуляция, точка с запятой или запятая</span>
                     </div>
                     <label className="inline-block py-2 px-4 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold cursor-pointer">
                       <span>Обзор файлов</span>
@@ -698,14 +733,14 @@ Vaporesso XROS 4 Mini\t75.00\t40.00\tpods\tVaporesso\tЧерный\t—\t8`;
 
               {/* Mini Quick Preview Counter */}
               {parsedRows.length > 0 && (
-                <div className="p-3 rounded-2xl bg-black/50 border border-white/10 flex items-center justify-between">
+                <div className="p-2.5 sm:p-3 rounded-2xl bg-black/50 border border-white/10 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                     <span className="text-xs font-semibold text-white">
                       Распознано строк: <b className="text-purple-300">{parsedRows.length} шт.</b>
                     </span>
                   </div>
-                  <span className="text-[11px] text-zinc-400">
+                  <span className="text-[10px] sm:text-[11px] text-zinc-400 hidden sm:inline">
                     Нажмите «Перейти к проверке», чтобы отредактировать поля
                   </span>
                 </div>
@@ -713,13 +748,13 @@ Vaporesso XROS 4 Mini\t75.00\t40.00\tpods\tVaporesso\tЧерный\t—\t8`;
             </div>
 
             {/* Step 1 Footer */}
-            <div className="pt-3 border-t border-white/10 flex items-center gap-2 shrink-0">
+            <div className="pt-2.5 sm:pt-3 border-t border-white/10 flex items-center gap-2 shrink-0 bg-[#141221]">
               <button
                 onClick={() => {
                   hapticImpact('light');
                   onClose();
                 }}
-                className="py-3 px-4 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-bold transition-all"
+                className="py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-bold transition-all shrink-0"
               >
                 Отмена
               </button>
@@ -727,7 +762,7 @@ Vaporesso XROS 4 Mini\t75.00\t40.00\tpods\tVaporesso\tЧерный\t—\t8`;
               <button
                 onClick={handleProceedToReview}
                 disabled={parsedRows.length === 0}
-                className={`flex-1 py-3 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+                className={`flex-1 py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${
                   parsedRows.length > 0
                     ? 'bg-gradient-to-r from-purple-600 via-fuchsia-600 to-orange-500 text-white shadow-[0_0_20px_rgba(168,85,247,0.4)]'
                     : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
@@ -740,67 +775,69 @@ Vaporesso XROS 4 Mini\t75.00\t40.00\tpods\tVaporesso\tЧерный\t—\t8`;
           </>
         )}
 
-        {/* STEP 2: MODERATION & REVIEW TABLE */}
+        {/* STEP 2: MODERATION & REVIEW */}
         {currentStep === 'review' && !resultSummary && (
           <>
-            {/* Moderation Toolbar */}
-            <div className="space-y-2.5 my-2 shrink-0">
+            {/* Moderation Toolbar & Stats */}
+            <div className="space-y-2 my-2 shrink-0">
               {/* Stats Summary Bar */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                <div className="p-2.5 rounded-2xl bg-black/40 border border-white/10">
-                  <div className="text-[10px] text-zinc-400 font-semibold uppercase">Товаров к импорту</div>
-                  <div className="text-sm font-extrabold text-white flex items-center gap-1.5">
-                    <span>{validReviewCount}</span>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 sm:gap-2">
+                <div className="p-2 sm:p-2.5 rounded-2xl bg-black/40 border border-white/10">
+                  <div className="text-[9px] sm:text-[10px] text-zinc-400 font-semibold uppercase">К импорту</div>
+                  <div className="text-xs sm:text-sm font-extrabold text-white flex items-center gap-1.5">
+                    <span>{validReviewCount} шт.</span>
                     {invalidReviewCount > 0 && (
-                      <span className="text-[10px] px-1.5 py-0.2 rounded-md bg-red-500/20 text-red-300 font-bold border border-red-500/30">
-                        {invalidReviewCount} с ошибкой
+                      <span className="text-[9px] px-1 py-0.2 rounded-md bg-red-500/20 text-red-300 font-bold border border-red-500/30">
+                        {invalidReviewCount} ⚠️
                       </span>
                     )}
                   </div>
                 </div>
 
-                <div className="p-2.5 rounded-2xl bg-black/40 border border-white/10">
-                  <div className="text-[10px] text-zinc-400 font-semibold uppercase">Сумма розницы</div>
-                  <div className="text-sm font-extrabold text-purple-300">{totalRetailSum.toFixed(2)} BYN</div>
+                <div className="p-2 sm:p-2.5 rounded-2xl bg-black/40 border border-white/10">
+                  <div className="text-[9px] sm:text-[10px] text-zinc-400 font-semibold uppercase">Розница</div>
+                  <div className="text-xs sm:text-sm font-extrabold text-purple-300 truncate">{totalRetailSum.toFixed(2)} BYN</div>
                 </div>
 
                 {isAdmin && (
-                  <div className="p-2.5 rounded-2xl bg-black/40 border border-white/10">
-                    <div className="text-[10px] text-zinc-400 font-semibold uppercase">Себестоимость партии</div>
-                    <div className="text-sm font-extrabold text-zinc-300">{totalCostSum.toFixed(2)} BYN</div>
+                  <div className="p-2 sm:p-2.5 rounded-2xl bg-black/40 border border-white/10">
+                    <div className="text-[9px] sm:text-[10px] text-zinc-400 font-semibold uppercase">Себестоимость</div>
+                    <div className="text-xs sm:text-sm font-extrabold text-zinc-300 truncate">{totalCostSum.toFixed(2)} BYN</div>
                   </div>
                 )}
 
                 {isAdmin && (
-                  <div className="p-2.5 rounded-2xl bg-black/40 border border-emerald-500/20">
-                    <div className="text-[10px] text-emerald-400 font-semibold uppercase">Ожидаемая маржа</div>
-                    <div className="text-sm font-extrabold text-emerald-400">+{totalMarginSum.toFixed(2)} BYN</div>
+                  <div className="p-2 sm:p-2.5 rounded-2xl bg-black/40 border border-emerald-500/20">
+                    <div className="text-[9px] sm:text-[10px] text-emerald-400 font-semibold uppercase">Ожид. маржа</div>
+                    <div className="text-xs sm:text-sm font-extrabold text-emerald-400 truncate">+{totalMarginSum.toFixed(2)} BYN</div>
                   </div>
                 )}
               </div>
 
               {/* Action Toolbar: Search + Bulk Actions + Add Row */}
-              <div className="flex flex-wrap items-center justify-between gap-2 p-2 bg-black/40 rounded-2xl border border-white/5">
+              <div className="flex flex-wrap items-center justify-between gap-1.5 sm:gap-2 p-1.5 sm:p-2 bg-black/40 rounded-2xl border border-white/5">
                 {/* Search */}
-                <div className="relative flex-1 min-w-[180px]">
-                  <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
+                <div className="relative flex-1 min-w-[130px] sm:min-w-[180px]">
+                  <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-400" />
                   <input
                     type="text"
                     value={reviewSearch}
                     onChange={(e) => setReviewSearch(e.target.value)}
-                    placeholder="Поиск по названию, бренду, вкусу..."
-                    className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500"
+                    onFocus={handleInputFocus}
+                    placeholder="Поиск по названию..."
+                    className="w-full pl-7 sm:pl-8 pr-2.5 py-1.5 rounded-xl bg-white/5 border border-white/10 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500"
                   />
                 </div>
 
                 {/* Bulk Category Assign */}
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1">
                   <select
                     value={bulkCategory}
                     onChange={(e) => setBulkCategory(e.target.value)}
-                    className="p-1.5 rounded-xl bg-white/5 border border-white/10 text-xs text-white focus:outline-none"
+                    onFocus={handleInputFocus}
+                    className="p-1.5 rounded-xl bg-white/5 border border-white/10 text-[11px] sm:text-xs text-white focus:outline-none max-w-[110px] sm:max-w-none"
                   >
-                    <option value="">Категория для всех...</option>
+                    <option value="">Категория всем...</option>
                     {categories.map((c) => (
                       <option key={c.id} value={c.slug}>
                         {c.name}
@@ -811,7 +848,7 @@ Vaporesso XROS 4 Mini\t75.00\t40.00\tpods\tVaporesso\tЧерный\t—\t8`;
                     <button
                       onClick={handleApplyBulkCategory}
                       title="Применить ко всем товарам в списке"
-                      className="p-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold flex items-center gap-1"
+                      className="p-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold flex items-center gap-1 shrink-0"
                     >
                       <Check className="w-3.5 h-3.5" />
                     </button>
@@ -819,19 +856,20 @@ Vaporesso XROS 4 Mini\t75.00\t40.00\tpods\tVaporesso\tЧерный\t—\t8`;
                 </div>
 
                 {/* Bulk Stock */}
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1">
                   <input
                     type="number"
                     value={bulkStock}
                     onChange={(e) => setBulkStock(e.target.value)}
-                    placeholder="Остаток всем..."
-                    className="w-24 p-1.5 rounded-xl bg-white/5 border border-white/10 text-xs text-white focus:outline-none"
+                    onFocus={handleInputFocus}
+                    placeholder="Остаток..."
+                    className="w-16 sm:w-20 p-1.5 rounded-xl bg-white/5 border border-white/10 text-[11px] sm:text-xs text-white focus:outline-none"
                   />
                   {bulkStock && (
                     <button
                       onClick={handleApplyBulkStock}
                       title="Установить остаток всем товарам"
-                      className="p-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold flex items-center gap-1"
+                      className="p-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold flex items-center gap-1 shrink-0"
                     >
                       <Check className="w-3.5 h-3.5" />
                     </button>
@@ -841,16 +879,174 @@ Vaporesso XROS 4 Mini\t75.00\t40.00\tpods\tVaporesso\tЧерный\t—\t8`;
                 {/* Add Manual Item */}
                 <button
                   onClick={handleAddNewItem}
-                  className="py-1.5 px-3 rounded-xl bg-white/10 hover:bg-white/15 text-purple-300 hover:text-white text-xs font-bold flex items-center gap-1 transition-all"
+                  className="py-1.5 px-2.5 sm:px-3 rounded-xl bg-white/10 hover:bg-white/15 text-purple-300 hover:text-white text-[11px] sm:text-xs font-bold flex items-center gap-1 transition-all shrink-0"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  <span>Добавить строку</span>
+                  <span className="hidden sm:inline">Добавить строку</span>
+                  <span className="sm:hidden">+Товар</span>
                 </button>
               </div>
             </div>
 
-            {/* Interactive Review Table */}
-            <div className="flex-1 overflow-y-auto border border-white/10 rounded-2xl bg-black/60 no-scrollbar">
+            {/* --- ADAPTIVE REVIEW CONTAINER --- */}
+            {/* 1. MOBILE VIEW (CARDS): Clean touch layout with auto-scroll on focus (sm:hidden) */}
+            <div
+              ref={scrollContainerRef}
+              className="sm:hidden flex-1 custom-modal-scroll space-y-2.5 pb-44 pr-0.5"
+            >
+              {filteredReviewItems.length === 0 ? (
+                <div className="p-8 text-center text-zinc-500 text-xs">
+                  Ничего не найдено по вашему запросу
+                </div>
+              ) : (
+                filteredReviewItems.map((item, idx) => (
+                  <div
+                    key={item.id || idx}
+                    className={`p-3 rounded-2xl border transition-all ${
+                      !item.isValid
+                        ? 'bg-red-500/10 border-red-500/40'
+                        : 'bg-black/50 border-white/10'
+                    }`}
+                  >
+                    {/* Card Header: # and Delete */}
+                    <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/5">
+                      <div className="flex items-center gap-2">
+                        <span className="w-5 h-5 rounded-lg bg-purple-500/20 text-purple-300 text-[10px] font-bold flex items-center justify-center">
+                          {idx + 1}
+                        </span>
+                        <span className="text-sm">{item.emoji || '📦'}</span>
+                        {!item.isValid && (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-red-500/20 text-red-300 font-bold border border-red-500/30">
+                            {item.error || 'Ошибка в полях'}
+                          </span>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => handleDeleteItem(item.id)}
+                        className="p-1.5 rounded-lg text-zinc-400 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    {/* Name Input */}
+                    <div className="mb-2">
+                      <label className="text-[10px] text-zinc-400 font-semibold block mb-0.5">Название товара</label>
+                      <input
+                        type="text"
+                        value={item.name}
+                        onChange={(e) => handleUpdateItem(item.id, 'name', e.target.value)}
+                        onFocus={handleInputFocus}
+                        placeholder="Название товара..."
+                        className={`w-full p-2 rounded-xl bg-black/60 border text-xs sm:text-sm text-white focus:outline-none ${
+                          !item.name ? 'border-red-500 bg-red-500/10' : 'border-white/10 focus:border-purple-500'
+                        }`}
+                      />
+                    </div>
+
+                    {/* Category & Brand Grid */}
+                    <div className="grid grid-cols-2 gap-2 mb-2">
+                      <div>
+                        <label className="text-[10px] text-zinc-400 font-semibold block mb-0.5">Категория</label>
+                        <select
+                          value={item.category}
+                          onChange={(e) => handleUpdateItem(item.id, 'category', e.target.value)}
+                          onFocus={handleInputFocus}
+                          className="w-full p-2 rounded-xl bg-black/60 border border-white/10 text-xs text-zinc-200 focus:outline-none focus:border-purple-500"
+                        >
+                          {categories.map((c) => (
+                            <option key={c.id} value={c.slug}>
+                              {c.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-[10px] text-zinc-400 font-semibold block mb-0.5">Бренд</label>
+                        <input
+                          type="text"
+                          value={item.brand || ''}
+                          onChange={(e) => handleUpdateItem(item.id, 'brand', e.target.value)}
+                          onFocus={handleInputFocus}
+                          placeholder="HQD / Elf Bar"
+                          className="w-full p-2 rounded-xl bg-black/60 border border-white/10 text-xs text-zinc-200 focus:outline-none focus:border-purple-500"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Flavor & Strength Grid */}
+                    <div className="grid grid-cols-2 gap-2 mb-2">
+                      <div>
+                        <label className="text-[10px] text-zinc-400 font-semibold block mb-0.5">Вкус</label>
+                        <input
+                          type="text"
+                          value={item.flavor || ''}
+                          onChange={(e) => handleUpdateItem(item.id, 'flavor', e.target.value)}
+                          onFocus={handleInputFocus}
+                          placeholder="Черника Лед"
+                          className="w-full p-2 rounded-xl bg-black/60 border border-white/10 text-xs text-zinc-200 focus:outline-none focus:border-purple-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] text-zinc-400 font-semibold block mb-0.5">Крепость</label>
+                        <input
+                          type="text"
+                          value={item.strength || ''}
+                          onChange={(e) => handleUpdateItem(item.id, 'strength', e.target.value)}
+                          onFocus={handleInputFocus}
+                          placeholder="20мг / 50мг"
+                          className="w-full p-2 rounded-xl bg-black/60 border border-white/10 text-xs text-zinc-200 focus:outline-none focus:border-purple-500"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Prices & Stock Grid (3 cols) */}
+                    <div className="grid grid-cols-3 gap-2 pt-1 border-t border-white/5">
+                      <div>
+                        <label className="text-[10px] text-purple-300 font-bold block mb-0.5">Розница BYN</label>
+                        <input
+                          type="number"
+                          step="0.1"
+                          value={item.price}
+                          onChange={(e) => handleUpdateItem(item.id, 'price', e.target.value)}
+                          onFocus={handleInputFocus}
+                          className={`w-full p-2 text-right font-bold rounded-xl bg-black/60 border text-xs text-white focus:outline-none ${
+                            item.price <= 0 ? 'border-red-500 bg-red-500/10' : 'border-purple-500/40 focus:border-purple-500'
+                          }`}
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-[10px] text-emerald-400 font-semibold block mb-0.5">Себест. BYN</label>
+                        <input
+                          type="number"
+                          step="0.1"
+                          value={item.cost_price ?? ''}
+                          placeholder="0"
+                          onChange={(e) => handleUpdateItem(item.id, 'cost_price', e.target.value)}
+                          onFocus={handleInputFocus}
+                          className="w-full p-2 text-right rounded-xl bg-black/60 border border-emerald-500/30 text-xs text-emerald-300 font-mono focus:outline-none focus:border-emerald-500"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-[10px] text-zinc-300 font-semibold block mb-0.5">Остаток шт.</label>
+                        <input
+                          type="number"
+                          value={item.stock ?? 10}
+                          onChange={(e) => handleUpdateItem(item.id, 'stock', parseInt(e.target.value, 10) || 0)}
+                          onFocus={handleInputFocus}
+                          className="w-full p-2 text-right rounded-xl bg-black/60 border border-white/10 text-xs text-zinc-200 focus:outline-none focus:border-purple-500"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* 2. DESKTOP VIEW (TABLE): High density spreadsheet for PC & Telegram Desktop (hidden sm:block) */}
+            <div className="hidden sm:block flex-1 border border-white/10 rounded-2xl bg-black/60 custom-modal-scroll overflow-y-auto">
               <table className="w-full text-left text-xs border-collapse">
                 <thead className="sticky top-0 bg-[#171526] text-zinc-400 border-b border-white/10 text-[10px] uppercase z-10">
                   <tr>
@@ -993,25 +1189,26 @@ Vaporesso XROS 4 Mini\t75.00\t40.00\tpods\tVaporesso\tЧерный\t—\t8`;
             </div>
 
             {/* Step 2 Footer: Back + Confirm Import */}
-            <div className="pt-3 border-t border-white/10 flex items-center justify-between gap-2 shrink-0">
+            <div className="pt-2.5 sm:pt-3 border-t border-white/10 flex items-center justify-between gap-2 shrink-0 bg-[#141221]">
               <button
                 onClick={() => {
                   hapticImpact('light');
                   setCurrentStep('input');
                 }}
-                className="py-3 px-4 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-bold flex items-center gap-1.5 transition-all"
+                className="py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-bold flex items-center gap-1.5 transition-all shrink-0"
               >
                 <ArrowLeft className="w-4 h-4" />
-                <span>Назад к вводу</span>
+                <span className="hidden sm:inline">Назад к вводу</span>
+                <span className="sm:hidden">Назад</span>
               </button>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 sm:gap-2">
                 <button
                   onClick={() => {
                     hapticImpact('light');
                     onClose();
                   }}
-                  className="py-3 px-4 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-400 text-xs font-bold transition-all"
+                  className="py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-400 text-xs font-bold transition-all"
                 >
                   Отмена
                 </button>
@@ -1019,14 +1216,14 @@ Vaporesso XROS 4 Mini\t75.00\t40.00\tpods\tVaporesso\tЧерный\t—\t8`;
                 <button
                   onClick={handleExecuteFinalImport}
                   disabled={validReviewCount === 0 || isProcessing}
-                  className={`py-3 px-6 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+                  className={`py-2.5 sm:py-3 px-4 sm:px-6 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${
                     validReviewCount > 0 && !isProcessing
                       ? 'bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 text-white shadow-[0_0_20px_rgba(16,185,129,0.4)]'
                       : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
                   }`}
                 >
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span>{isProcessing ? 'Загрузка...' : `Загрузить в каталог (${validReviewCount} шт.)`}</span>
+                  <CheckCircle2 className="w-4 h-4 shrink-0" />
+                  <span className="truncate">{isProcessing ? 'Загрузка...' : `Загрузить (${validReviewCount} шт.)`}</span>
                 </button>
               </div>
             </div>
@@ -1044,7 +1241,7 @@ Vaporesso XROS 4 Mini\t75.00\t40.00\tpods\tVaporesso\tЧерный\t—\t8`;
               <p>
                 Всего обработано позиций: <b className="text-emerald-400">{resultSummary.count} шт.</b>
               </p>
-              <div className="flex justify-center gap-4 pt-1">
+              <div className="flex justify-center gap-3 pt-1 flex-wrap">
                 {resultSummary.addedCount !== undefined && (
                   <span className="px-2.5 py-1 rounded-xl bg-purple-500/20 text-purple-300 border border-purple-500/30 text-[11px] font-semibold">
                     ✨ Новых карточек: <b>{resultSummary.addedCount}</b>
