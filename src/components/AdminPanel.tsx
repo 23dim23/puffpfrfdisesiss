@@ -29,9 +29,14 @@ import {
   Sparkles,
   Shield,
   Search,
+  MessageCircle,
+  Percent,
 } from 'lucide-react';
 import { OrderStatus, DeliveryType, Product, Category, Brand, ProductModel, Promotion, Promocode, PickupPoint } from '../types';
-import { hapticImpact, hapticNotification } from '../services/telegram';
+import { hapticImpact, hapticNotification, openTelegramOrWeb } from '../services/telegram';
+import { DetailedStatsModal } from './DetailedStatsModal';
+import { MassImportModal } from './MassImportModal';
+import { OrderExportModal } from './OrderExportModal';
 
 type AdminSubpage =
   | 'menu'
@@ -53,6 +58,7 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
   const {
     isAdmin,
     isModerator,
+    isMasterAdmin,
     orders,
     products,
     categories,
@@ -64,6 +70,7 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
     promocodes,
     pickupPoints,
     admins,
+    users,
     settings,
     updateOrderStatus,
     saveSettings,
@@ -96,6 +103,12 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
   const [dbDumpInput, setDbDumpInput] = useState<string>('');
   const [showDbTools, setShowDbTools] = useState<boolean>(false);
 
+  // New Modals
+  const [isStatsModalOpen, setIsStatsModalOpen] = useState(false);
+  const [statsModalPeriod, setStatsModalPeriod] = useState<'today' | 'week' | 'month' | 'total'>('today');
+  const [isMassImportModalOpen, setIsMassImportModalOpen] = useState(false);
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+
   // Orders filters
   const [orderStatusFilter, setOrderStatusFilter] = useState<string>('all');
   const [orderDeliveryFilter, setOrderDeliveryFilter] = useState<string>('all');
@@ -121,6 +134,7 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
   const [productForm, setProductForm] = useState({
     name: '',
     price: '',
+    cost_price: '',
     discount_price: '',
     category_slug: 'liquid',
     brand_slug: '',
@@ -194,45 +208,67 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
     let revenueWeek = 0;
     let revenueMonth = 0;
     let revenueTotal = 0;
+    let profitToday = 0;
+    let profitWeek = 0;
+    let profitMonth = 0;
+    let profitTotal = 0;
     let deliveryRevenue = 0;
     let deliveryCount = 0;
     let pickupCount = 0;
 
-    const productSalesMap: Record<number, { name: string; emoji: string; count: number; revenue: number }> = {};
-    const categorySalesMap: Record<string, { name: string; count: number; revenue: number }> = {};
+    const productSalesMap: Record<number, { name: string; emoji: string; count: number; revenue: number; margin: number }> = {};
+    const categorySalesMap: Record<string, { name: string; count: number; revenue: number; margin: number }> = {};
 
     categories.forEach((c) => {
-      categorySalesMap[c.slug] = { name: c.name, count: 0, revenue: 0 };
+      categorySalesMap[c.slug] = { name: c.name, count: 0, revenue: 0, margin: 0 };
     });
 
     completedOrders.forEach((order) => {
       const time = new Date(order.created_at).getTime();
+      const orderMargin = order.total_margin ?? (order.total * 0.6);
+
       revenueTotal += order.total;
+      profitTotal += orderMargin;
       deliveryRevenue += order.delivery_price || 0;
 
       if (order.delivery_type === 'delivery') deliveryCount++;
       else pickupCount++;
 
-      if (time >= todayStart) revenueToday += order.total;
-      if (time >= weekAgo) revenueWeek += order.total;
-      if (time >= monthAgo) revenueMonth += order.total;
+      if (time >= todayStart) {
+        revenueToday += order.total;
+        profitToday += orderMargin;
+      }
+      if (time >= weekAgo) {
+        revenueWeek += order.total;
+        profitWeek += orderMargin;
+      }
+      if (time >= monthAgo) {
+        revenueMonth += order.total;
+        profitMonth += orderMargin;
+      }
 
       order.items_json.forEach((item) => {
+        const prod = products.find((p) => p.id === item.id);
+        const itemCost = prod?.cost_price ?? (item.price * 0.4);
+        const itemMargin = (item.price - itemCost) * item.quantity;
+
         if (!productSalesMap[item.id]) {
           productSalesMap[item.id] = {
             name: item.name,
             emoji: item.emoji || '📦',
             count: 0,
             revenue: 0,
+            margin: 0,
           };
         }
         productSalesMap[item.id].count += item.quantity;
         productSalesMap[item.id].revenue += item.price * item.quantity;
+        productSalesMap[item.id].margin += itemMargin;
 
-        const prod = products.find((p) => p.id === item.id);
         if (prod && categorySalesMap[prod.category_slug]) {
           categorySalesMap[prod.category_slug].count += item.quantity;
           categorySalesMap[prod.category_slug].revenue += item.price * item.quantity;
+          categorySalesMap[prod.category_slug].margin += itemMargin;
         }
       });
     });
@@ -246,6 +282,10 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
       revenueWeek,
       revenueMonth,
       revenueTotal,
+      profitToday,
+      profitWeek,
+      profitMonth,
+      profitTotal,
       deliveryRevenue,
       deliveryCount,
       pickupCount,
@@ -256,35 +296,6 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
     };
   }, [orders, products, categories]);
 
-  // Export CSV
-  const handleExportCSV = () => {
-    hapticImpact('medium');
-    const headers = ['ID', 'Дата', 'Пользователь', 'Телефон', 'Тип', 'Адрес/Точка', 'Сумма (BYN)', 'Статус', 'Товары'];
-    const rows = orders.map((o) => [
-      o.id,
-      new Date(o.created_at).toLocaleString('ru-RU'),
-      o.username || o.first_name || 'Гость',
-      o.phone || '-',
-      o.delivery_type === 'pickup' ? 'Самовывоз' : 'Доставка',
-      o.pickup_point_name || o.delivery_address || '-',
-      o.total.toFixed(2),
-      o.status,
-      o.items_json.map((i) => `${i.name} (${i.quantity} шт)`).join('; '),
-    ]);
-
-    const csvContent =
-      'data:text/csv;charset=utf-8,\uFEFF' +
-      [headers.join(','), ...rows.map((r) => r.map((cell) => `"${cell}"`).join(','))].join('\n');
-
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `orders_puff_paradise_${new Date().toISOString().slice(0, 10)}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
   // Open Product Modal for Add/Edit
   const handleOpenProductModal = (product?: Product) => {
     hapticImpact('light');
@@ -293,6 +304,7 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
       setProductForm({
         name: product.name,
         price: product.price.toString(),
+        cost_price: product.cost_price ? product.cost_price.toString() : '',
         discount_price: product.discount_price ? product.discount_price.toString() : '',
         category_slug: product.category_slug,
         brand_slug: product.brand_slug || '',
@@ -308,6 +320,7 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
       setProductForm({
         name: '',
         price: '',
+        cost_price: '',
         discount_price: '',
         category_slug: 'liquid',
         brand_slug: '',
@@ -326,9 +339,15 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
     e.preventDefault();
     if (!productForm.name.trim() || !productForm.price) return;
 
-    const payload = {
+    const price = parseFloat(productForm.price) || 0;
+    const costPrice = productForm.cost_price ? parseFloat(productForm.cost_price) : (price * 0.4);
+    const marginProfit = Math.max(0, price - costPrice);
+
+    const payload: Partial<Product> = {
       name: productForm.name.trim(),
-      price: parseFloat(productForm.price) || 0,
+      price,
+      cost_price: costPrice,
+      margin_profit: marginProfit,
       discount_price: productForm.discount_price ? parseFloat(productForm.discount_price) : null,
       category_slug: productForm.category_slug,
       brand_slug: productForm.brand_slug || null,
@@ -481,22 +500,86 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
       {/* SUBPAGE: STATS */}
       {activeSubpage === 'stats' && (
         <div className="space-y-4">
+          {/* Detailed stats modal trigger */}
+          <button
+            onClick={() => {
+              setStatsModalPeriod('today');
+              setIsStatsModalOpen(true);
+              hapticImpact('medium');
+            }}
+            className="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-orange-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(168,85,247,0.35)] tap-active"
+          >
+            <BarChart3 className="w-4 h-4" />
+            <span>Открыть расширенную аналитику и графики</span>
+          </button>
+
           <div className="grid grid-cols-2 gap-2.5">
-            <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-purple-500/20">
+            <div
+              onClick={() => {
+                setStatsModalPeriod('today');
+                setIsStatsModalOpen(true);
+                hapticImpact('light');
+              }}
+              className="p-3.5 rounded-2xl bg-white/[0.03] hover:bg-white/[0.06] border border-purple-500/20 cursor-pointer transition-all active:scale-98"
+            >
               <span className="text-[11px] font-semibold text-zinc-400 block mb-1">Выручка сегодня</span>
-              <span className="text-lg font-black text-purple-300">{stats.revenueToday.toFixed(2)} BYN</span>
+              <span className="text-lg font-black text-purple-300 block">{stats.revenueToday.toFixed(2)} BYN</span>
+              {isAdmin && (
+                <span className="text-[10px] font-bold text-emerald-400 block mt-0.5">
+                  Прибыль: +{stats.profitToday.toFixed(2)} BYN
+                </span>
+              )}
             </div>
-            <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-purple-500/20">
+
+            <div
+              onClick={() => {
+                setStatsModalPeriod('week');
+                setIsStatsModalOpen(true);
+                hapticImpact('light');
+              }}
+              className="p-3.5 rounded-2xl bg-white/[0.03] hover:bg-white/[0.06] border border-purple-500/20 cursor-pointer transition-all active:scale-98"
+            >
               <span className="text-[11px] font-semibold text-zinc-400 block mb-1">Выручка за 7 дней</span>
-              <span className="text-lg font-black text-orange-300">{stats.revenueWeek.toFixed(2)} BYN</span>
+              <span className="text-lg font-black text-orange-300 block">{stats.revenueWeek.toFixed(2)} BYN</span>
+              {isAdmin && (
+                <span className="text-[10px] font-bold text-emerald-400 block mt-0.5">
+                  Прибыль: +{stats.profitWeek.toFixed(2)} BYN
+                </span>
+              )}
             </div>
-            <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-purple-500/20">
-              <span className="text-[11px] font-semibold text-zinc-400 block mb-1">Выручка за месяц</span>
-              <span className="text-lg font-black text-fuchsia-300">{stats.revenueMonth.toFixed(2)} BYN</span>
+
+            <div
+              onClick={() => {
+                setStatsModalPeriod('month');
+                setIsStatsModalOpen(true);
+                hapticImpact('light');
+              }}
+              className="p-3.5 rounded-2xl bg-white/[0.03] hover:bg-white/[0.06] border border-purple-500/20 cursor-pointer transition-all active:scale-98"
+            >
+              <span className="text-[11px] font-semibold text-zinc-400 block mb-1">Выручка за 30 дней</span>
+              <span className="text-lg font-black text-fuchsia-300 block">{stats.revenueMonth.toFixed(2)} BYN</span>
+              {isAdmin && (
+                <span className="text-[10px] font-bold text-emerald-400 block mt-0.5">
+                  Прибыль: +{stats.profitMonth.toFixed(2)} BYN
+                </span>
+              )}
             </div>
-            <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-purple-500/20">
+
+            <div
+              onClick={() => {
+                setStatsModalPeriod('total');
+                setIsStatsModalOpen(true);
+                hapticImpact('light');
+              }}
+              className="p-3.5 rounded-2xl bg-white/[0.03] hover:bg-white/[0.06] border border-purple-500/20 cursor-pointer transition-all active:scale-98"
+            >
               <span className="text-[11px] font-semibold text-zinc-400 block mb-1">Всего оборот</span>
-              <span className="text-lg font-black text-emerald-300">{stats.revenueTotal.toFixed(2)} BYN</span>
+              <span className="text-lg font-black text-emerald-300 block">{stats.revenueTotal.toFixed(2)} BYN</span>
+              {isAdmin && (
+                <span className="text-[10px] font-bold text-emerald-400 block mt-0.5">
+                  Прибыль: +{stats.profitTotal.toFixed(2)} BYN
+                </span>
+              )}
             </div>
           </div>
 
@@ -507,7 +590,7 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
               <span className="font-bold text-white">{stats.deliveryCount}</span>
             </div>
             <div className="flex justify-between text-xs text-zinc-300">
-              <span>Самовывозов:</span>
+              <span>Самовывозов (встреч):</span>
               <span className="font-bold text-white">{stats.pickupCount}</span>
             </div>
             <div className="flex justify-between text-xs text-zinc-300">
@@ -520,13 +603,20 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
             <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-2">Топ товаров по продажам</h4>
             {stats.topProducts.length > 0 ? (
               stats.topProducts.map((item, idx) => (
-                <div key={idx} className="flex items-center justify-between text-xs py-1 border-b border-white/5">
+                <div key={idx} className="flex items-center justify-between text-xs py-1.5 border-b border-white/5 last:border-0">
                   <span className="text-zinc-200 truncate pr-2">
                     {item.emoji} {item.name}
                   </span>
-                  <span className="font-bold text-purple-300 shrink-0">
-                    {item.count} шт. ({item.revenue.toFixed(2)} BYN)
-                  </span>
+                  <div className="text-right shrink-0">
+                    <span className="font-bold text-purple-300 block">
+                      {item.count} шт. ({item.revenue.toFixed(2)} BYN)
+                    </span>
+                    {isAdmin && (
+                      <span className="text-[10px] text-emerald-400 font-semibold">
+                        Прибыль: +{item.margin.toFixed(2)} BYN
+                      </span>
+                    )}
+                  </div>
                 </div>
               ))
             ) : (
@@ -542,11 +632,14 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
           {/* Controls bar */}
           <div className="flex items-center gap-2">
             <button
-              onClick={handleExportCSV}
-              className="flex-1 py-2.5 px-3 rounded-xl bg-purple-600/20 border border-purple-500/40 text-purple-300 font-bold text-xs flex items-center justify-center gap-1.5 tap-active"
+              onClick={() => {
+                hapticImpact('medium');
+                setIsExportModalOpen(true);
+              }}
+              className="flex-1 py-2.5 px-3 rounded-xl bg-purple-600/20 border border-purple-500/40 text-purple-300 font-bold text-xs flex items-center justify-center gap-1.5 tap-active hover:bg-purple-600/30 transition-all"
             >
               <Download className="w-3.5 h-3.5" />
-              <span>Экспорт заказов в CSV</span>
+              <span>Экспорт заказов и отчетов (Excel/CSV)</span>
             </button>
           </div>
 
@@ -560,7 +653,9 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
               <option value="all" className="bg-[#181628]">Все статусы</option>
               <option value="pending" className="bg-[#181628]">🔄 В обработке</option>
               <option value="confirmed" className="bg-[#181628]">✅ Подтвержден</option>
-              <option value="shipped" className="bg-[#181628]">🚚 Отправлен</option>
+              <option value="ready_for_pickup" className="bg-[#181628]">📍 Менеджер на точке</option>
+              <option value="courier_sent" className="bg-[#181628]">🚗 Курьер отправлен</option>
+              <option value="courier_arrived" className="bg-[#181628]">📍 Курьер прибыл</option>
               <option value="completed" className="bg-[#181628]">🎉 Выполнен</option>
               <option value="cancelled" className="bg-[#181628]">❌ Отменен</option>
             </select>
@@ -587,64 +682,172 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
               .map((order) => (
                 <div
                   key={order.id}
-                  className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.08] shadow-md space-y-2.5"
+                  className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.08] shadow-md space-y-3"
                 >
                   <div className="flex items-start justify-between">
                     <div>
                       <div className="text-xs font-extrabold text-white">
                         Заказ #{order.id} · <span className="text-purple-400">{order.total.toFixed(2)} BYN</span>
                       </div>
-                      <div className="text-[11px] text-zinc-400">
-                        Клиент: <span className="text-zinc-200 font-semibold">{order.username || order.first_name || 'Гость'}</span>
+                      <div className="text-[11px] text-zinc-400 mt-0.5">
+                        Клиент: <span className="text-zinc-200 font-semibold">{order.username ? `@${order.username}` : (order.first_name || 'Клиент')}</span>
+                        {order.phone && <span className="ml-1 text-zinc-400">({order.phone})</span>}
                       </div>
                     </div>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/10 text-purple-300">
-                      {order.status}
-                    </span>
+
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/10 text-purple-300">
+                        {order.status === 'pending' && '🔄 В обработке'}
+                        {order.status === 'confirmed' && '✅ Подтвержден'}
+                        {order.status === 'ready_for_pickup' && '📍 Менеджер на точке'}
+                        {order.status === 'courier_sent' && '🚗 Курьер отправлен'}
+                        {order.status === 'courier_arrived' && '📍 Курьер прибыл'}
+                        {order.status === 'shipped' && '🚚 В пути'}
+                        {order.status === 'completed' && '🎉 Выполнен'}
+                        {order.status === 'cancelled' && '❌ Отменен'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Customer Quick Chat Button */}
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        hapticImpact('medium');
+                        if (order.username) {
+                          openTelegramOrWeb(`https://t.me/${order.username.replace('@', '')}`);
+                        } else if (order.user_id) {
+                          openTelegramOrWeb(`tg://user?id=${order.user_id}`);
+                        }
+                      }}
+                      className="w-full py-2 px-3 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-500/40 text-xs font-bold flex items-center justify-center gap-2 tap-active-sm transition-all"
+                    >
+                      <MessageCircle className="w-4 h-4 text-purple-400" />
+                      <span>Связаться с заказчиком в Telegram</span>
+                    </button>
                   </div>
 
                   <div className="text-xs text-zinc-300 bg-black/30 p-2.5 rounded-xl space-y-1">
-                    <div>{order.delivery_type === 'pickup' ? `🏪 Точка: ${order.pickup_point_name}` : `🚚 Адрес: ${order.delivery_address}`}</div>
-                    {order.comment && <div className="text-zinc-400">💬 {order.comment}</div>}
-                    <div className="pt-1 font-mono text-[11px] text-zinc-400">
+                    <div className="font-semibold text-zinc-200">
+                      {order.delivery_type === 'pickup'
+                        ? `🏪 Самовывоз (Точка): ${order.pickup_point_name || 'По договоренности'}`
+                        : `🚚 Доставка: ${order.delivery_address}`}
+                    </div>
+                    {order.comment && <div className="text-zinc-400 italic">💬 {order.comment}</div>}
+                    <div className="pt-1 font-mono text-[11px] text-zinc-400 border-t border-white/5">
                       {order.items_json.map((i) => `${i.name} ×${i.quantity}`).join(', ')}
                     </div>
+                    {isAdmin && (
+                      <div className="pt-1 text-[11px] text-emerald-400 font-semibold">
+                        💎 Расчетная прибыль: +{(order.total_margin ?? (order.total * 0.6)).toFixed(2)} BYN
+                      </div>
+                    )}
                   </div>
 
-                  {/* Status Action Buttons */}
+                  {/* Status Action Buttons Workflow */}
                   <div className="flex flex-wrap gap-1.5 pt-1">
+                    {/* Status: Pending */}
                     {order.status === 'pending' && (
                       <>
                         <button
                           onClick={() => updateOrderStatus(order.id, 'confirmed')}
-                          className="flex-1 py-1.5 px-2 rounded-lg bg-blue-500/20 text-blue-300 border border-blue-500/30 text-xs font-bold tap-active-sm"
+                          className="flex-1 py-2 px-3 rounded-xl bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-500/40 text-xs font-bold tap-active-sm"
                         >
-                          Подтвердить
+                          ✅ Принять заказ
                         </button>
                         <button
                           onClick={() => updateOrderStatus(order.id, 'cancelled')}
-                          className="py-1.5 px-2.5 rounded-lg bg-red-500/20 text-red-400 border border-red-500/30 text-xs font-bold tap-active-sm"
+                          className="py-2 px-3 rounded-xl bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/40 text-xs font-bold tap-active-sm"
                         >
                           Отклонить
                         </button>
                       </>
                     )}
 
+                    {/* Status: Confirmed */}
                     {order.status === 'confirmed' && (
+                      <>
+                        {order.delivery_type === 'pickup' ? (
+                          <button
+                            onClick={() => updateOrderStatus(order.id, 'ready_for_pickup')}
+                            className="flex-1 py-2 px-3 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-500/40 text-xs font-bold tap-active-sm"
+                          >
+                            📍 Менеджер на месте
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => updateOrderStatus(order.id, 'courier_sent')}
+                            className="flex-1 py-2 px-3 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-500/40 text-xs font-bold tap-active-sm"
+                          >
+                            🚗 Курьер отправлен
+                          </button>
+                        )}
+                        <button
+                          onClick={() => updateOrderStatus(order.id, 'completed')}
+                          className="py-2 px-3 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-xs font-bold tap-active-sm"
+                        >
+                          🎉 Выполнен
+                        </button>
+                      </>
+                    )}
+
+                    {/* Status: Ready for pickup (Self-pickup) */}
+                    {order.status === 'ready_for_pickup' && (
                       <button
-                        onClick={() => updateOrderStatus(order.id, 'shipped')}
-                        className="flex-1 py-1.5 px-2 rounded-lg bg-purple-500/20 text-purple-300 border border-purple-500/30 text-xs font-bold tap-active-sm"
+                        onClick={() => updateOrderStatus(order.id, 'completed')}
+                        className="w-full py-2.5 px-3 rounded-xl bg-emerald-500/25 hover:bg-emerald-500/35 text-emerald-300 border border-emerald-500/50 text-xs font-bold tap-active-sm flex items-center justify-center gap-1.5"
                       >
-                        {order.delivery_type === 'pickup' ? 'Курьер на месте' : 'Курьер отправлен'}
+                        <Check className="w-4 h-4 text-emerald-400" />
+                        <span>Выдан клиенту (Завершить заказ)</span>
                       </button>
                     )}
 
-                    {(order.status === 'confirmed' || order.status === 'shipped') && (
+                    {/* Status: Courier sent (Delivery) */}
+                    {order.status === 'courier_sent' && (
+                      <>
+                        <button
+                          onClick={() => updateOrderStatus(order.id, 'courier_arrived')}
+                          className="flex-1 py-2 px-3 rounded-xl bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 border border-indigo-500/40 text-xs font-bold tap-active-sm"
+                        >
+                          📍 Курьер прибыл на адрес
+                        </button>
+                        <button
+                          onClick={() => updateOrderStatus(order.id, 'completed')}
+                          className="py-2 px-3 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-xs font-bold tap-active-sm"
+                        >
+                          🎉 Завершен
+                        </button>
+                      </>
+                    )}
+
+                    {/* Status: Courier arrived (Delivery) */}
+                    {order.status === 'courier_arrived' && (
                       <button
                         onClick={() => updateOrderStatus(order.id, 'completed')}
-                        className="flex-1 py-1.5 px-2 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-bold tap-active-sm"
+                        className="w-full py-2.5 px-3 rounded-xl bg-emerald-500/25 hover:bg-emerald-500/35 text-emerald-300 border border-emerald-500/50 text-xs font-bold tap-active-sm flex items-center justify-center gap-1.5"
+                      >
+                        <Check className="w-4 h-4 text-emerald-400" />
+                        <span>Заказ вручен и оплачен (Выполнен)</span>
+                      </button>
+                    )}
+
+                    {/* Status: Legacy Shipped */}
+                    {order.status === 'shipped' && (
+                      <button
+                        onClick={() => updateOrderStatus(order.id, 'completed')}
+                        className="w-full py-2.5 px-3 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-xs font-bold tap-active-sm"
                       >
                         ✅ Выполнен (Рассчитан)
+                      </button>
+                    )}
+
+                    {/* Allow cancel for active orders */}
+                    {order.status !== 'completed' && order.status !== 'cancelled' && (
+                      <button
+                        onClick={() => updateOrderStatus(order.id, 'cancelled')}
+                        className="text-[11px] text-zinc-400 hover:text-red-400 px-2 py-1 transition-colors ml-auto"
+                      >
+                        Отменить заказ
                       </button>
                     )}
                   </div>
@@ -674,9 +877,16 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
                 <div className="flex items-center gap-2.5 min-w-0">
                   <span className="text-2xl">{p.emoji || '📦'}</span>
                   <div className="min-w-0">
-                    <h4 className="text-xs font-bold text-white truncate">{p.name}</h4>
+                    <div className="flex items-center gap-1.5">
+                      <h4 className="text-xs font-bold text-white truncate">{p.name}</h4>
+                      {(!p.in_stock || p.stock_quantity <= 0) && (
+                        <span className="px-1.5 py-0.5 rounded-md bg-red-500/20 border border-red-500/30 text-red-300 text-[9px] font-bold shrink-0">
+                          Закончился
+                        </span>
+                      )}
+                    </div>
                     <p className="text-[10px] text-zinc-400">
-                      {p.price.toFixed(2)} BYN · Остаток: {p.stock_quantity} шт.
+                      {p.price.toFixed(2)} BYN · Остаток: <span className={p.stock_quantity <= 0 ? 'text-red-400 font-bold' : 'text-zinc-200'}>{p.stock_quantity} шт.</span>
                     </p>
                   </div>
                 </div>
@@ -795,8 +1005,19 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
       {/* SUBPAGE: IMPORT */}
       {activeSubpage === 'import' && (
         <div className="space-y-3">
+          <button
+            onClick={() => {
+              setIsMassImportModalOpen(true);
+              hapticImpact('medium');
+            }}
+            className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-teal-600 via-emerald-600 to-purple-600 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(20,184,166,0.35)] tap-active hover:brightness-110 transition-all"
+          >
+            <FileSpreadsheet className="w-4 h-4" />
+            <span>Запустить умный мастер импорта (Excel, CSV, линейки)</span>
+          </button>
+
           <div className="p-3 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-xs text-zinc-300 leading-relaxed">
-            <span className="font-bold text-white block mb-1">Формат для быстрой вставки (через символ |):</span>
+            <span className="font-bold text-white block mb-1">Быстрая вставка через символ | или ;:</span>
             <code>Название | Цена | Категория | Бренд | Модель | Вкус | Крепость | Количество</code>
           </div>
 
@@ -1471,7 +1692,7 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-xs text-zinc-300 block mb-1">Цена (BYN)</label>
+                  <label className="text-xs text-zinc-300 block mb-1">Розничная цена (BYN)</label>
                   <input
                     type="number"
                     step="0.5"
@@ -1492,6 +1713,48 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
                   />
                 </div>
               </div>
+
+              {/* Cost Price & Margin Calculation (Admin Only) */}
+              {isAdmin && (
+                <div className="p-3 rounded-2xl bg-purple-950/40 border border-purple-500/30 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-purple-300 flex items-center gap-1">
+                      <Percent className="w-3.5 h-3.5" />
+                      <span>Себестоимость товара</span>
+                    </label>
+                    <span className="text-[10px] text-zinc-400">Только для админов</span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 items-center">
+                    <div>
+                      <input
+                        type="number"
+                        step="0.5"
+                        placeholder="Напр. 4.00"
+                        value={productForm.cost_price}
+                        onChange={(e) => setProductForm((prev) => ({ ...prev, cost_price: e.target.value }))}
+                        className="w-full py-2 px-3 rounded-xl bg-black/40 border border-white/10 text-white text-xs"
+                      />
+                    </div>
+                    <div className="text-right">
+                      {(() => {
+                        const price = parseFloat(productForm.price) || 0;
+                        const cost = productForm.cost_price ? parseFloat(productForm.cost_price) : (price * 0.4);
+                        const margin = Math.max(0, price - cost);
+                        const percent = price > 0 ? Math.round((margin / price) * 100) : 0;
+                        return (
+                          <div>
+                            <span className="text-[11px] text-zinc-400 block">Чистая прибыль:</span>
+                            <span className="text-xs font-black text-emerald-400">
+                              +{margin.toFixed(2)} BYN ({percent}%)
+                            </span>
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
@@ -1568,6 +1831,25 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
           </div>
         </div>
       )}
+
+      {/* DETAILED STATS MODAL */}
+      <DetailedStatsModal
+        isOpen={isStatsModalOpen}
+        initialPeriod={statsModalPeriod}
+        onClose={() => setIsStatsModalOpen(false)}
+      />
+
+      {/* MASS IMPORT MODAL */}
+      <MassImportModal
+        isOpen={isMassImportModalOpen}
+        onClose={() => setIsMassImportModalOpen(false)}
+      />
+
+      {/* ORDER EXPORT MODAL */}
+      <OrderExportModal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+      />
     </div>
   );
 };

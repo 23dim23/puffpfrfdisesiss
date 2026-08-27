@@ -24,6 +24,7 @@ import {
   PickupPoint,
   ShopSettings,
   AdminUser,
+  ShopUser,
   OrderStatus,
 } from '../types';
 import {
@@ -58,6 +59,7 @@ const DB_KEYS = {
   PROMOCODES: 'puff_db_promocodes_v5',
   PICKUP_POINTS: 'puff_db_pickup_points_v5',
   ADMINS: 'puff_db_admins_v5',
+  USERS: 'puff_db_users_v5',
 };
 
 // Firestore Collection Names
@@ -75,6 +77,7 @@ const FS_COLS = {
   PROMOCODES: 'shop_promocodes',
   PICKUP_POINTS: 'shop_pickup_points',
   ADMINS: 'shop_admins',
+  USERS: 'shop_users',
 };
 
 // Local Storage Helper
@@ -432,9 +435,23 @@ class CloudDatabase {
   public addProduct(product: Omit<Product, 'id'>): Product {
     const products = this.getProducts();
     const nextId = products.length > 0 ? Math.max(...products.map((p) => p.id)) + 1 : 1;
+    
+    // Calculate cost_price / margin_profit if one is provided
+    let cost = product.cost_price;
+    let margin = product.margin_profit;
+    const price = Number(product.price) || 0;
+    
+    if (cost != null && cost > 0 && (margin == null || margin === 0)) {
+      margin = Math.max(0, price - cost);
+    } else if (margin != null && margin > 0 && (cost == null || cost === 0)) {
+      cost = Math.max(0, price - margin);
+    }
+
     const newProduct: Product = {
       ...product,
       id: nextId,
+      cost_price: cost != null ? Number(cost) : undefined,
+      margin_profit: margin != null ? Number(margin) : undefined,
       created_at: new Date().toISOString(),
     };
     const updated = [newProduct, ...products];
@@ -442,7 +459,7 @@ class CloudDatabase {
     this.notify();
 
     // Async write to Cloud Firestore
-    setDoc(doc(firestore, FS_COLS.PRODUCTS, String(nextId)), newProduct).catch((err) => {
+    setDoc(doc(firestore, FS_COLS.PRODUCTS, String(nextId)), cleanFirestoreData(newProduct)).catch((err) => {
       console.error('Error adding product to Firestore:', err);
     });
 
@@ -453,13 +470,31 @@ class CloudDatabase {
     const products = this.getProducts();
     const index = products.findIndex((p) => p.id === id);
     if (index === -1) return null;
-    const updatedProduct = { ...products[index], ...data };
+
+    const current = products[index];
+    const price = data.price !== undefined ? Number(data.price) : current.price;
+    let cost = data.cost_price !== undefined ? data.cost_price : current.cost_price;
+    let margin = data.margin_profit !== undefined ? data.margin_profit : current.margin_profit;
+
+    if (data.cost_price !== undefined && data.cost_price !== null && data.margin_profit === undefined) {
+      margin = Math.max(0, price - Number(data.cost_price));
+    } else if (data.margin_profit !== undefined && data.margin_profit !== null && data.cost_price === undefined) {
+      cost = Math.max(0, price - Number(data.margin_profit));
+    }
+
+    const updatedProduct = {
+      ...current,
+      ...data,
+      price,
+      cost_price: cost != null ? Number(cost) : undefined,
+      margin_profit: margin != null ? Number(margin) : undefined,
+    };
     products[index] = updatedProduct;
     setStoredItem(DB_KEYS.PRODUCTS, products);
     this.notify();
 
     // Async write to Cloud Firestore
-    setDoc(doc(firestore, FS_COLS.PRODUCTS, String(id)), updatedProduct, { merge: true }).catch((err) => {
+    setDoc(doc(firestore, FS_COLS.PRODUCTS, String(id)), cleanFirestoreData(updatedProduct), { merge: true }).catch((err) => {
       console.error('Error updating product in Firestore:', err);
     });
 
@@ -485,6 +520,8 @@ class CloudDatabase {
     items: Array<{
       name: string;
       price: number;
+      cost_price?: number;
+      margin_profit?: number;
       category: string;
       brand?: string;
       model?: string;
@@ -504,10 +541,23 @@ class CloudDatabase {
         errors.push(`Некорректный товар: ${item.name || 'без названия'}`);
         continue;
       }
+
+      const price = Number(item.price);
+      let cost = item.cost_price;
+      let margin = item.margin_profit;
+
+      if (cost != null && cost > 0 && (margin == null || margin === 0)) {
+        margin = Math.max(0, price - cost);
+      } else if (margin != null && margin > 0 && (cost == null || cost === 0)) {
+        cost = Math.max(0, price - margin);
+      }
+
       const prod: Product = {
         id: nextId++,
         name: item.name,
-        price: Number(item.price),
+        price,
+        cost_price: cost != null ? Number(cost) : undefined,
+        margin_profit: margin != null ? Number(margin) : undefined,
         category_slug: item.category || 'liquid',
         brand_slug: item.brand ? item.brand.toLowerCase() : undefined,
         description: [item.flavor, item.strength].filter(Boolean).join(' • '),
@@ -521,7 +571,7 @@ class CloudDatabase {
       newItems.push(prod);
 
       // Save each to Firestore
-      setDoc(doc(firestore, FS_COLS.PRODUCTS, String(prod.id)), prod).catch(() => {});
+      setDoc(doc(firestore, FS_COLS.PRODUCTS, String(prod.id)), cleanFirestoreData(prod)).catch(() => {});
     }
 
     if (newItems.length > 0) {
@@ -531,6 +581,20 @@ class CloudDatabase {
     }
 
     return { successCount: newItems.length, errors };
+  }
+
+  // Line margins helper
+  public setLineMargin(categorySlug: string, lineName: string, margin: number): void {
+    const s = this.getSettings();
+    const key = `${categorySlug}:${lineName.trim().toLowerCase()}`;
+    const lineMargins = { ...(s.line_margins || {}), [key]: Number(margin) };
+    this.updateSettings({ line_margins: lineMargins });
+  }
+
+  public getLineMargin(categorySlug: string, lineName: string): number | undefined {
+    const s = this.getSettings();
+    const key = `${categorySlug}:${lineName.trim().toLowerCase()}`;
+    return s.line_margins ? s.line_margins[key] : undefined;
   }
 
   // ================= CATEGORIES =================
@@ -735,9 +799,28 @@ class CloudDatabase {
   public createOrder(order: Omit<Order, 'id' | 'created_at'>): Order {
     const orders = this.getOrders();
     const nextId = 1000 + orders.length + 1;
+
+    // Compute total_margin for administrator financial records
+    let totalMargin = order.total_margin;
+    if (totalMargin == null) {
+      totalMargin = order.items_json.reduce((sum, it) => {
+        let itMargin = it.margin_profit;
+        if (itMargin == null) {
+          if (it.cost_price != null && it.cost_price > 0) {
+            itMargin = Math.max(0, it.price - it.cost_price);
+          } else {
+            // Default store ratio: e.g., price 10 => margin 6, cost 4
+            itMargin = it.price * 0.6;
+          }
+        }
+        return sum + itMargin * it.quantity;
+      }, 0);
+    }
+
     const newOrder: Order = {
       ...order,
       id: nextId,
+      total_margin: Number(totalMargin.toFixed(2)),
       created_at: new Date().toISOString(),
     };
     const updated = [newOrder, ...orders];
@@ -756,20 +839,201 @@ class CloudDatabase {
     const orders = this.getOrders();
     const index = orders.findIndex((o) => o.id === orderId);
     if (index === -1) return false;
-    orders[index] = { ...orders[index], status };
+
+    const order = orders[index];
+    let stockDeducted = order.stock_deducted ?? false;
+
+    // Active/confirmed statuses that require stock to be deducted from warehouse
+    const isNowConfirmedOrActive = ['confirmed', 'ready_for_pickup', 'courier_sent', 'courier_arrived', 'shipped', 'completed'].includes(status);
+    const isNowCancelled = status === 'cancelled';
+
+    // 1. If transitioning to confirmed/active and stock was NOT yet deducted -> DEDUCT STOCK (Anti-spam / Anti-competitor attack protection)
+    if (isNowConfirmedOrActive && !stockDeducted) {
+      this.deductOrderStock(order);
+      stockDeducted = true;
+    }
+    // 2. If transitioning to cancelled and stock WAS deducted earlier -> RESTORE STOCK to warehouse
+    else if (isNowCancelled && stockDeducted) {
+      this.restoreOrderStock(order);
+      stockDeducted = false;
+    }
+
+    orders[index] = { ...order, status, stock_deducted: stockDeducted };
     setStoredItem(DB_KEYS.ORDERS, orders);
     this.notify();
 
     // Update in Cloud Firestore
-    updateDoc(doc(firestore, FS_COLS.ORDERS, String(orderId)), { status }).catch((err) => {
+    updateDoc(doc(firestore, FS_COLS.ORDERS, String(orderId)), {
+      status,
+      stock_deducted: stockDeducted,
+    }).catch((err) => {
       console.error('Error updating order status in Firestore:', err);
     });
 
     return true;
   }
 
+  // Deduct items in order from warehouse stock
+  private deductOrderStock(order: Order): void {
+    const products = this.getProducts();
+    let productsChanged = false;
+
+    for (const item of order.items_json || []) {
+      const pIndex = products.findIndex((p) => p.id === item.id);
+      if (pIndex > -1) {
+        const prod = products[pIndex];
+        const currentStock = prod.stock_quantity ?? 10;
+        const newStock = Math.max(0, currentStock - (item.quantity || 1));
+        const inStock = newStock > 0;
+
+        products[pIndex] = {
+          ...prod,
+          stock_quantity: newStock,
+          in_stock: inStock,
+        };
+        productsChanged = true;
+
+        // Async sync to Firestore
+        setDoc(
+          doc(firestore, FS_COLS.PRODUCTS, String(prod.id)),
+          cleanFirestoreData({
+            stock_quantity: newStock,
+            in_stock: inStock,
+          }),
+          { merge: true }
+        ).catch((err) => {
+          console.error('Error updating product stock in Firestore:', err);
+        });
+      }
+    }
+
+    if (productsChanged) {
+      setStoredItem(DB_KEYS.PRODUCTS, products);
+    }
+  }
+
+  // Restore items in order back to warehouse stock (on cancellation)
+  private restoreOrderStock(order: Order): void {
+    const products = this.getProducts();
+    let productsChanged = false;
+
+    for (const item of order.items_json || []) {
+      const pIndex = products.findIndex((p) => p.id === item.id);
+      if (pIndex > -1) {
+        const prod = products[pIndex];
+        const currentStock = prod.stock_quantity ?? 0;
+        const newStock = currentStock + (item.quantity || 1);
+        const inStock = newStock > 0;
+
+        products[pIndex] = {
+          ...prod,
+          stock_quantity: newStock,
+          in_stock: inStock,
+        };
+        productsChanged = true;
+
+        // Async sync to Firestore
+        setDoc(
+          doc(firestore, FS_COLS.PRODUCTS, String(prod.id)),
+          cleanFirestoreData({
+            stock_quantity: newStock,
+            in_stock: inStock,
+          }),
+          { merge: true }
+        ).catch((err) => {
+          console.error('Error restoring product stock in Firestore:', err);
+        });
+      }
+    }
+
+    if (productsChanged) {
+      setStoredItem(DB_KEYS.PRODUCTS, products);
+    }
+  }
+
   public cancelOrder(orderId: number): boolean {
     return this.updateOrderStatus(orderId, 'cancelled');
+  }
+
+  // ================= USERS & TRAFFIC ANALYTICS =================
+  public getUsers(): ShopUser[] {
+    const now = new Date();
+    const oneDay = 24 * 60 * 60 * 1000;
+    const initialUsers: ShopUser[] = [
+      { id: 5659638424, username: 'admin_mogilev', first_name: 'Главный Администратор', source: 'miniapp', created_at: new Date(now.getTime() - 14 * oneDay).toISOString(), last_seen_at: now.toISOString(), orders_count: 5 },
+      { id: 8161417737, username: 'puff_owner', first_name: 'Puff Owner', source: 'bot', created_at: new Date(now.getTime() - 20 * oneDay).toISOString(), last_seen_at: now.toISOString(), orders_count: 2 },
+      { id: 104829104, username: 'vape_fan_by', first_name: 'Алексей', source: 'bot', created_at: new Date(now.getTime() - 5 * oneDay).toISOString(), last_seen_at: now.toISOString(), orders_count: 3 },
+      { id: 284918239, username: 'dima_mog', first_name: 'Дмитрий', source: 'miniapp', created_at: new Date(now.getTime() - 2 * oneDay).toISOString(), last_seen_at: now.toISOString(), orders_count: 1 },
+      { id: 394819201, username: 'smoke_puff', first_name: 'Илья', source: 'miniapp', created_at: new Date(now.getTime() - 10 * 60 * 60 * 1000).toISOString(), last_seen_at: now.toISOString(), orders_count: 1 },
+      { id: 492019481, username: 'cloud_master', first_name: 'Максим', source: 'bot', created_at: new Date(now.getTime() - 3 * 60 * 60 * 1000).toISOString(), last_seen_at: now.toISOString(), orders_count: 0 },
+    ];
+    return getStoredItem<ShopUser[]>(DB_KEYS.USERS, initialUsers);
+  }
+
+  public recordUser(
+    user: { id: number; username?: string; first_name?: string; last_name?: string },
+    source: 'bot' | 'miniapp' = 'miniapp'
+  ): ShopUser {
+    const users = this.getUsers();
+    const existingIndex = users.findIndex((u) => u.id === user.id);
+    const now = new Date().toISOString();
+
+    if (existingIndex > -1) {
+      const existing = users[existingIndex];
+      const updatedUser: ShopUser = {
+        ...existing,
+        username: user.username || existing.username,
+        first_name: user.first_name || existing.first_name,
+        last_name: user.last_name || existing.last_name,
+        last_seen_at: now,
+      };
+      users[existingIndex] = updatedUser;
+      setStoredItem(DB_KEYS.USERS, users);
+      this.notify();
+
+      setDoc(doc(firestore, FS_COLS.USERS, String(user.id)), cleanFirestoreData(updatedUser), { merge: true }).catch(() => {});
+      return updatedUser;
+    }
+
+    const newUser: ShopUser = {
+      id: user.id,
+      username: user.username,
+      first_name: user.first_name,
+      last_name: user.last_name,
+      source,
+      created_at: now,
+      last_seen_at: now,
+      orders_count: 0,
+    };
+    const updated = [newUser, ...users];
+    setStoredItem(DB_KEYS.USERS, updated);
+    this.notify();
+
+    setDoc(doc(firestore, FS_COLS.USERS, String(user.id)), cleanFirestoreData(newUser)).catch(() => {});
+    return newUser;
+  }
+
+  // Strict User Role Check ('admin' | 'moderator' | null)
+  public getUserRole(userId?: number | string | null, username?: string | null): 'admin' | 'moderator' | null {
+    const numId = userId ? parseInt(String(userId), 10) : 0;
+    if (!isNaN(numId) && numId > 0 && HARDCODED_ADMIN_IDS.includes(numId)) {
+      return 'admin';
+    }
+
+    const cleanUsername = username ? username.replace(/^@/, '').toLowerCase().trim() : '';
+    const admins = this.getAdmins();
+
+    const match = admins.find((a) => {
+      if (!a.is_active) return false;
+      const matchId = numId > 0 && Number(a.user_id) === numId;
+      const matchUsername =
+        cleanUsername &&
+        a.username &&
+        a.username.replace(/^@/, '').toLowerCase().trim() === cleanUsername;
+      return Boolean(matchId || matchUsername);
+    });
+
+    return match ? match.role : null;
   }
 
   // ================= ADMINS & MODERATORS =================

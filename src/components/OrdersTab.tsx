@@ -28,7 +28,7 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({ onGoToCatalog }) => {
     await cancelOrder(orderId);
   };
 
-  const getStatusBadge = (status: OrderStatus) => {
+  const getStatusBadge = (status: OrderStatus, deliveryType?: string) => {
     switch (status) {
       case 'pending':
         return (
@@ -44,18 +44,39 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({ onGoToCatalog }) => {
             <span>Подтвержден</span>
           </span>
         );
+      case 'ready_for_pickup':
+        return (
+          <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 flex items-center gap-1 animate-pulse">
+            <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+            <span>📍 Менеджер на точке (ждет вас)</span>
+          </span>
+        );
+      case 'courier_sent':
+        return (
+          <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 flex items-center gap-1">
+            <Truck className="w-3 h-3 text-indigo-400" />
+            <span>🚗 Курьер в пути</span>
+          </span>
+        );
+      case 'courier_arrived':
+        return (
+          <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 flex items-center gap-1 animate-pulse">
+            <Truck className="w-3 h-3 text-emerald-400" />
+            <span>📍 Курьер прибыл на адрес</span>
+          </span>
+        );
       case 'shipped':
         return (
           <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/40 flex items-center gap-1">
             <Truck className="w-3 h-3 text-purple-400" />
-            <span>Отправлен / На точке</span>
+            <span>{deliveryType === 'pickup' ? 'Готов к выдаче' : 'Отправлен курьером'}</span>
           </span>
         );
       case 'completed':
         return (
           <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 flex items-center gap-1">
             <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-            <span>Выполнен</span>
+            <span>Выполнен 🎉</span>
           </span>
         );
       case 'cancelled':
@@ -63,6 +84,12 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({ onGoToCatalog }) => {
           <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-red-500/20 text-red-300 border border-red-500/40 flex items-center gap-1">
             <AlertCircle className="w-3 h-3 text-red-400" />
             <span>Отменен</span>
+          </span>
+        );
+      default:
+        return (
+          <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-zinc-500/20 text-zinc-300 border border-zinc-500/40">
+            {status}
           </span>
         );
     }
@@ -129,7 +156,7 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({ onGoToCatalog }) => {
                     </div>
                   </div>
 
-                  <div>{getStatusBadge(order.status)}</div>
+                  <div>{getStatusBadge(order.status, order.delivery_type)}</div>
                 </div>
 
                 {/* Delivery & Payment info */}

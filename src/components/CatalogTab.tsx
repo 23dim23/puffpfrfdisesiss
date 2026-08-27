@@ -48,6 +48,11 @@ export const CatalogTab: React.FC<CatalogTabProps> = ({ initialCategory = 'all',
   // Filtered Products
   const filteredProducts = useMemo(() => {
     return products.filter((product) => {
+      // Hide out of stock / sold out items from customer catalog
+      if (!product.in_stock || (product.stock_quantity !== undefined && product.stock_quantity <= 0)) {
+        return false;
+      }
+
       // Category filter
       if (selectedCategory === 'on-sale') {
         if (!product.discount_price || product.discount_price <= 0) return false;

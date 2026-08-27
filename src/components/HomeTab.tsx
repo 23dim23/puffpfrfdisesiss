@@ -19,14 +19,14 @@ export const HomeTab: React.FC<HomeTabProps> = ({
 }) => {
   const { settings, categories, products, promotions, brands } = useStore();
 
-  // Discount products
+  // Discount products (only in-stock items)
   const discountProducts = products.filter(
-    (p) => p.in_stock && p.discount_price && p.discount_price > 0
+    (p) => p.in_stock && (p.stock_quantity === undefined || p.stock_quantity > 0) && p.discount_price && p.discount_price > 0
   );
 
-  // Popular products (sorted by sold_count or is_hit)
+  // Popular products (sorted by sold_count or is_hit, only in-stock items)
   const popularProducts = [...products]
-    .filter((p) => p.in_stock)
+    .filter((p) => p.in_stock && (p.stock_quantity === undefined || p.stock_quantity > 0))
     .sort((a, b) => (b.sold_count || 0) - (a.sold_count || 0));
 
   const handleManagerClick = () => {

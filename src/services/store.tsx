@@ -14,6 +14,7 @@ import {
   PickupPoint,
   ShopSettings,
   AdminUser,
+  ShopUser,
   TelegramUser,
   OrderStatus,
   DeliveryType,
@@ -28,8 +29,10 @@ interface StoreContextType {
   // User & Access
   currentUser: TelegramUser | null;
   isAuthorizedAdmin: boolean; // True only if user ID is in admin list (5659638424, 8161417737 or admins table)
-  isAdmin: boolean;           // True if user is admin AND admin mode is active
-  isModerator: boolean;
+  isAdmin: boolean;           // True if user is full admin AND admin mode is active
+  isModerator: boolean;       // True if user is moderator OR admin
+  isMasterAdmin: boolean;     // True for owner/root admins
+  userRole: 'admin' | 'moderator' | null;
   isAdminMode: boolean;       // Current view mode (admin vs client preview)
   toggleAdminMode: () => void; // Only works if isAuthorizedAdmin is true
   setCurrentUser: (user: TelegramUser | null) => void;
@@ -51,6 +54,7 @@ interface StoreContextType {
   promocodes: Promocode[];
   pickupPoints: PickupPoint[];
   admins: AdminUser[];
+  users: ShopUser[];
   appliedPromocode: Promocode | null;
   isLoading: boolean;
 
@@ -73,6 +77,8 @@ interface StoreContextType {
 
   // Database Management Actions (CRUD)
   saveSettings: (newSettings: Partial<ShopSettings>) => Promise<boolean>;
+  setLineMargin: (categorySlug: string, lineName: string, margin: number) => void;
+  getLineMargin: (categorySlug: string, lineName: string) => number | undefined;
   addProduct: (product: Omit<Product, 'id'>) => Promise<boolean>;
   updateProduct: (id: number, product: Partial<Product>) => Promise<boolean>;
   deleteProduct: (id: number) => Promise<boolean>;
@@ -96,6 +102,8 @@ interface StoreContextType {
     items: Array<{
       name: string;
       price: number;
+      cost_price?: number;
+      margin_profit?: number;
       category: string;
       brand?: string;
       model?: string;
@@ -136,6 +144,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [promocodes, setPromocodes] = useState<Promocode[]>(() => db.getPromocodes());
   const [pickupPoints, setPickupPoints] = useState<PickupPoint[]>(() => db.getPickupPoints());
   const [admins, setAdmins] = useState<AdminUser[]>(() => db.getAdmins());
+  const [users, setUsers] = useState<ShopUser[]>(() => db.getUsers());
 
   const [cart, setCart] = useState<CartItem[]>(() => {
     try {
@@ -162,6 +171,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setPromocodes(db.getPromocodes());
     setPickupPoints(db.getPickupPoints());
     setAdmins(db.getAdmins());
+    setUsers(db.getUsers());
   }, []);
 
   useEffect(() => {
@@ -200,6 +210,13 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         language_code: tgUser.language_code || 'ru',
       };
       setCurrentUserState(user);
+      db.recordUser({
+        id: user.id,
+        username: user.username,
+        first_name: user.first_name,
+        last_name: user.last_name,
+      }, 'miniapp');
+
       const isAdm = verifyAdmin(user);
       if (isAdm) setIsAdminMode(true);
     } else {
@@ -217,6 +234,13 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           language_code: 'ru',
         };
         setCurrentUserState(user);
+        db.recordUser({
+          id: user.id,
+          username: user.username,
+          first_name: user.first_name,
+          last_name: user.last_name,
+        }, 'miniapp');
+
         const isAdm = verifyAdmin(user);
         if (isAdm) setIsAdminMode(true);
         localStorage.setItem('puff_current_user_v4', JSON.stringify(user));
@@ -235,7 +259,6 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           setIsAuthorizedAdmin(false);
         }
       } else {
-        // By default in browser preview if no user, check if we can log in with master admin or stay guest
         setIsAuthorizedAdmin(false);
       }
     }
@@ -245,6 +268,12 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setCurrentUserState(user);
     if (user) {
       localStorage.setItem('puff_current_user_v4', JSON.stringify(user));
+      db.recordUser({
+        id: user.id,
+        username: user.username,
+        first_name: user.first_name,
+        last_name: user.last_name,
+      }, 'miniapp');
       const isAdm = verifyAdmin(user);
       if (isAdm) setIsAdminMode(true);
     } else {
@@ -291,8 +320,13 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     hapticImpact('medium');
   };
 
-  // Effective Admin / Moderator statuses (active only when admin mode is turned on)
-  const isAdmin = isAuthorizedAdmin && isAdminMode;
+  // Determine user's exact RBAC role
+  const userRole = db.getUserRole(currentUser?.id, currentUser?.username);
+  const isMasterAdmin = Boolean(currentUser?.id && HARDCODED_ADMIN_IDS.includes(currentUser.id));
+  
+  // Full Admin privileges (Financial metrics, margins, cost prices, staff management)
+  const isAdmin = isAuthorizedAdmin && isAdminMode && (userRole === 'admin' || isMasterAdmin);
+  // Moderator privileges (Order processing, status changes, customer chat)
   const isModerator = isAuthorizedAdmin && isAdminMode;
 
   const loadAllData = async () => {
@@ -437,6 +471,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           id: c.id,
           name: c.name,
           price: c.discount_price && c.discount_price > 0 ? c.discount_price : c.price,
+          cost_price: c.cost_price,
+          margin_profit: c.margin_profit,
           quantity: c.quantity,
           emoji: c.emoji || '📦',
         })),
@@ -541,8 +577,11 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         const statusTitles: Record<OrderStatus, string> = {
           pending: 'В обработке ⏳',
           confirmed: 'Подтвержден ✅',
+          ready_for_pickup: '📍 Менеджер на точке / Заказ готов к выдаче (Могилев)',
+          courier_sent: '🚗 Курьер отправлен / В пути 🚚',
+          courier_arrived: '📍 Курьер прибыл на адрес (встречайте)',
           shipped: 'Передан курьеру / В пути 🚚',
-          completed: 'Выполнен 🎉',
+          completed: 'Выполнен 🎉 Спасибо за покупку!',
           cancelled: 'Отменен ❌',
         };
 
@@ -573,6 +612,14 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     db.updateSettings(newSettings);
     hapticNotification('success');
     return true;
+  };
+
+  const setLineMargin = (categorySlug: string, lineName: string, margin: number) => {
+    db.setLineMargin(categorySlug, lineName, margin);
+  };
+
+  const getLineMargin = (categorySlug: string, lineName: string): number | undefined => {
+    return db.getLineMargin(categorySlug, lineName);
   };
 
   const addProduct = async (product: Omit<Product, 'id'>) => {
@@ -629,9 +676,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const deleteBrandLine = async (id: number) => {
-    // Delete attribute value by ID
     const values = db.getAttributeValues().filter((v) => v.id !== id);
-    localStorage.setItem('puff_db_attr_values_v4', JSON.stringify(values));
+    localStorage.setItem('puff_db_attr_values_v5', JSON.stringify(values));
     syncFromDb();
     hapticImpact('medium');
     return true;
@@ -705,6 +751,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     items: Array<{
       name: string;
       price: number;
+      cost_price?: number;
+      margin_profit?: number;
       category: string;
       brand?: string;
       model?: string;
@@ -743,6 +791,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         isAuthorizedAdmin,
         isAdmin,
         isModerator,
+        isMasterAdmin,
+        userRole,
         isAdminMode,
         toggleAdminMode,
         setCurrentUser,
@@ -762,6 +812,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         promocodes,
         pickupPoints,
         admins,
+        users,
         appliedPromocode,
         isLoading,
         loadAllData,
@@ -775,6 +826,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         updateOrderStatus,
         cancelOrder,
         saveSettings,
+        setLineMargin,
+        getLineMargin,
         addProduct,
         updateProduct,
         deleteProduct,

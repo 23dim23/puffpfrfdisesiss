@@ -8,6 +8,7 @@ export interface Category {
   icon?: string;
   sort_order?: number;
   is_active: boolean;
+  default_margin?: number; // Маржа по умолчанию для категории в BYN
 }
 
 export interface Brand {
@@ -17,6 +18,7 @@ export interface Brand {
   category_slug: string;
   sort_order?: number;
   is_active: boolean;
+  default_margin?: number; // Маржа для бренда в BYN
 }
 
 export interface ProductModel {
@@ -27,6 +29,7 @@ export interface ProductModel {
   brand_slug: string;
   sort_order?: number;
   is_active: boolean;
+  default_margin?: number;
 }
 
 export interface AttributeGroup {
@@ -44,6 +47,7 @@ export interface AttributeValue {
   value: string;
   sort_order?: number;
   is_active: boolean;
+  margin_profit?: number; // Маржа для линейки вкусов / серии в BYN
 }
 
 export interface ProductColor {
@@ -66,12 +70,15 @@ export interface Product {
   id: number;
   name: string;
   price: number;
+  cost_price?: number | null; // Цена закупа / себестоимость (в BYN)
+  margin_profit?: number | null; // Чистая прибыль с 1 шт (в BYN)
   discount_price?: number | null;
   emoji?: string;
   image_url?: string;
   category_slug: string;
   brand_slug?: string | null;
   model_slug?: string | null;
+  flavor_line?: string | null; // Линейка вкусов / серия
   stock_quantity: number;
   in_stock: boolean;
   sold_count?: number;
@@ -88,13 +95,24 @@ export interface CartItem extends Product {
   selected_flavor?: string;
 }
 
-export type OrderStatus = 'pending' | 'confirmed' | 'shipped' | 'completed' | 'cancelled';
+export type OrderStatus =
+  | 'pending'
+  | 'confirmed'
+  | 'ready_for_pickup'
+  | 'courier_sent'
+  | 'courier_arrived'
+  | 'shipped'
+  | 'completed'
+  | 'cancelled';
+
 export type DeliveryType = 'pickup' | 'delivery';
 
 export interface OrderItem {
   id: number;
   name: string;
   price: number;
+  cost_price?: number | null;
+  margin_profit?: number | null;
   quantity: number;
   emoji?: string;
   color_id?: number | null;
@@ -112,6 +130,7 @@ export interface Order {
   discount_amount: number;
   delivery_price: number;
   total: number;
+  total_margin?: number; // Общая чистая прибыль за заказ (для админов)
   currency: string;
   delivery_type: DeliveryType;
   pickup_point_id?: number | null;
@@ -123,6 +142,7 @@ export interface Order {
   promocode_code?: string | null;
   items_json: OrderItem[];
   status: OrderStatus;
+  stock_deducted?: boolean;
   created_at: string;
 }
 
@@ -173,6 +193,17 @@ export interface AdminUser {
   created_at?: string;
 }
 
+export interface ShopUser {
+  id: number;
+  username?: string;
+  first_name?: string;
+  last_name?: string;
+  source: 'bot' | 'miniapp';
+  created_at: string;
+  last_seen_at: string;
+  orders_count?: number;
+}
+
 export interface ShopSettings {
   welcome_title: string;
   welcome_description: string;
@@ -180,6 +211,7 @@ export interface ShopSettings {
   delivery_price: number;
   free_delivery_min_items: number;
   manager_username: string;
+  line_margins?: Record<string, number>; // key: "category_slug:line_name" -> margin BYN
 }
 
 export interface TelegramUser {
