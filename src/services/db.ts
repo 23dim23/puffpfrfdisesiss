@@ -530,11 +530,15 @@ class CloudDatabase {
       stock?: number;
       emoji?: string;
     }>
-  ): { successCount: number; errors: string[] } {
+  ): { successCount: number; updatedCount: number; addedCount: number; errors: string[] } {
     const products = this.getProducts();
     let nextId = products.length > 0 ? Math.max(...products.map((p) => p.id)) + 1 : 1;
-    const newItems: Product[] = [];
+    let addedCount = 0;
+    let updatedCount = 0;
     const errors: string[] = [];
+
+    // Working copy
+    const workingProducts = [...products];
 
     for (const item of items) {
       if (!item.name || isNaN(item.price)) {
@@ -552,35 +556,92 @@ class CloudDatabase {
         cost = Math.max(0, price - margin);
       }
 
-      const prod: Product = {
-        id: nextId++,
-        name: item.name,
-        price,
-        cost_price: cost != null ? Number(cost) : undefined,
-        margin_profit: margin != null ? Number(margin) : undefined,
-        category_slug: item.category || 'liquid',
-        brand_slug: item.brand ? item.brand.toLowerCase() : undefined,
-        description: [item.flavor, item.strength].filter(Boolean).join(' • '),
-        emoji: item.emoji || '📦',
-        in_stock: (item.stock ?? 1) > 0,
-        stock_quantity: item.stock ?? 10,
-        is_hit: false,
-        is_new: true,
-        created_at: new Date().toISOString(),
-      };
-      newItems.push(prod);
+      const categorySlug = item.category || 'liquid';
+      const importStock = item.stock ?? 10;
 
-      // Save each to Firestore
-      setDoc(doc(firestore, FS_COLS.PRODUCTS, String(prod.id)), cleanFirestoreData(prod)).catch(() => {});
+      // Check if product already exists (by exact name or normalized name + category)
+      const cleanName = item.name.trim().toLowerCase();
+      const existingIndex = workingProducts.findIndex((p) => {
+        const existingName = p.name.trim().toLowerCase();
+        return (
+          existingName === cleanName ||
+          (p.category_slug === categorySlug &&
+            existingName.replace(/\s+/g, '') === cleanName.replace(/\s+/g, ''))
+        );
+      });
+
+      if (existingIndex > -1) {
+        // --- STACKING / MERGING WITH EXISTING PRODUCT ---
+        const existing = workingProducts[existingIndex];
+        const currentStock = existing.stock_quantity ?? 0;
+        const newStock = currentStock + importStock;
+
+        const updatedProd: Product = {
+          ...existing,
+          price: price > 0 ? price : existing.price,
+          cost_price: cost != null ? Number(cost) : existing.cost_price,
+          margin_profit: margin != null ? Number(margin) : existing.margin_profit,
+          stock_quantity: newStock,
+          in_stock: newStock > 0,
+        };
+
+        if (item.brand && !existing.brand_slug) {
+          updatedProd.brand_slug = item.brand.toLowerCase();
+        }
+
+        workingProducts[existingIndex] = updatedProd;
+        updatedCount++;
+
+        // Sync updated product to Firestore
+        setDoc(
+          doc(firestore, FS_COLS.PRODUCTS, String(existing.id)),
+          cleanFirestoreData(updatedProd)
+        ).catch((err) => {
+          console.error('Error updating existing product in Firestore:', err);
+        });
+      } else {
+        // --- CREATING BRAND NEW PRODUCT ---
+        const prod: Product = {
+          id: nextId++,
+          name: item.name.trim(),
+          price,
+          cost_price: cost != null ? Number(cost) : undefined,
+          margin_profit: margin != null ? Number(margin) : undefined,
+          category_slug: categorySlug,
+          brand_slug: item.brand ? item.brand.toLowerCase() : undefined,
+          description: [item.flavor, item.strength].filter(Boolean).join(' • '),
+          emoji: item.emoji || '📦',
+          in_stock: importStock > 0,
+          stock_quantity: importStock,
+          is_hit: false,
+          is_new: true,
+          created_at: new Date().toISOString(),
+        };
+
+        workingProducts.unshift(prod);
+        addedCount++;
+
+        // Save new to Firestore
+        setDoc(
+          doc(firestore, FS_COLS.PRODUCTS, String(prod.id)),
+          cleanFirestoreData(prod)
+        ).catch((err) => {
+          console.error('Error saving new product to Firestore:', err);
+        });
+      }
     }
 
-    if (newItems.length > 0) {
-      const merged = [...newItems, ...products];
-      setStoredItem(DB_KEYS.PRODUCTS, merged);
+    if (addedCount > 0 || updatedCount > 0) {
+      setStoredItem(DB_KEYS.PRODUCTS, workingProducts);
       this.notify();
     }
 
-    return { successCount: newItems.length, errors };
+    return {
+      successCount: addedCount + updatedCount,
+      updatedCount,
+      addedCount,
+      errors,
+    };
   }
 
   // Line margins helper
