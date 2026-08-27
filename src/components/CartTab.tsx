@@ -77,19 +77,24 @@ export const CartTab: React.FC<CartTabProps> = ({ onGoToCatalog, onOrderComplete
     setIsSubmitting(true);
     hapticImpact('heavy');
 
-    const result = await placeOrder({
-      deliveryType,
-      pickupPointId: deliveryType === 'pickup' ? (selectedPickupId || pickupPoints[0]?.id || null) : null,
-      deliveryAddress: deliveryType === 'delivery' ? deliveryAddress : null,
-      comment,
-    });
+    try {
+      const result = await placeOrder({
+        deliveryType,
+        pickupPointId: deliveryType === 'pickup' ? (selectedPickupId || pickupPoints[0]?.id || null) : null,
+        deliveryAddress: deliveryType === 'delivery' ? deliveryAddress : null,
+        comment,
+      });
 
-    setIsSubmitting(false);
-
-    if (result.success && result.orderId !== undefined && result.total !== undefined) {
-      onOrderCompleted(result.orderId, result.total);
-    } else {
-      alert(result.error || 'Ошибка оформления заказа');
+      if (result.success && result.orderId !== undefined && result.total !== undefined) {
+        onOrderCompleted(result.orderId, result.total);
+      } else {
+        alert(result.error || 'Ошибка оформления заказа');
+      }
+    } catch (err: any) {
+      console.error('Checkout error:', err);
+      alert('Произошла ошибка при создании заказа. Пожалуйста, попробуйте еще раз.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 

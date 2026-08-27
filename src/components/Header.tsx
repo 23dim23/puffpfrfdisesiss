@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useStore } from '../services/store';
-import { Shield, ShieldCheck, User, KeyRound, LogOut, X } from 'lucide-react';
+import { ShieldCheck, User } from 'lucide-react';
 import { hapticImpact } from '../services/telegram';
 
 interface HeaderProps {
@@ -17,28 +17,7 @@ export const Header: React.FC<HeaderProps> = ({ subtitle }) => {
     isAuthorizedAdmin,
     isAdminMode,
     toggleAdminMode,
-    loginAsAdmin,
-    logoutUser,
   } = useStore();
-
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [authInput, setAuthInput] = useState('');
-  const [authError, setAuthError] = useState('');
-
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    setAuthError('');
-    if (!authInput.trim()) return;
-
-    const ok = loginAsAdmin(authInput.trim());
-    if (ok) {
-      setIsAuthModalOpen(false);
-      setAuthInput('');
-      hapticImpact('medium');
-    } else {
-      setAuthError('Доступ не найден. Укажите ID администратора (5659638424) или ник модератора.');
-    }
-  };
 
   return (
     <header className="mb-3 pt-1">
@@ -63,8 +42,8 @@ export const Header: React.FC<HeaderProps> = ({ subtitle }) => {
         </div>
 
         <div className="flex items-center gap-1.5">
-          {/* Admin toggle: visible for verified Admins */}
-          {isAuthorizedAdmin ? (
+          {/* Admin toggle: STRICTLY visible ONLY if authorized from Telegram client */}
+          {isAuthorizedAdmin && (
             <button
               onClick={() => {
                 toggleAdminMode();
@@ -72,8 +51,8 @@ export const Header: React.FC<HeaderProps> = ({ subtitle }) => {
               }}
               title={
                 isAdminMode
-                  ? 'Режим: Админ (нажмите для переключения в режим клиента)'
-                  : 'Режим: Клиент (нажмите для переключения в режим админа)'
+                  ? 'Режим: Админ (нажмите для переключения в режим предпросмотра витрины)'
+                  : 'Режим: Клиент (нажмите для возврата в панель управления)'
               }
               className={`px-2.5 py-1 rounded-xl text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all tap-active ${
                 isAdminMode
@@ -95,15 +74,6 @@ export const Header: React.FC<HeaderProps> = ({ subtitle }) => {
                 </>
               )}
             </button>
-          ) : (
-            <button
-              onClick={() => setIsAuthModalOpen(true)}
-              title="Вход для администраторов и модераторов"
-              className="px-2 py-1 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-zinc-200 border border-white/10 text-[11px] font-medium flex items-center gap-1 tap-active"
-            >
-              <KeyRound className="w-3 h-3 text-purple-400" />
-              <span>Сотрудник</span>
-            </button>
           )}
         </div>
       </div>
@@ -119,15 +89,6 @@ export const Header: React.FC<HeaderProps> = ({ subtitle }) => {
             </span>
             !
           </span>
-          {isAuthorizedAdmin && (
-            <button
-              onClick={logoutUser}
-              title="Выйти из аккаунта администратора"
-              className="text-[10px] text-zinc-500 hover:text-red-400 ml-1"
-            >
-              (выйти)
-            </button>
-          )}
         </p>
 
         {subtitle && (
@@ -136,68 +97,6 @@ export const Header: React.FC<HeaderProps> = ({ subtitle }) => {
           </span>
         )}
       </div>
-
-      {/* Employee Quick Login Modal */}
-      {isAuthModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-sm p-5 rounded-3xl bg-[#171526] border border-purple-500/30 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Shield className="w-5 h-5 text-purple-400" />
-                <h3 className="text-sm font-bold text-white">Авторизация сотрудника</h3>
-              </div>
-              <button
-                onClick={() => setIsAuthModalOpen(false)}
-                className="p-1 rounded-full text-zinc-400 hover:text-white"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <p className="text-xs text-zinc-400 leading-relaxed">
-              Введите ваш <b>Telegram ID</b> (напр. <code>5659638424</code>) или <b>@username</b> модератора, чтобы открыть панель управления.
-            </p>
-
-            <form onSubmit={handleLogin} className="space-y-3">
-              <input
-                type="text"
-                value={authInput}
-                onChange={(e) => {
-                  setAuthInput(e.target.value);
-                  setAuthError('');
-                }}
-                placeholder="Telegram ID или @username"
-                className="w-full py-2.5 px-3 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-purple-500"
-                autoFocus
-              />
-
-              {authError && (
-                <p className="text-[11px] text-red-400 leading-tight">{authError}</p>
-              )}
-
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    // Fast login with Master Admin ID
-                    loginAsAdmin('5659638424');
-                    setIsAuthModalOpen(false);
-                  }}
-                  className="flex-1 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-[11px] font-semibold text-purple-300 border border-purple-500/20"
-                >
-                  👑 Главный админ
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-orange-500 text-white text-xs font-bold shadow-md"
-                >
-                  Войти
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </header>
   );
 };

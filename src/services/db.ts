@@ -100,6 +100,11 @@ function setStoredItem<T>(key: string, value: T): void {
   }
 }
 
+// Strip undefined values so Firestore setDoc / updateDoc never fails
+function cleanFirestoreData<T>(obj: T): T {
+  return JSON.parse(JSON.stringify(obj, (_, v) => (v === undefined ? null : v)));
+}
+
 /**
  * Unified Cloud Database Engine (Firestore + Realtime Sync + Local Offline Fallback)
  */
@@ -740,7 +745,7 @@ class CloudDatabase {
     this.notify();
 
     // Persist immediately to Cloud Firestore
-    setDoc(doc(firestore, FS_COLS.ORDERS, String(nextId)), newOrder).catch((err) => {
+    setDoc(doc(firestore, FS_COLS.ORDERS, String(nextId)), cleanFirestoreData(newOrder)).catch((err) => {
       console.error('Error saving order to Firestore:', err);
     });
 

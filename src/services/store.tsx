@@ -398,141 +398,136 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     deliveryAddress?: string | null;
     comment?: string | null;
   }) => {
-    if (cart.length === 0) {
-      return { success: false, error: 'Корзина пуста' };
-    }
-
-    const subtotal = cart.reduce((sum, item) => {
-      const price = item.discount_price && item.discount_price > 0 ? item.discount_price : item.price;
-      return sum + price * item.quantity;
-    }, 0);
-
-    let discountAmount = 0;
-    if (appliedPromocode) {
-      if (appliedPromocode.discount_type === 'percent') {
-        discountAmount = Math.round((subtotal * appliedPromocode.discount_value) / 100);
-      } else {
-        discountAmount = appliedPromocode.discount_value;
-      }
-    }
-
-    const totalItemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
-    let deliveryPrice = 0;
-    if (params.deliveryType === 'delivery') {
-      const isFree = totalItemCount >= (settings.free_delivery_min_items || 4);
-      deliveryPrice = isFree ? 0 : settings.delivery_price;
-    }
-
-    const total = Math.max(0, subtotal - discountAmount + deliveryPrice);
-    const selectedPickup = pickupPoints.find((p) => p.id === params.pickupPointId);
-
-    const newOrder = db.createOrder({
-      user_id: currentUser?.id || 999999,
-      username: currentUser?.username || 'user',
-      first_name: currentUser?.first_name || '',
-      last_name: currentUser?.last_name || '',
-      phone: currentUser?.username ? `@${currentUser.username}` : 'Не указан',
-      items_json: cart.map((c) => ({
-        id: c.id,
-        name: c.name,
-        price: c.discount_price && c.discount_price > 0 ? c.discount_price : c.price,
-        quantity: c.quantity,
-        emoji: c.emoji,
-      })),
-      total,
-      subtotal,
-      discount_amount: discountAmount,
-      delivery_price: deliveryPrice,
-      currency: 'BYN',
-      status: 'pending',
-      delivery_type: params.deliveryType,
-      pickup_point_id: params.pickupPointId || undefined,
-      pickup_point_name: selectedPickup?.name || (params.deliveryType === 'pickup' ? 'Точка самовывоза' : undefined),
-      delivery_address: params.deliveryAddress || undefined,
-      comment: params.comment || undefined,
-      promocode_id: appliedPromocode?.id,
-      promocode_code: appliedPromocode?.code,
-    });
-
-    // Send Telegram WebApp Data to connected Python Bot
-    const tg = getTelegramWebApp();
-    if (tg?.sendData) {
-      try {
-        tg.sendData(
-          JSON.stringify({
-            action: 'order',
-            order_id: newOrder.id,
-            username: newOrder.username,
-            items: newOrder.items_json,
-            total: newOrder.total,
-            subtotal: newOrder.subtotal,
-            discount: newOrder.discount_amount,
-            delivery_cost: newOrder.delivery_price,
-            currency: 'BYN',
-            phone: newOrder.phone,
-            delivery_type: newOrder.delivery_type,
-            delivery_address: newOrder.delivery_address || '',
-            pickup_point_name: newOrder.pickup_point_name || '',
-            comment: newOrder.comment || '',
-            promocode: newOrder.promocode_code || '',
-          })
-        );
-      } catch (e) {
-        console.warn('Telegram sendData exception:', e);
-      }
-    }
-
-    // Direct Telegram Notification to Admins if BOT_TOKEN is present
-    if (BOT_TOKEN) {
-      const itemsListText = newOrder.items_json
-        .map((it) => `  • ${it.emoji || '📦'} ${it.name} × ${it.quantity} — ${it.price} BYN`)
-        .join('\n');
-
-      const deliveryInfo =
-        newOrder.delivery_type === 'pickup'
-          ? `🏪 <b>Самовывоз (Могилев):</b> ${newOrder.pickup_point_name || 'Точка не указана'}`
-          : `🚚 <b>Доставка (Могилев):</b> ${newOrder.delivery_address || 'Адрес не указан'} (+${newOrder.delivery_price} BYN)`;
-
-      let priceInfo = `💰 <b>Итого:</b> ${newOrder.total} BYN`;
-      if (newOrder.discount_amount > 0) {
-        priceInfo += `\n   Скидка: -${newOrder.discount_amount} BYN`;
-      }
-      if (newOrder.promocode_code) {
-        priceInfo += `\n   Промокод: ${newOrder.promocode_code}`;
+    try {
+      if (cart.length === 0) {
+        return { success: false, error: 'Корзина пуста' };
       }
 
-      const adminNotice = `🆕 <b>НОВЫЙ ЗАКАЗ #${newOrder.id}!</b>
+      const subtotal = cart.reduce((sum, item) => {
+        const price = item.discount_price && item.discount_price > 0 ? item.discount_price : item.price;
+        return sum + price * item.quantity;
+      }, 0);
 
-👤 <b>Покупатель:</b> @${currentUser?.username || 'unknown'} (${currentUser?.first_name || 'Пользователь'})
-🆔 <b>User ID:</b> <code>${newOrder.user_id}</code>
-
-📦 <b>Товары:</b>
-${itemsListText}
-
-${priceInfo}
-
-${deliveryInfo}
-💬 <b>Комментарий:</b> ${newOrder.comment || 'Нет'}
-
-🔗 <a href="tg://user?id=${newOrder.user_id}">✉️ Связаться с покупателем</a>
-📩 Менеджер: @${settings.manager_username || 'puff_mngr'}`;
-
-      for (const adminId of HARDCODED_ADMINS) {
-        fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            chat_id: adminId,
-            text: adminNotice,
-            parse_mode: 'HTML',
-          }),
-        }).catch(() => {});
+      let discountAmount = 0;
+      if (appliedPromocode) {
+        if (appliedPromocode.discount_type === 'percent') {
+          discountAmount = Math.round((subtotal * appliedPromocode.discount_value) / 100);
+        } else {
+          discountAmount = appliedPromocode.discount_value;
+        }
       }
-    }
 
-    clearCart();
-    hapticNotification('success');
-    return { success: true, orderId: newOrder.id, total: newOrder.total };
+      const totalItemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+      let deliveryPrice = 0;
+      if (params.deliveryType === 'delivery') {
+        const isFree = totalItemCount >= (settings.free_delivery_min_items || 4);
+        deliveryPrice = isFree ? 0 : settings.delivery_price;
+      }
+
+      const total = Math.max(0, subtotal - discountAmount + deliveryPrice);
+      const selectedPickup = pickupPoints.find((p) => p.id === params.pickupPointId);
+
+      const newOrder = db.createOrder({
+        user_id: currentUser?.id || 999999,
+        username: currentUser?.username || 'user',
+        first_name: currentUser?.first_name || '',
+        last_name: currentUser?.last_name || '',
+        phone: currentUser?.username ? `@${currentUser.username}` : 'Не указан',
+        items_json: cart.map((c) => ({
+          id: c.id,
+          name: c.name,
+          price: c.discount_price && c.discount_price > 0 ? c.discount_price : c.price,
+          quantity: c.quantity,
+          emoji: c.emoji || '📦',
+        })),
+        total,
+        subtotal,
+        discount_amount: discountAmount,
+        delivery_price: deliveryPrice,
+        currency: 'BYN',
+        status: 'pending',
+        delivery_type: params.deliveryType,
+        pickup_point_id: params.pickupPointId || undefined,
+        pickup_point_name: selectedPickup?.name || (params.deliveryType === 'pickup' ? 'Точка самовывоза' : undefined),
+        delivery_address: params.deliveryAddress || undefined,
+        comment: params.comment || undefined,
+        promocode_id: appliedPromocode?.id,
+        promocode_code: appliedPromocode?.code,
+      });
+
+      // Send Telegram WebApp Data to connected Python Bot (if supported)
+      const tg = getTelegramWebApp();
+      if (tg?.sendData) {
+        try {
+          tg.sendData(
+            JSON.stringify({
+              action: 'order',
+              order_id: newOrder.id,
+              username: newOrder.username,
+              items: newOrder.items_json,
+              total: newOrder.total,
+              subtotal: newOrder.subtotal,
+              discount: newOrder.discount_amount,
+              delivery_cost: newOrder.delivery_price,
+              currency: 'BYN',
+              phone: newOrder.phone,
+              delivery_type: newOrder.delivery_type,
+              delivery_address: newOrder.delivery_address || '',
+              pickup_point_name: newOrder.pickup_point_name || '',
+              comment: newOrder.comment || '',
+              promocode: newOrder.promocode_code || '',
+            })
+          );
+        } catch (e) {
+          console.warn('Telegram sendData exception:', e);
+        }
+      }
+
+      // Direct Telegram Notification to Admins if BOT_TOKEN is present
+      if (BOT_TOKEN) {
+        try {
+          const itemsListText = (newOrder.items_json || [])
+            .map((it) => `  • ${it.emoji || '📦'} ${it.name} × ${it.quantity} — ${it.price} BYN`)
+            .join('\n');
+
+          const deliveryInfo =
+            newOrder.delivery_type === 'pickup'
+              ? `🏪 <b>Самовывоз (Могилев):</b> ${newOrder.pickup_point_name || 'Точка не указана'}`
+              : `🚚 <b>Доставка (Могилев):</b> ${newOrder.delivery_address || 'Адрес не указан'} (+${newOrder.delivery_price} BYN)`;
+
+          let priceInfo = `💰 <b>Итого:</b> ${newOrder.total} BYN`;
+          if (newOrder.discount_amount > 0) {
+            priceInfo += `\n   Скидка: -${newOrder.discount_amount} BYN`;
+          }
+          if (newOrder.promocode_code) {
+            priceInfo += `\n   Промокод: ${newOrder.promocode_code}`;
+          }
+
+          const adminNotice = `🆕 <b>НОВЫЙ ЗАКАЗ #${newOrder.id}!</b>\n\n👤 <b>Покупатель:</b> @${currentUser?.username || 'unknown'} (${currentUser?.first_name || 'Пользователь'})\n🆔 <b>User ID:</b> <code>${newOrder.user_id}</code>\n\n📦 <b>Товары:</b>\n${itemsListText}\n\n${priceInfo}\n\n${deliveryInfo}\n💬 <b>Комментарий:</b> ${newOrder.comment || 'Нет'}\n\n🔗 <a href="tg://user?id=${newOrder.user_id}">✉️ Связаться с покупателем</a>\n📩 Менеджер: @${settings.manager_username || 'puff_mngr'}`;
+
+          for (const adminId of HARDCODED_ADMINS) {
+            fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                chat_id: adminId,
+                text: adminNotice,
+                parse_mode: 'HTML',
+              }),
+            }).catch(() => {});
+          }
+        } catch (botErr) {
+          console.warn('Bot notification error:', botErr);
+        }
+      }
+
+      clearCart();
+      hapticNotification('success');
+      return { success: true, orderId: newOrder.id, total: newOrder.total };
+    } catch (err: any) {
+      console.error('placeOrder error:', err);
+      return { success: false, error: err?.message || 'Не удалось создать заказ' };
+    }
   };
 
   const updateOrderStatus = async (orderId: number, newStatus: OrderStatus) => {
