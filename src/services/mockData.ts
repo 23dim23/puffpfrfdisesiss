@@ -33,6 +33,7 @@ export const INITIAL_CATEGORIES: Category[] = [
   { id: 3, slug: 'consumables', name: 'Расходники', icon: '⚡', sort_order: 3, is_active: true },
   { id: 4, slug: 'disposable', name: 'Одноразки', icon: '💨', sort_order: 4, is_active: true },
   { id: 5, slug: 'snus', name: 'Снюс', icon: '❄️', sort_order: 5, is_active: true },
+  { id: 6, slug: 'nicboosters', name: 'Никобустеры', icon: '🎯', sort_order: 6, is_active: true },
 ];
 
 export const INITIAL_BRANDS: Brand[] = [];

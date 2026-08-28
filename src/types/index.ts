@@ -1,4 +1,4 @@
-export type CategorySlug = 'all' | 'on-sale' | 'liquid' | 'accessories' | 'pod' | 'disposable' | 'snus';
+export type CategorySlug = 'all' | 'on-sale' | 'liquid' | 'accessories' | 'pod' | 'disposable' | 'snus' | 'nicboosters';
 export type TabType = 'home' | 'catalog' | 'cart' | 'prizes' | 'orders' | 'admin';
 
 export interface Category {

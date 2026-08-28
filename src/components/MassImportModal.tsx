@@ -115,6 +115,9 @@ export const MassImportModal: React.FC<MassImportModalProps> = ({ isOpen, onClos
     if (clean.includes('снюс') || clean.includes('пауч') || clean === 'snus') {
       return categories.find((c) => c.slug === 'snus')?.slug || 'snus';
     }
+    if (clean.includes('никобустер') || clean.includes('бустер') || clean.includes('nicbooster') || clean === 'nicboosters') {
+      return categories.find((c) => c.slug === 'nicboosters')?.slug || 'nicboosters';
+    }
 
     const matched = categories.find(
       (c) => c.slug.toLowerCase() === clean || c.name.toLowerCase() === clean
@@ -138,6 +141,8 @@ export const MassImportModal: React.FC<MassImportModalProps> = ({ isOpen, onClos
         return '💨';
       case 'snus':
         return '❄️';
+      case 'nicboosters':
+        return '🎯';
       default:
         return '📦';
     }

@@ -132,6 +132,11 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
   const [orderDeliveryFilter, setOrderDeliveryFilter] = useState<string>('all');
   const [orderSearch, setOrderSearch] = useState<string>('');
 
+  // Admin Catalog filters
+  const [adminProductSearch, setAdminProductSearch] = useState<string>('');
+  const [adminProductCategoryFilter, setAdminProductCategoryFilter] = useState<string>('all');
+  const [adminProductBrandFilter, setAdminProductBrandFilter] = useState<string>('all');
+
   // Brand & Model forms
   const [brandForm, setBrandForm] = useState({
     name: '',
@@ -915,8 +920,70 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
             <span>Добавить новый товар</span>
           </button>
 
+          {/* Search and Filters */}
+          <div className="space-y-2 bg-black/20 p-3 rounded-2xl border border-white/5">
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-zinc-400" />
+              <input
+                type="text"
+                value={adminProductSearch}
+                onChange={(e) => setAdminProductSearch(e.target.value)}
+                placeholder="Поиск по названию товара..."
+                className="w-full pl-9 pr-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-xs placeholder-zinc-500"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <select
+                value={adminProductCategoryFilter}
+                onChange={(e) => setAdminProductCategoryFilter(e.target.value)}
+                className="w-full py-2 px-2.5 rounded-xl bg-[#181628] border border-white/10 text-white text-xs"
+              >
+                <option value="all">Все категории</option>
+                {categories.map((c) => (
+                  <option key={c.id} value={c.slug}>
+                    {c.icon} {c.name}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={adminProductBrandFilter}
+                onChange={(e) => setAdminProductBrandFilter(e.target.value)}
+                className="w-full py-2 px-2.5 rounded-xl bg-[#181628] border border-white/10 text-white text-xs"
+              >
+                <option value="all">Все бренды</option>
+                {brands.map((b) => (
+                  <option key={b.id} value={b.slug}>
+                    {b.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
           <div className="space-y-2">
-            {products.map((p) => (
+            {products
+              .filter((p) => {
+                const matchesSearch = p.name.toLowerCase().includes(adminProductSearch.toLowerCase());
+                const matchesCategory = adminProductCategoryFilter === 'all' || p.category_slug === adminProductCategoryFilter;
+                
+                let matchesBrand = true;
+                if (adminProductBrandFilter !== 'all') {
+                  const brandObj = brands.find((b) => b.slug === adminProductBrandFilter);
+                  const pBrandSlug = p.brand_slug || '';
+                  const matchSlug = pBrandSlug === adminProductBrandFilter;
+                  const matchName = brandObj && (
+                    pBrandSlug.toLowerCase() === brandObj.name.toLowerCase() ||
+                    pBrandSlug.toLowerCase().replace(/[^a-z0-9а-яё]/gi, '-') === brandObj.slug ||
+                    pBrandSlug.toLowerCase().replace(/\s+/g, '-') === brandObj.slug
+                  );
+                  matchesBrand = !!(matchSlug || matchName);
+                }
+                
+                return matchesSearch && matchesCategory && matchesBrand;
+              })
+              .map((p) => (
               <div
                 key={p.id}
                 className="flex items-center justify-between p-3 rounded-2xl bg-white/[0.03] border border-white/[0.06]"
@@ -2139,7 +2206,13 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
           <div className="space-y-2">
             <h5 className="text-xs font-bold text-zinc-400 uppercase tracking-wider px-1">Список брендов</h5>
             {brands.map((b) => {
-              const brandProductsCount = products.filter((p) => p.brand_slug === b.slug).length;
+              const brandProductsCount = products.filter((p) => {
+                const pBrandSlug = p.brand_slug || '';
+                return pBrandSlug === b.slug || 
+                  pBrandSlug.toLowerCase() === b.name.toLowerCase() ||
+                  pBrandSlug.toLowerCase().replace(/[^a-z0-9а-яё]/gi, '-') === b.slug ||
+                  pBrandSlug.toLowerCase().replace(/\s+/g, '-') === b.slug;
+              }).length;
               return (
                 <div
                   key={b.id}

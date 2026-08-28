@@ -145,6 +145,24 @@ export const DetailedStatsModal: React.FC<DetailedStatsModalProps> = ({
     };
   }, [filteredOrders, products]);
 
+  // Inventory Value Metrics (total stock value)
+  const inventoryMetrics = useMemo(() => {
+    let totalCostValue = 0;
+    let totalRetailValue = 0;
+    for (const p of products) {
+      const stock = p.stock_quantity || 0;
+      if (stock > 0) {
+        const cost = p.cost_price !== undefined && p.cost_price !== null ? p.cost_price : (p.price * 0.4);
+        totalCostValue += cost * stock;
+        totalRetailValue += p.price * stock;
+      }
+    }
+    return {
+      totalCostValue,
+      totalRetailValue,
+    };
+  }, [products]);
+
   // User Traffic & Audience Metrics
   const userMetrics = useMemo(() => {
     const now = new Date();
@@ -307,6 +325,27 @@ export const DetailedStatsModal: React.FC<DetailedStatsModalProps> = ({
                   </div>
                 )}
               </div>
+
+              {/* Inventory Value Cards */}
+              {isAdmin && (
+                <div className="grid grid-cols-2 gap-2.5">
+                  <div className="p-3.5 rounded-2xl bg-blue-500/10 border border-blue-500/30 space-y-1">
+                    <span className="text-[11px] text-blue-300/80 block">Остатки по себестоимости</span>
+                    <div className="text-lg font-black text-blue-300">
+                      {inventoryMetrics.totalCostValue.toFixed(2)} BYN
+                    </div>
+                    <span className="text-[10px] text-blue-400 block">Всего на складе (закуп)</span>
+                  </div>
+
+                  <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 space-y-1">
+                    <span className="text-[11px] text-amber-300/80 block">Остатки в рознице</span>
+                    <div className="text-lg font-black text-amber-300">
+                      {inventoryMetrics.totalRetailValue.toFixed(2)} BYN
+                    </div>
+                    <span className="text-[10px] text-amber-400 block">Ожидаемая выручка</span>
+                  </div>
+                </div>
+              )}
 
               {/* Detailed Metrics Grid */}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">

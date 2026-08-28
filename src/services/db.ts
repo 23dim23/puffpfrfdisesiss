@@ -656,7 +656,14 @@ class CloudDatabase {
 
   // ================= CATEGORIES =================
   public getCategories(): Category[] {
-    return getStoredItem<Category[]>(DB_KEYS.CATEGORIES, INITIAL_CATEGORIES);
+    let cats = getStoredItem<Category[]>(DB_KEYS.CATEGORIES, INITIAL_CATEGORIES);
+    if (!cats.some(c => c.slug === 'nicboosters')) {
+      const nico: Category = { id: 6, slug: 'nicboosters', name: 'Никобустеры', icon: '🎯', sort_order: 6, is_active: true };
+      cats = [...cats, nico];
+      setStoredItem(DB_KEYS.CATEGORIES, cats);
+      setDoc(doc(firestore, FS_COLS.CATEGORIES, "6"), nico).catch(() => {});
+    }
+    return cats;
   }
 
   public addCategory(cat: Omit<Category, 'id'>): Category {

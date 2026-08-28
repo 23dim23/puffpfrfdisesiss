@@ -25,10 +25,15 @@ export const HomeTab: React.FC<HomeTabProps> = ({
     (p) => p.in_stock && (p.stock_quantity === undefined || p.stock_quantity > 0) && p.discount_price && p.discount_price > 0
   );
 
-  // Popular products (sorted by sold_count or is_hit, only in-stock items)
+  // Popular products (sorted by is_hit first to help sell specified items, then sold_count, only in-stock items)
   const popularProducts = [...products]
     .filter((p) => p.in_stock && (p.stock_quantity === undefined || p.stock_quantity > 0))
-    .sort((a, b) => (b.sold_count || 0) - (a.sold_count || 0));
+    .sort((a, b) => {
+      const aHit = a.is_hit ? 1 : 0;
+      const bHit = b.is_hit ? 1 : 0;
+      if (bHit !== aHit) return bHit - aHit;
+      return (b.sold_count || 0) - (a.sold_count || 0);
+    });
 
   const handleManagerClick = () => {
     hapticImpact('medium');
@@ -47,6 +52,8 @@ export const HomeTab: React.FC<HomeTabProps> = ({
         return 'liquid-card-disposable';
       case 'snus':
         return 'liquid-card-snus';
+      case 'nicboosters':
+        return 'liquid-card-liquid'; // Use the beautiful liquid gradient or standard glass panel
       default:
         return 'glass-panel border-purple-500/20';
     }
