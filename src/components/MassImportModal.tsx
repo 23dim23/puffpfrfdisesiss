@@ -963,14 +963,22 @@ Vaporesso XROS 4 Mini\t75.00\t40.00\tpods\tVaporesso\tЧерный\t—\t8`;
                       </div>
                       <div>
                         <label className="text-[10px] text-zinc-400 font-semibold block mb-0.5">Бренд</label>
-                        <input
-                          type="text"
+                        <select
                           value={item.brand || ''}
                           onChange={(e) => handleUpdateItem(item.id, 'brand', e.target.value)}
                           onFocus={handleInputFocus}
-                          placeholder="HQD / Elf Bar"
                           className="w-full p-2 rounded-xl bg-black/60 border border-white/10 text-xs text-zinc-200 focus:outline-none focus:border-purple-500"
-                        />
+                        >
+                          <option value="">Выберите бренд...</option>
+                          {item.brand && !brands.some((b) => b.name.toLowerCase() === item.brand?.toLowerCase()) && (
+                            <option value={item.brand}>{item.brand}</option>
+                          )}
+                          {brands.map((b) => (
+                            <option key={b.id} value={b.name}>
+                              {b.name}
+                            </option>
+                          ))}
+                        </select>
                       </div>
                     </div>
 
@@ -1116,14 +1124,22 @@ Vaporesso XROS 4 Mini\t75.00\t40.00\tpods\tVaporesso\tЧерный\t—\t8`;
 
                         {/* Brand & Flavor */}
                         <td className="p-2">
-                          <div className="flex gap-1">
-                            <input
-                              type="text"
+                          <div className="flex gap-1 items-center">
+                            <select
                               value={item.brand || ''}
                               onChange={(e) => handleUpdateItem(item.id, 'brand', e.target.value)}
-                              placeholder="Бренд"
                               className="w-1/2 p-1.5 rounded-lg bg-black/40 border border-white/10 text-[11px] text-zinc-200 focus:outline-none focus:border-purple-500"
-                            />
+                            >
+                              <option value="">Бренд...</option>
+                              {item.brand && !brands.some((b) => b.name.toLowerCase() === item.brand?.toLowerCase()) && (
+                                <option value={item.brand}>{item.brand}</option>
+                              )}
+                              {brands.map((b) => (
+                                <option key={b.id} value={b.name}>
+                                  {b.name}
+                                </option>
+                              ))}
+                            </select>
                             <input
                               type="text"
                               value={item.flavor || ''}
