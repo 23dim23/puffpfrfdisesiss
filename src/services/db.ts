@@ -138,67 +138,44 @@ class CloudDatabase {
 
   // Local fallback storage initialization
   public initDatabase(): void {
-    const isCleaned = localStorage.getItem('puff_clean_defaults_v1');
-    if (!isCleaned) {
-      // One-time purge of legacy mock data from localStorage
+    if (!localStorage.getItem(DB_KEYS.SETTINGS)) {
       setStoredItem(DB_KEYS.SETTINGS, INITIAL_SETTINGS);
+    }
+    if (!localStorage.getItem(DB_KEYS.PRODUCTS)) {
       setStoredItem(DB_KEYS.PRODUCTS, []);
-      setStoredItem(DB_KEYS.ORDERS, []);
+    }
+    if (!localStorage.getItem(DB_KEYS.CATEGORIES)) {
       setStoredItem(DB_KEYS.CATEGORIES, INITIAL_CATEGORIES);
+    }
+    if (!localStorage.getItem(DB_KEYS.BRANDS)) {
       setStoredItem(DB_KEYS.BRANDS, []);
+    }
+    if (!localStorage.getItem(DB_KEYS.MODELS)) {
       setStoredItem(DB_KEYS.MODELS, []);
+    }
+    if (!localStorage.getItem(DB_KEYS.ATTR_GROUPS)) {
       setStoredItem(DB_KEYS.ATTR_GROUPS, []);
+    }
+    if (!localStorage.getItem(DB_KEYS.ATTR_VALUES)) {
       setStoredItem(DB_KEYS.ATTR_VALUES, []);
+    }
+    if (!localStorage.getItem(DB_KEYS.COLORS)) {
       setStoredItem(DB_KEYS.COLORS, []);
+    }
+    if (!localStorage.getItem(DB_KEYS.PROMOTIONS)) {
       setStoredItem(DB_KEYS.PROMOTIONS, INITIAL_PROMOTIONS);
+    }
+    if (!localStorage.getItem(DB_KEYS.PROMOCODES)) {
       setStoredItem(DB_KEYS.PROMOCODES, []);
+    }
+    if (!localStorage.getItem(DB_KEYS.PICKUP_POINTS)) {
       setStoredItem(DB_KEYS.PICKUP_POINTS, []);
+    }
+    if (!localStorage.getItem(DB_KEYS.ADMINS)) {
       setStoredItem(DB_KEYS.ADMINS, INITIAL_ADMINS);
-      localStorage.setItem('puff_clean_defaults_v1', 'true');
-      // Trigger cloud reset to clean Firestore as well
-      setTimeout(() => {
-        this.resetToInvoiceData().catch(() => {});
-      }, 500);
-    } else {
-      if (!localStorage.getItem(DB_KEYS.SETTINGS)) {
-        setStoredItem(DB_KEYS.SETTINGS, INITIAL_SETTINGS);
-      }
-      if (!localStorage.getItem(DB_KEYS.PRODUCTS)) {
-        setStoredItem(DB_KEYS.PRODUCTS, []);
-      }
-      if (!localStorage.getItem(DB_KEYS.CATEGORIES)) {
-        setStoredItem(DB_KEYS.CATEGORIES, INITIAL_CATEGORIES);
-      }
-      if (!localStorage.getItem(DB_KEYS.BRANDS)) {
-        setStoredItem(DB_KEYS.BRANDS, []);
-      }
-      if (!localStorage.getItem(DB_KEYS.MODELS)) {
-        setStoredItem(DB_KEYS.MODELS, []);
-      }
-      if (!localStorage.getItem(DB_KEYS.ATTR_GROUPS)) {
-        setStoredItem(DB_KEYS.ATTR_GROUPS, []);
-      }
-      if (!localStorage.getItem(DB_KEYS.ATTR_VALUES)) {
-        setStoredItem(DB_KEYS.ATTR_VALUES, []);
-      }
-      if (!localStorage.getItem(DB_KEYS.COLORS)) {
-        setStoredItem(DB_KEYS.COLORS, []);
-      }
-      if (!localStorage.getItem(DB_KEYS.PROMOTIONS)) {
-        setStoredItem(DB_KEYS.PROMOTIONS, INITIAL_PROMOTIONS);
-      }
-      if (!localStorage.getItem(DB_KEYS.PROMOCODES)) {
-        setStoredItem(DB_KEYS.PROMOCODES, []);
-      }
-      if (!localStorage.getItem(DB_KEYS.PICKUP_POINTS)) {
-        setStoredItem(DB_KEYS.PICKUP_POINTS, []);
-      }
-      if (!localStorage.getItem(DB_KEYS.ADMINS)) {
-        setStoredItem(DB_KEYS.ADMINS, INITIAL_ADMINS);
-      }
-      if (!localStorage.getItem(DB_KEYS.ORDERS)) {
-        setStoredItem(DB_KEYS.ORDERS, []);
-      }
+    }
+    if (!localStorage.getItem(DB_KEYS.ORDERS)) {
+      setStoredItem(DB_KEYS.ORDERS, []);
     }
   }
 

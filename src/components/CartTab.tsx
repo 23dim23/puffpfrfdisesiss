@@ -3,6 +3,7 @@ import { useStore } from '../services/store';
 import { ShoppingBag, Trash2, Plus, Minus, AlertTriangle, Truck, MapPin, CheckCircle2, ArrowRight } from 'lucide-react';
 import { DeliveryType } from '../types';
 import { hapticImpact } from '../services/telegram';
+import { ProductImage } from './ProductImage';
 
 interface CartTabProps {
   onGoToCatalog: () => void;
@@ -143,12 +144,13 @@ export const CartTab: React.FC<CartTabProps> = ({ onGoToCatalog, onOrderComplete
               className="flex items-center gap-3 p-3 rounded-2xl bg-white/[0.03] border border-white/[0.06] shadow-sm"
             >
               {/* Item Thumbnail */}
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-b from-purple-950/40 to-black/40 border border-white/5 flex items-center justify-center text-2xl shrink-0 overflow-hidden">
-                {item.image_url ? (
-                  <img src={item.image_url} alt={item.name} className="w-full h-full object-contain p-1" />
-                ) : (
-                  <span>{item.emoji || '📦'}</span>
-                )}
+              <div className="w-12 h-12 rounded-xl shrink-0 overflow-hidden">
+                <ProductImage
+                  src={item.image_url}
+                  alt={item.name}
+                  className="w-full h-full"
+                  imageClassName="w-full h-full object-contain p-1"
+                />
               </div>
 
               {/* Info */}
