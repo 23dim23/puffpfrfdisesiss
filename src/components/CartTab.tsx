@@ -134,6 +134,8 @@ export const CartTab: React.FC<CartTabProps> = ({ onGoToCatalog, onOrderComplete
         {cart.map((item, index) => {
           const effectivePrice = item.discount_price && item.discount_price > 0 ? item.discount_price : item.price;
           const lineTotal = ((effectivePrice || 0) * (item.quantity || 1)).toFixed(2);
+          const maxStock = item.stock_quantity !== undefined ? item.stock_quantity : 999;
+          const isAtMaxStock = item.quantity >= maxStock;
 
           return (
             <div
@@ -155,7 +157,14 @@ export const CartTab: React.FC<CartTabProps> = ({ onGoToCatalog, onOrderComplete
                 <p className="text-[11px] text-zinc-400 truncate">
                   {item.selected_color_name ? `Цвет: ${item.selected_color_name}` : `${(effectivePrice || 0).toFixed(2)} BYN / шт.`}
                 </p>
-                <div className="text-xs font-extrabold text-purple-300 mt-0.5">{lineTotal} BYN</div>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="text-xs font-extrabold text-purple-300">{lineTotal} BYN</span>
+                  {item.stock_quantity !== undefined && (
+                    <span className="text-[10px] text-zinc-500">
+                      (в наличии: {item.stock_quantity} шт.)
+                    </span>
+                  )}
+                </div>
               </div>
 
               {/* Quantity Adjusters */}
@@ -168,8 +177,20 @@ export const CartTab: React.FC<CartTabProps> = ({ onGoToCatalog, onOrderComplete
                 </button>
                 <span className="text-xs font-bold text-white min-w-[16px] text-center">{item.quantity}</span>
                 <button
-                  onClick={() => updateCartQuantity(index, 1)}
-                  className="w-7 h-7 rounded-lg bg-white/5 flex items-center justify-center text-xs font-bold text-zinc-300 hover:text-white tap-active-sm"
+                  disabled={isAtMaxStock}
+                  onClick={() => {
+                    if (isAtMaxStock) {
+                      alert(`К сожалению, в наличии доступно только ${maxStock} шт.`);
+                      return;
+                    }
+                    updateCartQuantity(index, 1);
+                  }}
+                  className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold transition-all tap-active-sm ${
+                    isAtMaxStock
+                      ? 'bg-white/5 text-zinc-600 cursor-not-allowed opacity-40'
+                      : 'bg-white/5 text-zinc-300 hover:text-white'
+                  }`}
+                  title={isAtMaxStock ? 'Достигнут лимит наличия товара' : 'Увеличить количество'}
                 >
                   <Plus className="w-3 h-3" />
                 </button>
@@ -263,20 +284,28 @@ export const CartTab: React.FC<CartTabProps> = ({ onGoToCatalog, onOrderComplete
         {/* Delivery Details */}
         {deliveryType === 'delivery' && (
           <div className="space-y-3">
-            {/* Courier policy text */}
-            <div className="p-3 rounded-2xl bg-orange-500/10 border border-orange-500/20 text-xs text-orange-200 leading-relaxed">
-              <p className="font-semibold text-white mb-1 flex items-center gap-1.5">
-                <Truck className="w-4 h-4 text-orange-400" />
-                Доставка курьером по Могилеву и области
+            {/* Courier policy text (Fully customizable via Admin Panel) */}
+            <div className="p-3.5 rounded-2xl bg-orange-500/10 border border-orange-500/20 text-xs text-orange-200 leading-relaxed shadow-sm">
+              <p className="font-bold text-white mb-1 flex items-center gap-1.5 text-xs">
+                <Truck className="w-4 h-4 text-orange-400 shrink-0" />
+                <span>{settings.delivery_card_title || 'Доставка курьером по Могилеву и области'}</span>
               </p>
-              По будням и выходным с 13:00. Стоимость 5.0 BYN; от 4 позиций в заказе — бесплатно. Итоговая стоимость
-              может измениться в зависимости от района.
+              <p className="text-[11px] text-zinc-300 mb-1 font-medium">
+                {settings.delivery_card_subtitle || 'По будням и выходным с 13:00.'}
+              </p>
+              <div className="text-[11px] font-semibold text-orange-300">
+                {settings.delivery_card_conditions ||
+                  `Стоимость ${settings.delivery_price || 5.0} BYN • от ${settings.free_delivery_min_items || 4} позиций в заказе — бесплатно`}
+              </div>
             </div>
 
-            {/* Warning card */}
+            {/* Warning card (Fully customizable via Admin Panel) */}
             <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center gap-2 text-[11px] text-amber-300">
               <AlertTriangle className="w-4 h-4 shrink-0 text-amber-400" />
-              <span>Стоимость доставки может измениться в зависимости от района Могилева.</span>
+              <span>
+                {settings.delivery_card_note ||
+                  'Итоговая стоимость доставки может измениться в зависимости от района Могилева.'}
+              </span>
             </div>
 
             {/* Address input */}

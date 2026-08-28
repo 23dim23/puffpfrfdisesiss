@@ -31,18 +31,23 @@ import {
   Search,
   MessageCircle,
   Percent,
+  Image as ImageIcon,
+  Camera,
+  UploadCloud,
 } from 'lucide-react';
 import { OrderStatus, DeliveryType, Product, Category, Brand, ProductModel, Promotion, Promocode, PickupPoint } from '../types';
 import { hapticImpact, hapticNotification, openTelegramOrWeb } from '../services/telegram';
 import { DetailedStatsModal } from './DetailedStatsModal';
 import { MassImportModal } from './MassImportModal';
 import { OrderExportModal } from './OrderExportModal';
+import { ProductImage } from './ProductImage';
 
 type AdminSubpage =
   | 'menu'
   | 'stats'
   | 'orders'
   | 'products'
+  | 'photos'
   | 'categories'
   | 'brands'
   | 'models'
@@ -76,6 +81,7 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
     saveSettings,
     addProduct,
     updateProduct,
+    bulkUpdateProductImage,
     deleteProduct,
     addCategory,
     deleteCategory,
@@ -102,6 +108,18 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
   const [activeSubpage, setActiveSubpage] = useState<AdminSubpage>('menu');
   const [dbDumpInput, setDbDumpInput] = useState<string>('');
   const [showDbTools, setShowDbTools] = useState<boolean>(false);
+
+  // Photo Hub State
+  const [photoTab, setPhotoTab] = useState<'single' | 'brand' | 'category'>('single');
+  const [photoSearch, setPhotoSearch] = useState('');
+  const [photoCategoryFilter, setPhotoCategoryFilter] = useState('all');
+  const [photoBrandFilter, setPhotoBrandFilter] = useState('all');
+  const [photoModalProduct, setPhotoModalProduct] = useState<Product | null>(null);
+  const [photoModalUrl, setPhotoModalUrl] = useState('');
+  const [bulkBrandSlug, setBulkBrandSlug] = useState('');
+  const [bulkBrandImageUrl, setBulkBrandImageUrl] = useState('');
+  const [bulkCategorySlug, setBulkCategorySlug] = useState('liquid');
+  const [bulkCategoryImageUrl, setBulkCategoryImageUrl] = useState('');
 
   // New Modals
   const [isStatsModalOpen, setIsStatsModalOpen] = useState(false);
@@ -139,6 +157,8 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
     category_slug: 'liquid',
     brand_slug: '',
     model_slug: '',
+    nicotine_strength: '',
+    image_url: '',
     stock_quantity: '10',
     emoji: '📦',
     description: '',
@@ -154,6 +174,10 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
     delivery_price: settings.delivery_price.toString(),
     free_delivery_min_items: settings.free_delivery_min_items.toString(),
     manager_username: settings.manager_username,
+    delivery_card_title: settings.delivery_card_title || 'Доставка курьером по Могилеву и области',
+    delivery_card_subtitle: settings.delivery_card_subtitle || 'По будням и выходным с 13:00',
+    delivery_card_conditions: settings.delivery_card_conditions || 'Стоимость 5.0 BYN • От 4 позиций в заказе — БЕСПЛАТНО',
+    delivery_card_note: settings.delivery_card_note || 'Итоговая стоимость доставки может измениться в зависимости от района Могилева.',
   });
 
   // Promocode form state
@@ -309,6 +333,8 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
         category_slug: product.category_slug,
         brand_slug: product.brand_slug || '',
         model_slug: product.model_slug || '',
+        nicotine_strength: product.nicotine_strength || '',
+        image_url: product.image_url || '',
         stock_quantity: product.stock_quantity.toString(),
         emoji: product.emoji || '📦',
         description: product.description || '',
@@ -325,6 +351,8 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
         category_slug: 'liquid',
         brand_slug: '',
         model_slug: '',
+        nicotine_strength: '',
+        image_url: '',
         stock_quantity: '10',
         emoji: '📦',
         description: '',
@@ -352,6 +380,8 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
       category_slug: productForm.category_slug,
       brand_slug: productForm.brand_slug || null,
       model_slug: productForm.model_slug || null,
+      nicotine_strength: productForm.nicotine_strength || null,
+      image_url: productForm.image_url.trim() || null,
       stock_quantity: parseInt(productForm.stock_quantity) || 0,
       in_stock: (parseInt(productForm.stock_quantity) || 0) > 0,
       emoji: productForm.emoji || '📦',
@@ -417,12 +447,13 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
     { id: 'stats', label: 'Статистика & Прибыль', icon: BarChart3, color: 'text-purple-400', desc: 'Продажи, выручка, топ товаров' },
     { id: 'orders', label: 'Управление заказами', icon: Package, color: 'text-orange-400', desc: `${stats.pendingOrdersCount} новых заказов` },
     { id: 'products', label: 'Каталог товаров', icon: ShoppingBag, color: 'text-emerald-400', desc: `${products.length} активных товаров` },
+    { id: 'photos', label: 'Фото товаров', icon: ImageIcon, color: 'text-amber-400', desc: 'Привязка фото: по товару, бренду или категории' },
     { id: 'categories', label: 'Категории', icon: FolderTree, color: 'text-blue-400', desc: `${categories.length} категорий` },
     { id: 'brands', label: 'Бренды & Линейки', icon: Tag, color: 'text-pink-400', desc: `${brands.length} брендов` },
     { id: 'models', label: 'Модели устройств', icon: Boxes, color: 'text-cyan-400', desc: `${models.length} моделей` },
     { id: 'promotions', label: 'Акции и розыгрыши', icon: Gift, color: 'text-amber-400', desc: `${promotions.length} активных акций` },
     { id: 'promocodes', label: 'Генератор промокодов', icon: Ticket, color: 'text-fuchsia-400', desc: `${promocodes.length} промокодов` },
-    { id: 'pickup', label: 'Точки самовывоза', icon: MapPin, color: 'text-lime-400', desc: `${pickupPoints.length} локаций в Минске` },
+    { id: 'pickup', label: 'Точки самовывоза (Могилев)', icon: MapPin, color: 'text-lime-400', desc: `${pickupPoints.length} локаций в Могилеве` },
     { id: 'moderators', label: 'Модераторы & Админы', icon: Users, color: 'text-indigo-400', desc: `${admins.length} сотрудников` },
     { id: 'import', label: 'Пакетный импорт товаров', icon: FileSpreadsheet, color: 'text-teal-400', desc: 'Вставка списком через |' },
     { id: 'settings', label: 'Настройки магазина', icon: SettingsIcon, color: 'text-zinc-300', desc: 'Тексты, доставка, менеджер' },
@@ -875,7 +906,14 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
                 className="flex items-center justify-between p-3 rounded-2xl bg-white/[0.03] border border-white/[0.06]"
               >
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <span className="text-2xl">{p.emoji || '📦'}</span>
+                  <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0 border border-white/10">
+                    <ProductImage
+                      src={p.image_url}
+                      alt={p.name}
+                      className="w-full h-full"
+                      imageClassName="w-full h-full object-contain p-1"
+                    />
+                  </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5">
                       <h4 className="text-xs font-bold text-white truncate">{p.name}</h4>
@@ -910,6 +948,489 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* SUBPAGE: PHOTOS HUB */}
+      {activeSubpage === 'photos' && (
+        <div className="space-y-4">
+          {/* Photos Navigation Mode Toggle */}
+          <div className="grid grid-cols-3 gap-1.5 p-1 bg-black/40 rounded-2xl border border-white/5">
+            <button
+              onClick={() => {
+                setPhotoTab('single');
+                hapticImpact('light');
+              }}
+              className={`py-2 px-2 rounded-xl text-xs font-bold transition-all text-center tap-active-sm ${
+                photoTab === 'single'
+                  ? 'bg-gradient-to-r from-amber-600 to-orange-500 text-white shadow-md'
+                  : 'text-zinc-400 hover:text-white'
+              }`}
+            >
+              По товарам
+            </button>
+            <button
+              onClick={() => {
+                setPhotoTab('brand');
+                hapticImpact('light');
+              }}
+              className={`py-2 px-2 rounded-xl text-xs font-bold transition-all text-center tap-active-sm ${
+                photoTab === 'brand'
+                  ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-md'
+                  : 'text-zinc-400 hover:text-white'
+              }`}
+            >
+              По бренду
+            </button>
+            <button
+              onClick={() => {
+                setPhotoTab('category');
+                hapticImpact('light');
+              }}
+              className={`py-2 px-2 rounded-xl text-xs font-bold transition-all text-center tap-active-sm ${
+                photoTab === 'category'
+                  ? 'bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-md'
+                  : 'text-zinc-400 hover:text-white'
+              }`}
+            >
+              По категории
+            </button>
+          </div>
+
+          {/* TAB 1: INDIVIDUAL PRODUCT PHOTO */}
+          {photoTab === 'single' && (
+            <div className="space-y-3">
+              {/* Search and Filters */}
+              <div className="space-y-2">
+                <div className="relative">
+                  <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-zinc-400" />
+                  <input
+                    type="text"
+                    value={photoSearch}
+                    onChange={(e) => setPhotoSearch(e.target.value)}
+                    placeholder="Поиск товара для фото..."
+                    className="w-full pl-9 pr-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-xs placeholder-zinc-500"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <select
+                    value={photoCategoryFilter}
+                    onChange={(e) => setPhotoCategoryFilter(e.target.value)}
+                    className="w-full py-2 px-2.5 rounded-xl bg-[#181628] border border-white/10 text-white text-xs"
+                  >
+                    <option value="all">Все категории</option>
+                    {categories.map((c) => (
+                      <option key={c.id} value={c.slug}>
+                        {c.icon} {c.name}
+                      </option>
+                    ))}
+                  </select>
+
+                  <select
+                    value={photoBrandFilter}
+                    onChange={(e) => setPhotoBrandFilter(e.target.value)}
+                    className="w-full py-2 px-2.5 rounded-xl bg-[#181628] border border-white/10 text-white text-xs"
+                  >
+                    <option value="all">Все бренды</option>
+                    {brands.map((b) => (
+                      <option key={b.id} value={b.slug}>
+                        {b.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Products List */}
+              <div className="space-y-2 max-h-[500px] overflow-y-auto pr-1">
+                {products
+                  .filter((p) => {
+                    const matchSearch =
+                      !photoSearch ||
+                      p.name.toLowerCase().includes(photoSearch.toLowerCase()) ||
+                      (p.flavor && p.flavor.toLowerCase().includes(photoSearch.toLowerCase()));
+                    const matchCat = photoCategoryFilter === 'all' || p.category_slug === photoCategoryFilter;
+                    const matchBrand = photoBrandFilter === 'all' || p.brand_slug === photoBrandFilter;
+                    return matchSearch && matchCat && matchBrand;
+                  })
+                  .map((p) => (
+                    <div
+                      key={p.id}
+                      className="flex items-center justify-between p-3 rounded-2xl bg-white/[0.03] border border-white/[0.06] hover:border-amber-500/30 transition-all"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0 border border-white/10 bg-black/40">
+                          <ProductImage
+                            src={p.image_url}
+                            alt={p.name}
+                            className="w-full h-full"
+                            imageClassName="w-full h-full object-contain p-1"
+                          />
+                        </div>
+                        <div className="min-w-0">
+                          <h4 className="text-xs font-bold text-white truncate">{p.name}</h4>
+                          <p className="text-[10px] text-zinc-400">
+                            {categories.find((c) => c.slug === p.category_slug)?.name || p.category_slug}
+                            {p.brand_slug ? ` · ${brands.find((b) => b.slug === p.brand_slug)?.name || p.brand_slug}` : ''}
+                          </p>
+                          <span className={`text-[10px] font-semibold ${p.image_url ? 'text-emerald-400' : 'text-zinc-500'}`}>
+                            {p.image_url ? '✓ Фото установлено' : '• Без фото (плейсхолдер)'}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <button
+                          onClick={() => {
+                            setPhotoModalProduct(p);
+                            setPhotoModalUrl(p.image_url || '');
+                          }}
+                          className="px-2.5 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-bold tap-active-sm"
+                        >
+                          {p.image_url ? 'Изменить' : 'Установить'}
+                        </button>
+                        {p.image_url && (
+                          <button
+                            onClick={() => {
+                              updateProduct(p.id, { image_url: '' });
+                              hapticNotification('success');
+                            }}
+                            title="Сбросить фото"
+                            className="p-1.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 tap-active-sm"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+              </div>
+
+              {/* Single Product Photo Modal */}
+              {photoModalProduct && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+                  <div className="relative w-full max-w-sm bg-[#181628] border border-amber-500/30 rounded-3xl p-5 shadow-2xl space-y-4 animate-in fade-in zoom-in-95">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-xs font-bold text-white uppercase tracking-wider">
+                        Фото для: {photoModalProduct.name}
+                      </h3>
+                      <button
+                        onClick={() => setPhotoModalProduct(null)}
+                        className="p-1 rounded-full text-zinc-400 hover:text-white"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    {/* Preview */}
+                    <div className="w-28 h-28 mx-auto rounded-2xl overflow-hidden border border-amber-500/40 bg-black/50 flex items-center justify-center shadow-md">
+                      <ProductImage
+                        src={photoModalUrl}
+                        alt="Preview"
+                        className="w-full h-full"
+                        imageClassName="w-full h-full object-contain p-2"
+                      />
+                    </div>
+
+                    {/* Direct URL input */}
+                    <div>
+                      <label className="text-xs font-semibold text-zinc-300 block mb-1">
+                        Прямая ссылка на фото (URL):
+                      </label>
+                      <input
+                        type="text"
+                        value={photoModalUrl}
+                        onChange={(e) => setPhotoModalUrl(e.target.value)}
+                        placeholder="https://... или ссылка на фото"
+                        className="w-full py-2 px-3 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-amber-500"
+                      />
+                    </div>
+
+                    {/* Upload File */}
+                    <div>
+                      <label className="text-xs font-semibold text-zinc-300 block mb-1">Или выберите файл:</label>
+                      <label className="w-full py-2.5 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 text-xs font-medium flex items-center justify-center gap-2 cursor-pointer transition-all">
+                        <Camera className="w-4 h-4 text-amber-400" />
+                        <span>Загрузить фото с устройства</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const reader = new FileReader();
+                              reader.onload = () => {
+                                if (typeof reader.result === 'string') {
+                                  setPhotoModalUrl(reader.result);
+                                }
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                        />
+                      </label>
+                    </div>
+
+                    <div className="flex gap-2 pt-2">
+                      <button
+                        onClick={() => {
+                          updateProduct(photoModalProduct.id, { image_url: photoModalUrl });
+                          setPhotoModalProduct(null);
+                          hapticNotification('success');
+                        }}
+                        className="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-amber-600 to-orange-500 text-white text-xs font-bold shadow-md tap-active"
+                      >
+                        Сохранить фото
+                      </button>
+                      <button
+                        onClick={() => setPhotoModalProduct(null)}
+                        className="py-3 px-4 rounded-xl bg-white/10 text-zinc-300 text-xs font-bold hover:bg-white/20 tap-active"
+                      >
+                        Отмена
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB 2: BULK PHOTO BY BRAND */}
+          {photoTab === 'brand' && (
+            <div className="p-4 rounded-2xl bg-white/[0.03] border border-purple-500/20 space-y-4">
+              <div className="space-y-1">
+                <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                  <Tag className="w-4 h-4 text-pink-400" />
+                  <span>Массовая установка фото по бренду</span>
+                </h4>
+                <p className="text-[11px] text-zinc-400 leading-relaxed">
+                  Выберите бренд и примените одно общее фото ко всем товарам этого бренда в один клик.
+                </p>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-zinc-300 block mb-1">Выберите бренд:</label>
+                <select
+                  value={bulkBrandSlug}
+                  onChange={(e) => setBulkBrandSlug(e.target.value)}
+                  className="w-full py-2.5 px-3 rounded-xl bg-[#181628] border border-white/10 text-white text-xs focus:outline-none focus:border-purple-500"
+                >
+                  <option value="">-- Выберите бренд из списка --</option>
+                  {brands.map((b) => {
+                    const count = products.filter((p) => p.brand_slug === b.slug).length;
+                    return (
+                      <option key={b.id} value={b.slug}>
+                        {b.name} ({count} товаров в базе)
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+
+              {/* Preview Box */}
+              {bulkBrandImageUrl && (
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-black/40 border border-purple-500/30">
+                  <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0 border border-purple-500/40 bg-black/50">
+                    <ProductImage
+                      src={bulkBrandImageUrl}
+                      alt="Brand Preview"
+                      className="w-full h-full"
+                      imageClassName="w-full h-full object-contain p-1"
+                    />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <span className="text-xs font-bold text-purple-300">Предпросмотр фото бренда</span>
+                    <p className="text-[10px] text-zinc-400 truncate mt-0.5">{bulkBrandImageUrl}</p>
+                  </div>
+                  <button
+                    onClick={() => setBulkBrandImageUrl('')}
+                    className="p-1 rounded-lg text-zinc-400 hover:text-red-400"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+
+              {/* URL Input */}
+              <div>
+                <label className="text-xs font-semibold text-zinc-300 block mb-1">
+                  Прямая ссылка на фото бренда (URL):
+                </label>
+                <input
+                  type="text"
+                  value={bulkBrandImageUrl}
+                  onChange={(e) => setBulkBrandImageUrl(e.target.value)}
+                  placeholder="https://... или прямая ссылка на фото"
+                  className="w-full py-2 px-3 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-purple-500"
+                />
+              </div>
+
+              {/* Upload File */}
+              <div>
+                <label className="w-full py-2.5 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 text-xs font-medium flex items-center justify-center gap-2 cursor-pointer transition-all">
+                  <UploadCloud className="w-4 h-4 text-pink-400" />
+                  <span>Загрузить фото бренда с устройства</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onload = () => {
+                          if (typeof reader.result === 'string') {
+                            setBulkBrandImageUrl(reader.result);
+                          }
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                  />
+                </label>
+              </div>
+
+              <button
+                disabled={!bulkBrandSlug || !bulkBrandImageUrl}
+                onClick={async () => {
+                  if (!bulkBrandSlug || !bulkBrandImageUrl) return;
+                  const matchingCount = products.filter((p) => p.brand_slug === bulkBrandSlug).length;
+                  const brandObj = brands.find((b) => b.slug === bulkBrandSlug);
+                  if (
+                    confirm(
+                      `Применить это фото ко всем товарам бренда "${brandObj?.name || bulkBrandSlug}" (${matchingCount} шт.)?`
+                    )
+                  ) {
+                    const count = await bulkUpdateProductImage({ brand_slug: bulkBrandSlug }, bulkBrandImageUrl);
+                    alert(`✅ Фото успешно установлено для ${count} товаров бренда!`);
+                    setBulkBrandImageUrl('');
+                  }
+                }}
+                className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 text-white text-xs font-bold shadow-md tap-active disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Применить фото ко всем товарам бренда
+              </button>
+            </div>
+          )}
+
+          {/* TAB 3: BULK PHOTO BY CATEGORY */}
+          {photoTab === 'category' && (
+            <div className="p-4 rounded-2xl bg-white/[0.03] border border-blue-500/20 space-y-4">
+              <div className="space-y-1">
+                <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                  <FolderTree className="w-4 h-4 text-cyan-400" />
+                  <span>Массовая установка фото по категории</span>
+                </h4>
+                <p className="text-[11px] text-zinc-400 leading-relaxed">
+                  Установите общее фото для всех товаров определенной категории (жидкости, одноразки, поды, картриджи, снюс).
+                </p>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-zinc-300 block mb-1">Выберите категорию:</label>
+                <select
+                  value={bulkCategorySlug}
+                  onChange={(e) => setBulkCategorySlug(e.target.value)}
+                  className="w-full py-2.5 px-3 rounded-xl bg-[#181628] border border-white/10 text-white text-xs focus:outline-none focus:border-blue-500"
+                >
+                  {categories.map((c) => {
+                    const count = products.filter((p) => p.category_slug === c.slug).length;
+                    return (
+                      <option key={c.id} value={c.slug}>
+                        {c.icon} {c.name} ({count} товаров в базе)
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+
+              {/* Preview Box */}
+              {bulkCategoryImageUrl && (
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-black/40 border border-blue-500/30">
+                  <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0 border border-blue-500/40 bg-black/50">
+                    <ProductImage
+                      src={bulkCategoryImageUrl}
+                      alt="Category Preview"
+                      className="w-full h-full"
+                      imageClassName="w-full h-full object-contain p-1"
+                    />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <span className="text-xs font-bold text-cyan-300">Предпросмотр фото категории</span>
+                    <p className="text-[10px] text-zinc-400 truncate mt-0.5">{bulkCategoryImageUrl}</p>
+                  </div>
+                  <button
+                    onClick={() => setBulkCategoryImageUrl('')}
+                    className="p-1 rounded-lg text-zinc-400 hover:text-red-400"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+
+              {/* URL Input */}
+              <div>
+                <label className="text-xs font-semibold text-zinc-300 block mb-1">
+                  Прямая ссылка на фото категории (URL):
+                </label>
+                <input
+                  type="text"
+                  value={bulkCategoryImageUrl}
+                  onChange={(e) => setBulkCategoryImageUrl(e.target.value)}
+                  placeholder="https://... или прямая ссылка на фото"
+                  className="w-full py-2 px-3 rounded-xl bg-white/5 border border-white/10 text-white text-xs focus:outline-none focus:border-blue-500"
+                />
+              </div>
+
+              {/* Upload File */}
+              <div>
+                <label className="w-full py-2.5 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-300 text-xs font-medium flex items-center justify-center gap-2 cursor-pointer transition-all">
+                  <UploadCloud className="w-4 h-4 text-cyan-400" />
+                  <span>Загрузить фото категории с устройства</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onload = () => {
+                          if (typeof reader.result === 'string') {
+                            setBulkCategoryImageUrl(reader.result);
+                          }
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                  />
+                </label>
+              </div>
+
+              <button
+                disabled={!bulkCategorySlug || !bulkCategoryImageUrl}
+                onClick={async () => {
+                  if (!bulkCategorySlug || !bulkCategoryImageUrl) return;
+                  const matchingCount = products.filter((p) => p.category_slug === bulkCategorySlug).length;
+                  const catObj = categories.find((c) => c.slug === bulkCategorySlug);
+                  if (
+                    confirm(
+                      `Применить это фото ко всем товарам категории "${catObj?.name || bulkCategorySlug}" (${matchingCount} шт.)?`
+                    )
+                  ) {
+                    const count = await bulkUpdateProductImage({ category_slug: bulkCategorySlug }, bulkCategoryImageUrl);
+                    alert(`✅ Фото успешно установлено для ${count} товаров категории!`);
+                    setBulkCategoryImageUrl('');
+                  }
+                }}
+                className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white text-xs font-bold shadow-md tap-active disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Применить фото ко всем товарам категории
+              </button>
+            </div>
+          )}
         </div>
       )}
 
@@ -1120,6 +1641,58 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
             </div>
           </div>
 
+          {/* Delivery Card Customization */}
+          <div className="p-3.5 rounded-xl bg-purple-500/5 border border-purple-500/20 space-y-2.5">
+            <h5 className="text-xs font-bold text-purple-300 flex items-center gap-1.5">
+              <Truck className="w-3.5 h-3.5" />
+              <span>Оформление карточки курьерской доставки в корзине</span>
+            </h5>
+            
+            <div>
+              <label className="text-[11px] font-medium text-zinc-300 block mb-1">Заголовок карточки доставки:</label>
+              <input
+                type="text"
+                value={settingsForm.delivery_card_title}
+                onChange={(e) => setSettingsForm((prev) => ({ ...prev, delivery_card_title: e.target.value }))}
+                placeholder="Доставка курьером по Могилеву и области"
+                className="w-full py-2 px-3 rounded-xl bg-white/5 border border-white/10 text-white text-xs"
+              />
+            </div>
+
+            <div>
+              <label className="text-[11px] font-medium text-zinc-300 block mb-1">Время / график доставки (подзаголовок):</label>
+              <input
+                type="text"
+                value={settingsForm.delivery_card_subtitle}
+                onChange={(e) => setSettingsForm((prev) => ({ ...prev, delivery_card_subtitle: e.target.value }))}
+                placeholder="По будням и выходным с 13:00"
+                className="w-full py-2 px-3 rounded-xl bg-white/5 border border-white/10 text-white text-xs"
+              />
+            </div>
+
+            <div>
+              <label className="text-[11px] font-medium text-zinc-300 block mb-1">Текст условий и тарифов:</label>
+              <input
+                type="text"
+                value={settingsForm.delivery_card_conditions}
+                onChange={(e) => setSettingsForm((prev) => ({ ...prev, delivery_card_conditions: e.target.value }))}
+                placeholder="Стоимость 5.0 BYN • От 4 позиций в заказе — БЕСПЛАТНО"
+                className="w-full py-2 px-3 rounded-xl bg-white/5 border border-white/10 text-white text-xs"
+              />
+            </div>
+
+            <div>
+              <label className="text-[11px] font-medium text-zinc-300 block mb-1">Предупреждение / примечание по району:</label>
+              <textarea
+                value={settingsForm.delivery_card_note}
+                onChange={(e) => setSettingsForm((prev) => ({ ...prev, delivery_card_note: e.target.value }))}
+                rows={2}
+                placeholder="Итоговая стоимость доставки может измениться в зависимости от района Могилева."
+                className="w-full py-2 px-3 rounded-xl bg-white/5 border border-white/10 text-white text-xs"
+              />
+            </div>
+          </div>
+
           <button
             onClick={() => {
               saveSettings({
@@ -1129,6 +1702,10 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
                 free_delivery_min_items: parseInt(settingsForm.free_delivery_min_items) || 4,
                 manager_username: settingsForm.manager_username,
                 logo_url: settingsForm.logo_url,
+                delivery_card_title: settingsForm.delivery_card_title,
+                delivery_card_subtitle: settingsForm.delivery_card_subtitle,
+                delivery_card_conditions: settingsForm.delivery_card_conditions,
+                delivery_card_note: settingsForm.delivery_card_note,
               });
               alert('Настройки успешно сохранены!');
             }}
@@ -1169,9 +1746,13 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
                   <button
                     type="button"
                     onClick={() => {
-                      if (confirm('Вы уверены, что хотите сбросить базу данных к начальным товарам и категориям? Все созданные вручную товары будут заменены исходными.')) {
+                      if (
+                        confirm(
+                          'Вы уверены, что хотите сбросить базу данных к чистой версии? Будут очищены все товары, бренды, заказы и промокоды, сохранятся только оформление главной страницы, акции и администраторы.'
+                        )
+                      ) {
                         resetDatabaseDefaults();
-                        alert('База данных успешно сброшена!');
+                        alert('База данных успешно сброшена к чистой версии!');
                       }
                     }}
                     className="py-2 px-3 rounded-lg bg-red-500/20 border border-red-500/30 text-red-300 text-[11px] font-semibold hover:bg-red-500/30"
@@ -1770,6 +2351,22 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
                   </select>
                 </div>
                 <div>
+                  <label className="text-xs text-zinc-300 block mb-1">Бренд товара</label>
+                  <select
+                    value={productForm.brand_slug}
+                    onChange={(e) => setProductForm((prev) => ({ ...prev, brand_slug: e.target.value }))}
+                    className="w-full py-2 px-2 rounded-xl bg-[#181628] border border-white/10 text-white text-xs"
+                  >
+                    <option value="">-- Без бренда --</option>
+                    {brands.map((b) => (
+                      <option key={b.slug} value={b.slug}>{b.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
                   <label className="text-xs text-zinc-300 block mb-1">Остаток (шт)</label>
                   <input
                     type="number"
@@ -1778,16 +2375,60 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
                     className="w-full py-2 px-3 rounded-xl bg-white/5 border border-white/10 text-white text-xs"
                   />
                 </div>
+                <div>
+                  <label className="text-xs text-zinc-300 block mb-1">Крепость (мг)</label>
+                  <input
+                    type="text"
+                    placeholder="Напр. 20 мг, 50 мг"
+                    value={productForm.nicotine_strength}
+                    onChange={(e) => setProductForm((prev) => ({ ...prev, nicotine_strength: e.target.value }))}
+                    className="w-full py-2 px-3 rounded-xl bg-white/5 border border-white/10 text-white text-xs"
+                  />
+                </div>
               </div>
 
-              <div>
-                <label className="text-xs text-zinc-300 block mb-1">Эмодзи или значок</label>
-                <input
-                  type="text"
-                  value={productForm.emoji}
-                  onChange={(e) => setProductForm((prev) => ({ ...prev, emoji: e.target.value }))}
-                  className="w-full py-2 px-3 rounded-xl bg-white/5 border border-white/10 text-white text-xs"
-                />
+              {/* Photo & Image URL */}
+              <div className="space-y-1.5 p-3 rounded-2xl bg-white/[0.03] border border-white/10">
+                <label className="text-xs font-semibold text-zinc-300 block">Фотография товара</label>
+                <div className="flex items-center gap-3">
+                  <div className="w-14 h-14 rounded-2xl overflow-hidden shrink-0 border border-white/15">
+                    <ProductImage
+                      src={productForm.image_url}
+                      alt="Предпросмотр"
+                      className="w-full h-full"
+                      imageClassName="w-full h-full object-contain p-1"
+                    />
+                  </div>
+                  <div className="flex-1 space-y-1.5">
+                    <input
+                      type="text"
+                      placeholder="Ссылка на фото (URL)"
+                      value={productForm.image_url}
+                      onChange={(e) => setProductForm((prev) => ({ ...prev, image_url: e.target.value }))}
+                      className="w-full py-1.5 px-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-xs"
+                    />
+                    <label className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-purple-500/20 text-purple-300 text-[11px] font-bold cursor-pointer hover:bg-purple-500/30 transition-all">
+                      <span>📁 Загрузить файл</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onload = () => {
+                              if (typeof reader.result === 'string') {
+                                setProductForm((prev) => ({ ...prev, image_url: reader.result as string }));
+                              }
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                      />
+                    </label>
+                  </div>
+                </div>
               </div>
 
               <div>

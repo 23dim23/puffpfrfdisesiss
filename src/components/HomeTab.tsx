@@ -3,6 +3,7 @@ import { useStore } from '../services/store';
 import { Product, Promotion } from '../types';
 import { Sparkles, Tag, MessageCircle, ArrowRight, Flame, Percent, ChevronRight } from 'lucide-react';
 import { openTelegramOrWeb, hapticImpact } from '../services/telegram';
+import { ProductImage } from './ProductImage';
 
 interface HomeTabProps {
   onNavigateToCatalog: (categorySlug?: string) => void;
@@ -243,14 +244,15 @@ export const HomeTab: React.FC<HomeTabProps> = ({
                   }}
                   className="min-w-[160px] max-w-[160px] p-3 rounded-2xl bg-white/[0.04] border border-purple-500/20 backdrop-blur-md shadow-lg shadow-black/40 shrink-0 snap-start cursor-pointer hover:border-purple-500/40 transition-all flex flex-col justify-between tap-active"
                 >
-                  <div className="relative w-full aspect-square rounded-xl bg-gradient-to-b from-purple-950/30 to-black/40 flex items-center justify-center text-4xl mb-2.5 overflow-hidden border border-white/5">
-                    {product.image_url ? (
-                      <img src={product.image_url} alt={product.name} className="w-full h-full object-contain p-2" />
-                    ) : (
-                      <span>{product.emoji || '📦'}</span>
-                    )}
+                  <div className="relative w-full aspect-square rounded-xl overflow-hidden mb-2.5 border border-white/5">
+                    <ProductImage
+                      src={product.image_url}
+                      alt={product.name}
+                      className="w-full h-full"
+                      imageClassName="w-full h-full object-contain p-2"
+                    />
                     {discountPercent > 0 && (
-                      <span className="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded-full text-[9px] font-extrabold bg-red-500 text-white shadow-sm">
+                      <span className="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded-full text-[9px] font-extrabold bg-red-500 text-white shadow-sm z-10">
                         -{discountPercent}%
                       </span>
                     )}
@@ -315,14 +317,15 @@ export const HomeTab: React.FC<HomeTabProps> = ({
                 }}
                 className="min-w-[155px] max-w-[155px] p-3 rounded-2xl bg-white/[0.03] border border-white/[0.07] backdrop-blur-md shadow-lg shadow-black/40 shrink-0 snap-start cursor-pointer hover:border-purple-500/30 transition-all flex flex-col justify-between tap-active"
               >
-                <div className="relative w-full aspect-square rounded-xl bg-gradient-to-b from-white/[0.03] to-black/40 flex items-center justify-center text-4xl mb-2.5 overflow-hidden border border-white/5">
-                  {product.image_url ? (
-                    <img src={product.image_url} alt={product.name} className="w-full h-full object-contain p-2" />
-                  ) : (
-                    <span>{product.emoji || '📦'}</span>
-                  )}
+                <div className="relative w-full aspect-square rounded-xl overflow-hidden mb-2.5 border border-white/5">
+                  <ProductImage
+                    src={product.image_url}
+                    alt={product.name}
+                    className="w-full h-full"
+                    imageClassName="w-full h-full object-contain p-2"
+                  />
                   {product.is_hit && (
-                    <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-amber-500/30 text-amber-300 border border-amber-500/40">
+                    <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-amber-500/30 text-amber-300 border border-amber-500/40 z-10">
                       Хит
                     </span>
                   )}

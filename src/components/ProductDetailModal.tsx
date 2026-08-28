@@ -214,7 +214,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product,
         </button>
 
         <p className="text-[10px] text-zinc-400 text-center mt-2.5">
-          🔒 Быстрый заказ и выдача в Минске / доставка по Беларуси
+          🔒 Быстрый заказ и выдача в Могилеве
         </p>
       </div>
     </div>

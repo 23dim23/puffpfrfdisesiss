@@ -3,6 +3,7 @@ import { useStore } from '../services/store';
 import { Product } from '../types';
 import { Search, Plus, Filter, Flame, Sparkles, Check, X } from 'lucide-react';
 import { hapticImpact } from '../services/telegram';
+import { ProductImage } from './ProductImage';
 
 interface CatalogTabProps {
   initialCategory?: string;
@@ -67,36 +68,47 @@ export const CatalogTab: React.FC<CatalogTabProps> = ({ initialCategory = 'all',
 
       // Strength filter
       if (selectedStrength !== 'all') {
-        const text = `${product.name} ${product.description || ''}`.toLowerCase();
-        if (selectedStrength === '0 мг' && !text.includes('0мг') && !text.includes('0 мг')) return false;
+        const text = `${product.name} ${product.description || ''} ${product.nicotine_strength || ''}`.toLowerCase();
+        if (selectedStrength === '0 мг' && !text.includes('0мг') && !text.includes('0 мг') && !text.includes('без никотина')) return false;
         if (
           selectedStrength === '20-50 мг' &&
           !text.includes('20мг') &&
+          !text.includes('20 мг') &&
           !text.includes('20-50') &&
           !text.includes('50мг') &&
-          !text.includes('salt')
+          !text.includes('50 мг') &&
+          !text.includes('salt') &&
+          !text.includes('20')
         )
           return false;
         if (
           selectedStrength === '60-70 мг' &&
           !text.includes('60мг') &&
+          !text.includes('60 мг') &&
+          !text.includes('60') &&
           !text.includes('70мг') &&
-          !text.includes('hard')
+          !text.includes('70 мг') &&
+          !text.includes('70') &&
+          !text.includes('hard') &&
+          !text.includes('strong')
         )
           return false;
         if (
           selectedStrength === '80+ мг' &&
           !text.includes('80мг') &&
+          !text.includes('80 мг') &&
           !text.includes('80+') &&
+          !text.includes('80') &&
           !text.includes('ultra') &&
-          !text.includes('100мг')
+          !text.includes('100мг') &&
+          !text.includes('100 мг')
         )
           return false;
 
         // Snus strengths
-        if (selectedStrength === '75 мг' && !text.includes('75мг') && !text.includes('75 мг')) return false;
-        if (selectedStrength === '150 мг' && !text.includes('150мг') && !text.includes('150 мг')) return false;
-        if (selectedStrength === '200 мг' && !text.includes('200мг') && !text.includes('200 мг')) return false;
+        if (selectedStrength === '75 мг' && !text.includes('75мг') && !text.includes('75 мг') && !text.includes('75')) return false;
+        if (selectedStrength === '150 мг' && !text.includes('150мг') && !text.includes('150 мг') && !text.includes('150')) return false;
+        if (selectedStrength === '200 мг' && !text.includes('200мг') && !text.includes('200 мг') && !text.includes('200')) return false;
       }
 
       // Line filter
@@ -388,12 +400,13 @@ export const CatalogTab: React.FC<CatalogTabProps> = ({ initialCategory = 'all',
                 className="flex items-center gap-3.5 p-3 rounded-2xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] hover:border-purple-500/30 transition-all cursor-pointer shadow-md shadow-black/30 tap-active"
               >
                 {/* Thumbnail */}
-                <div className="w-13 h-13 rounded-xl bg-gradient-to-b from-purple-950/30 to-black/40 border border-white/5 flex items-center justify-center text-3xl shrink-0 overflow-hidden">
-                  {product.image_url ? (
-                    <img src={product.image_url} alt={product.name} className="w-full h-full object-contain p-1" />
-                  ) : (
-                    <span>{product.emoji || '📦'}</span>
-                  )}
+                <div className="w-13 h-13 rounded-xl border border-white/5 flex items-center justify-center shrink-0 overflow-hidden">
+                  <ProductImage
+                    src={product.image_url}
+                    alt={product.name}
+                    className="w-full h-full"
+                    imageClassName="w-full h-full object-contain p-1"
+                  />
                 </div>
 
                 {/* Details */}

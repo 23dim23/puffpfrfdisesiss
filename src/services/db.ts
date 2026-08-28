@@ -138,44 +138,67 @@ class CloudDatabase {
 
   // Local fallback storage initialization
   public initDatabase(): void {
-    if (!localStorage.getItem(DB_KEYS.SETTINGS)) {
+    const isCleaned = localStorage.getItem('puff_clean_defaults_v1');
+    if (!isCleaned) {
+      // One-time purge of legacy mock data from localStorage
       setStoredItem(DB_KEYS.SETTINGS, INITIAL_SETTINGS);
-    }
-    if (!localStorage.getItem(DB_KEYS.PRODUCTS)) {
-      setStoredItem(DB_KEYS.PRODUCTS, INITIAL_PRODUCTS);
-    }
-    if (!localStorage.getItem(DB_KEYS.CATEGORIES)) {
-      setStoredItem(DB_KEYS.CATEGORIES, INITIAL_CATEGORIES);
-    }
-    if (!localStorage.getItem(DB_KEYS.BRANDS)) {
-      setStoredItem(DB_KEYS.BRANDS, INITIAL_BRANDS);
-    }
-    if (!localStorage.getItem(DB_KEYS.MODELS)) {
-      setStoredItem(DB_KEYS.MODELS, INITIAL_MODELS);
-    }
-    if (!localStorage.getItem(DB_KEYS.ATTR_GROUPS)) {
-      setStoredItem(DB_KEYS.ATTR_GROUPS, INITIAL_ATTRIBUTE_GROUPS);
-    }
-    if (!localStorage.getItem(DB_KEYS.ATTR_VALUES)) {
-      setStoredItem(DB_KEYS.ATTR_VALUES, INITIAL_ATTRIBUTE_VALUES);
-    }
-    if (!localStorage.getItem(DB_KEYS.COLORS)) {
-      setStoredItem(DB_KEYS.COLORS, INITIAL_PRODUCT_COLORS);
-    }
-    if (!localStorage.getItem(DB_KEYS.PROMOTIONS)) {
-      setStoredItem(DB_KEYS.PROMOTIONS, INITIAL_PROMOTIONS);
-    }
-    if (!localStorage.getItem(DB_KEYS.PROMOCODES)) {
-      setStoredItem(DB_KEYS.PROMOCODES, INITIAL_PROMOCODES);
-    }
-    if (!localStorage.getItem(DB_KEYS.PICKUP_POINTS)) {
-      setStoredItem(DB_KEYS.PICKUP_POINTS, INITIAL_PICKUP_POINTS);
-    }
-    if (!localStorage.getItem(DB_KEYS.ADMINS)) {
-      setStoredItem(DB_KEYS.ADMINS, INITIAL_ADMINS);
-    }
-    if (!localStorage.getItem(DB_KEYS.ORDERS)) {
+      setStoredItem(DB_KEYS.PRODUCTS, []);
       setStoredItem(DB_KEYS.ORDERS, []);
+      setStoredItem(DB_KEYS.CATEGORIES, INITIAL_CATEGORIES);
+      setStoredItem(DB_KEYS.BRANDS, []);
+      setStoredItem(DB_KEYS.MODELS, []);
+      setStoredItem(DB_KEYS.ATTR_GROUPS, []);
+      setStoredItem(DB_KEYS.ATTR_VALUES, []);
+      setStoredItem(DB_KEYS.COLORS, []);
+      setStoredItem(DB_KEYS.PROMOTIONS, INITIAL_PROMOTIONS);
+      setStoredItem(DB_KEYS.PROMOCODES, []);
+      setStoredItem(DB_KEYS.PICKUP_POINTS, []);
+      setStoredItem(DB_KEYS.ADMINS, INITIAL_ADMINS);
+      localStorage.setItem('puff_clean_defaults_v1', 'true');
+      // Trigger cloud reset to clean Firestore as well
+      setTimeout(() => {
+        this.resetToInvoiceData().catch(() => {});
+      }, 500);
+    } else {
+      if (!localStorage.getItem(DB_KEYS.SETTINGS)) {
+        setStoredItem(DB_KEYS.SETTINGS, INITIAL_SETTINGS);
+      }
+      if (!localStorage.getItem(DB_KEYS.PRODUCTS)) {
+        setStoredItem(DB_KEYS.PRODUCTS, []);
+      }
+      if (!localStorage.getItem(DB_KEYS.CATEGORIES)) {
+        setStoredItem(DB_KEYS.CATEGORIES, INITIAL_CATEGORIES);
+      }
+      if (!localStorage.getItem(DB_KEYS.BRANDS)) {
+        setStoredItem(DB_KEYS.BRANDS, []);
+      }
+      if (!localStorage.getItem(DB_KEYS.MODELS)) {
+        setStoredItem(DB_KEYS.MODELS, []);
+      }
+      if (!localStorage.getItem(DB_KEYS.ATTR_GROUPS)) {
+        setStoredItem(DB_KEYS.ATTR_GROUPS, []);
+      }
+      if (!localStorage.getItem(DB_KEYS.ATTR_VALUES)) {
+        setStoredItem(DB_KEYS.ATTR_VALUES, []);
+      }
+      if (!localStorage.getItem(DB_KEYS.COLORS)) {
+        setStoredItem(DB_KEYS.COLORS, []);
+      }
+      if (!localStorage.getItem(DB_KEYS.PROMOTIONS)) {
+        setStoredItem(DB_KEYS.PROMOTIONS, INITIAL_PROMOTIONS);
+      }
+      if (!localStorage.getItem(DB_KEYS.PROMOCODES)) {
+        setStoredItem(DB_KEYS.PROMOCODES, []);
+      }
+      if (!localStorage.getItem(DB_KEYS.PICKUP_POINTS)) {
+        setStoredItem(DB_KEYS.PICKUP_POINTS, []);
+      }
+      if (!localStorage.getItem(DB_KEYS.ADMINS)) {
+        setStoredItem(DB_KEYS.ADMINS, INITIAL_ADMINS);
+      }
+      if (!localStorage.getItem(DB_KEYS.ORDERS)) {
+        setStoredItem(DB_KEYS.ORDERS, []);
+      }
     }
   }
 
@@ -202,28 +225,22 @@ class CloudDatabase {
       onSnapshot(
         collection(firestore, FS_COLS.ORDERS),
         (snapshot) => {
-          if (!snapshot.empty) {
-            const list = snapshot.docs.map((d) => d.data() as Order);
-            // Sort by id descending
-            list.sort((a, b) => (b.id || 0) - (a.id || 0));
-            setStoredItem(DB_KEYS.ORDERS, list);
-            this.notify();
-          }
+          const list = snapshot.docs.map((d) => d.data() as Order);
+          // Sort by id descending
+          list.sort((a, b) => (b.id || 0) - (a.id || 0));
+          setStoredItem(DB_KEYS.ORDERS, list);
+          this.notify();
         },
         (err) => console.warn('Firestore orders listener:', err)
       );
 
-      // 3. Products Listener
+      // 3. Products Listener (Realtime!)
       onSnapshot(
         collection(firestore, FS_COLS.PRODUCTS),
         (snapshot) => {
-          if (!snapshot.empty) {
-            const list = snapshot.docs.map((d) => d.data() as Product);
-            setStoredItem(DB_KEYS.PRODUCTS, list);
-            this.notify();
-          } else if (!this.isInitialized) {
-            this.seedInitialProductsToFirestore();
-          }
+          const list = snapshot.docs.map((d) => d.data() as Product);
+          setStoredItem(DB_KEYS.PRODUCTS, list);
+          this.notify();
         },
         (err) => console.warn('Firestore products listener:', err)
       );
@@ -247,13 +264,9 @@ class CloudDatabase {
       onSnapshot(
         collection(firestore, FS_COLS.PICKUP_POINTS),
         (snapshot) => {
-          if (!snapshot.empty) {
-            const list = snapshot.docs.map((d) => d.data() as PickupPoint);
-            setStoredItem(DB_KEYS.PICKUP_POINTS, list);
-            this.notify();
-          } else {
-            this.seedInitialPickupPointsToFirestore();
-          }
+          const list = snapshot.docs.map((d) => d.data() as PickupPoint);
+          setStoredItem(DB_KEYS.PICKUP_POINTS, list);
+          this.notify();
         },
         (err) => console.warn('Firestore pickup points listener:', err)
       );
@@ -277,13 +290,9 @@ class CloudDatabase {
       onSnapshot(
         collection(firestore, FS_COLS.PROMOCODES),
         (snapshot) => {
-          if (!snapshot.empty) {
-            const list = snapshot.docs.map((d) => d.data() as Promocode);
-            setStoredItem(DB_KEYS.PROMOCODES, list);
-            this.notify();
-          } else {
-            this.seedInitialPromocodesToFirestore();
-          }
+          const list = snapshot.docs.map((d) => d.data() as Promocode);
+          setStoredItem(DB_KEYS.PROMOCODES, list);
+          this.notify();
         },
         (err) => console.warn('Firestore promocodes listener:', err)
       );
@@ -307,11 +316,9 @@ class CloudDatabase {
       onSnapshot(
         collection(firestore, FS_COLS.BRANDS),
         (snapshot) => {
-          if (!snapshot.empty) {
-            const list = snapshot.docs.map((d) => d.data() as Brand);
-            setStoredItem(DB_KEYS.BRANDS, list);
-            this.notify();
-          }
+          const list = snapshot.docs.map((d) => d.data() as Brand);
+          setStoredItem(DB_KEYS.BRANDS, list);
+          this.notify();
         },
         (err) => console.warn('Firestore brands listener:', err)
       );
@@ -319,13 +326,32 @@ class CloudDatabase {
       onSnapshot(
         collection(firestore, FS_COLS.MODELS),
         (snapshot) => {
-          if (!snapshot.empty) {
-            const list = snapshot.docs.map((d) => d.data() as ProductModel);
-            setStoredItem(DB_KEYS.MODELS, list);
-            this.notify();
-          }
+          const list = snapshot.docs.map((d) => d.data() as ProductModel);
+          setStoredItem(DB_KEYS.MODELS, list);
+          this.notify();
         },
         (err) => console.warn('Firestore models listener:', err)
+      );
+
+      // 10. Attribute Groups & Values Listener
+      onSnapshot(
+        collection(firestore, FS_COLS.ATTR_GROUPS),
+        (snapshot) => {
+          const list = snapshot.docs.map((d) => d.data() as AttributeGroup);
+          setStoredItem(DB_KEYS.ATTR_GROUPS, list);
+          this.notify();
+        },
+        (err) => console.warn('Firestore attr groups listener:', err)
+      );
+
+      onSnapshot(
+        collection(firestore, FS_COLS.ATTR_VALUES),
+        (snapshot) => {
+          const list = snapshot.docs.map((d) => d.data() as AttributeValue);
+          setStoredItem(DB_KEYS.ATTR_VALUES, list);
+          this.notify();
+        },
+        (err) => console.warn('Firestore attr values listener:', err)
       );
 
       this.isInitialized = true;
@@ -334,20 +360,7 @@ class CloudDatabase {
     }
   }
 
-  // Seeding helpers to populate Firestore from invoice mock data on clean DB
-  private async seedInitialProductsToFirestore(): Promise<void> {
-    try {
-      const snap = await getDocs(collection(firestore, FS_COLS.PRODUCTS));
-      if (snap.empty) {
-        for (const p of INITIAL_PRODUCTS) {
-          await setDoc(doc(firestore, FS_COLS.PRODUCTS, String(p.id)), p);
-        }
-      }
-    } catch (e) {
-      console.warn('Product seeding notice:', e);
-    }
-  }
-
+  // Seeding helpers to populate Firestore on clean DB
   private async seedInitialAdminsToFirestore(): Promise<void> {
     try {
       for (const a of INITIAL_ADMINS) {
@@ -355,16 +368,6 @@ class CloudDatabase {
       }
     } catch (e) {
       console.warn('Admin seeding notice:', e);
-    }
-  }
-
-  private async seedInitialPickupPointsToFirestore(): Promise<void> {
-    try {
-      for (const p of INITIAL_PICKUP_POINTS) {
-        await setDoc(doc(firestore, FS_COLS.PICKUP_POINTS, String(p.id)), p);
-      }
-    } catch (e) {
-      console.warn('Pickup point seeding notice:', e);
     }
   }
 
@@ -378,26 +381,10 @@ class CloudDatabase {
     }
   }
 
-  private async seedInitialPromocodesToFirestore(): Promise<void> {
-    try {
-      for (const p of INITIAL_PROMOCODES) {
-        await setDoc(doc(firestore, FS_COLS.PROMOCODES, String(p.id)), p);
-      }
-    } catch (e) {
-      console.warn('Promocode seeding notice:', e);
-    }
-  }
-
   private async seedInitialCategoriesToFirestore(): Promise<void> {
     try {
       for (const c of INITIAL_CATEGORIES) {
         await setDoc(doc(firestore, FS_COLS.CATEGORIES, String(c.id)), c);
-      }
-      for (const b of INITIAL_BRANDS) {
-        await setDoc(doc(firestore, FS_COLS.BRANDS, String(b.id)), b);
-      }
-      for (const m of INITIAL_MODELS) {
-        await setDoc(doc(firestore, FS_COLS.MODELS, String(m.id)), m);
       }
     } catch (e) {
       console.warn('Category seeding notice:', e);
@@ -499,6 +486,35 @@ class CloudDatabase {
     });
 
     return updatedProduct;
+  }
+
+  public bulkUpdateProductImage(filter: { category_slug?: string; brand_slug?: string }, imageUrl: string): number {
+    const products = this.getProducts();
+    let updatedCount = 0;
+    const updatedProducts = products.map((p) => {
+      let matches = true;
+      if (filter.category_slug && p.category_slug !== filter.category_slug) {
+        matches = false;
+      }
+      if (filter.brand_slug && p.brand_slug !== filter.brand_slug) {
+        matches = false;
+      }
+      if (matches) {
+        updatedCount++;
+        const upd = { ...p, image_url: imageUrl };
+        setDoc(doc(firestore, FS_COLS.PRODUCTS, String(p.id)), cleanFirestoreData(upd), { merge: true }).catch((err) => {
+          console.error('Error updating bulk product image in Firestore:', err);
+        });
+        return upd;
+      }
+      return p;
+    });
+
+    if (updatedCount > 0) {
+      setStoredItem(DB_KEYS.PRODUCTS, updatedProducts);
+      this.notify();
+    }
+    return updatedCount;
   }
 
   public deleteProduct(id: number): boolean {
@@ -859,7 +875,8 @@ class CloudDatabase {
 
   public createOrder(order: Omit<Order, 'id' | 'created_at'>): Order {
     const orders = this.getOrders();
-    const nextId = 1000 + orders.length + 1;
+    const maxExistingId = orders.length > 0 ? Math.max(...orders.map((o) => o.id || 0)) : 1000;
+    const nextId = Math.max(1001, maxExistingId + 1);
 
     // Compute total_margin for administrator financial records
     let totalMargin = order.total_margin;
@@ -1203,34 +1220,93 @@ class CloudDatabase {
     });
   }
 
-  // Reset / Restore to Invoice Data (Cloud & Local)
+  // Reset / Restore to Clean Starter Database (Cloud Firestore & Local)
   public async resetToInvoiceData(): Promise<void> {
+    // 1. Reset local state
     setStoredItem(DB_KEYS.SETTINGS, INITIAL_SETTINGS);
-    setStoredItem(DB_KEYS.PRODUCTS, INITIAL_PRODUCTS);
+    setStoredItem(DB_KEYS.PRODUCTS, []);
+    setStoredItem(DB_KEYS.ORDERS, []);
     setStoredItem(DB_KEYS.CATEGORIES, INITIAL_CATEGORIES);
-    setStoredItem(DB_KEYS.BRANDS, INITIAL_BRANDS);
-    setStoredItem(DB_KEYS.MODELS, INITIAL_MODELS);
-    setStoredItem(DB_KEYS.ATTR_GROUPS, INITIAL_ATTRIBUTE_GROUPS);
-    setStoredItem(DB_KEYS.ATTR_VALUES, INITIAL_ATTRIBUTE_VALUES);
-    setStoredItem(DB_KEYS.COLORS, INITIAL_PRODUCT_COLORS);
+    setStoredItem(DB_KEYS.BRANDS, []);
+    setStoredItem(DB_KEYS.MODELS, []);
+    setStoredItem(DB_KEYS.ATTR_GROUPS, []);
+    setStoredItem(DB_KEYS.ATTR_VALUES, []);
+    setStoredItem(DB_KEYS.COLORS, []);
     setStoredItem(DB_KEYS.PROMOTIONS, INITIAL_PROMOTIONS);
-    setStoredItem(DB_KEYS.PROMOCODES, INITIAL_PROMOCODES);
-    setStoredItem(DB_KEYS.PICKUP_POINTS, INITIAL_PICKUP_POINTS);
+    setStoredItem(DB_KEYS.PROMOCODES, []);
+    setStoredItem(DB_KEYS.PICKUP_POINTS, []);
     setStoredItem(DB_KEYS.ADMINS, INITIAL_ADMINS);
+    setStoredItem(DB_KEYS.USERS, []);
     this.notify();
 
-    // Re-seed to Firestore
+    // 2. Clear collections from Cloud Firestore, and sync only admins, settings, promotions, and base categories
     try {
-      await setDoc(doc(firestore, FS_COLS.SETTINGS, 'global'), INITIAL_SETTINGS);
-      for (const p of INITIAL_PRODUCTS) {
-        await setDoc(doc(firestore, FS_COLS.PRODUCTS, String(p.id)), p);
+      const collectionsToClear = [
+        FS_COLS.PRODUCTS,
+        FS_COLS.ORDERS,
+        FS_COLS.BRANDS,
+        FS_COLS.MODELS,
+        FS_COLS.ATTR_GROUPS,
+        FS_COLS.ATTR_VALUES,
+        FS_COLS.PICKUP_POINTS,
+        FS_COLS.PROMOCODES,
+        FS_COLS.USERS,
+      ];
+
+      for (const colName of collectionsToClear) {
+        try {
+          const snap = await getDocs(collection(firestore, colName));
+          for (const d of snap.docs) {
+            await deleteDoc(d.ref).catch(() => {});
+          }
+        } catch (colErr) {
+          console.warn(`Error clearing ${colName}:`, colErr);
+        }
       }
-      for (const a of INITIAL_ADMINS) {
-        await setDoc(doc(firestore, FS_COLS.ADMINS, String(a.id)), a);
+
+      // Reset Settings
+      await setDoc(doc(firestore, FS_COLS.SETTINGS, 'global'), INITIAL_SETTINGS).catch(() => {});
+
+      // Clean & set Admins
+      try {
+        const adminSnap = await getDocs(collection(firestore, FS_COLS.ADMINS));
+        for (const d of adminSnap.docs) {
+          await deleteDoc(d.ref).catch(() => {});
+        }
+        for (const a of INITIAL_ADMINS) {
+          await setDoc(doc(firestore, FS_COLS.ADMINS, String(a.id)), a).catch(() => {});
+        }
+      } catch (adminErr) {
+        console.warn('Error resetting admins:', adminErr);
       }
-      for (const pt of INITIAL_PICKUP_POINTS) {
-        await setDoc(doc(firestore, FS_COLS.PICKUP_POINTS, String(pt.id)), pt);
+
+      // Clean & set Promotions
+      try {
+        const promoSnap = await getDocs(collection(firestore, FS_COLS.PROMOTIONS));
+        for (const d of promoSnap.docs) {
+          await deleteDoc(d.ref).catch(() => {});
+        }
+        for (const p of INITIAL_PROMOTIONS) {
+          await setDoc(doc(firestore, FS_COLS.PROMOTIONS, String(p.id)), p).catch(() => {});
+        }
+      } catch (promoErr) {
+        console.warn('Error resetting promotions:', promoErr);
       }
+
+      // Clean & set Categories
+      try {
+        const catSnap = await getDocs(collection(firestore, FS_COLS.CATEGORIES));
+        for (const d of catSnap.docs) {
+          await deleteDoc(d.ref).catch(() => {});
+        }
+        for (const c of INITIAL_CATEGORIES) {
+          await setDoc(doc(firestore, FS_COLS.CATEGORIES, String(c.id)), c).catch(() => {});
+        }
+      } catch (catErr) {
+        console.warn('Error resetting categories:', catErr);
+      }
+
+      this.notify();
     } catch (e) {
       console.warn('Error resetting cloud DB:', e);
     }

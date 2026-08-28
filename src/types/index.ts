@@ -78,6 +78,8 @@ export interface Product {
   category_slug: string;
   brand_slug?: string | null;
   model_slug?: string | null;
+  nicotine_strength?: string | null; // Крепость (напр. "20 мг", "50 мг")
+  flavor?: string | null; // Вкус
   flavor_line?: string | null; // Линейка вкусов / серия
   stock_quantity: number;
   in_stock: boolean;
@@ -212,6 +214,10 @@ export interface ShopSettings {
   free_delivery_min_items: number;
   manager_username: string;
   line_margins?: Record<string, number>; // key: "category_slug:line_name" -> margin BYN
+  delivery_card_title?: string; // Заголовок карточки курьера
+  delivery_card_subtitle?: string; // Время / график доставки
+  delivery_card_conditions?: string; // Условия / тарифы
+  delivery_card_note?: string; // Примечание / предупреждение
 }
 
 export interface TelegramUser {

@@ -81,6 +81,7 @@ interface StoreContextType {
   getLineMargin: (categorySlug: string, lineName: string) => number | undefined;
   addProduct: (product: Omit<Product, 'id'>) => Promise<boolean>;
   updateProduct: (id: number, product: Partial<Product>) => Promise<boolean>;
+  bulkUpdateProductImage: (filter: { category_slug?: string; brand_slug?: string }, imageUrl: string) => Promise<number>;
   deleteProduct: (id: number) => Promise<boolean>;
   addCategory: (category: Omit<Category, 'id'>) => Promise<boolean>;
   deleteCategory: (id: number) => Promise<boolean>;
@@ -342,18 +343,25 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     colorId: number | null = null,
     selectedColorName?: string
   ) => {
+    const availableStock = product.stock_quantity !== undefined ? product.stock_quantity : 999;
+    if (availableStock <= 0 || !product.in_stock) {
+      return;
+    }
+
     setCart((prev) => {
       const existingIndex = prev.findIndex(
         (item) => item.id === product.id && (item.color_id || null) === (colorId || null)
       );
       if (existingIndex > -1) {
         const copy = [...prev];
-        copy[existingIndex].quantity += quantity;
+        const newTotalQty = Math.min(availableStock, copy[existingIndex].quantity + quantity);
+        copy[existingIndex].quantity = newTotalQty;
         return copy;
       }
+      const initialQty = Math.min(availableStock, Math.max(1, quantity));
       const newItem: CartItem = {
         ...product,
-        quantity,
+        quantity: initialQty,
         color_id: colorId,
         selected_color_name: selectedColorName,
       };
@@ -371,11 +379,18 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setCart((prev) => {
       const copy = [...prev];
       if (!copy[index]) return prev;
-      const newQty = copy[index].quantity + delta;
+      const targetItem = copy[index];
+      const maxStock = targetItem.stock_quantity !== undefined ? targetItem.stock_quantity : 999;
+      const newQty = targetItem.quantity + delta;
+
       if (newQty <= 0) {
         return copy.filter((_, i) => i !== index);
       }
-      copy[index].quantity = newQty;
+      if (newQty > maxStock) {
+        targetItem.quantity = maxStock;
+        return copy;
+      }
+      targetItem.quantity = newQty;
       return copy;
     });
     hapticImpact('light');
@@ -634,6 +649,12 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return true;
   };
 
+  const bulkUpdateProductImage = async (filter: { category_slug?: string; brand_slug?: string }, imageUrl: string) => {
+    const updatedCount = db.bulkUpdateProductImage(filter, imageUrl);
+    hapticNotification('success');
+    return updatedCount;
+  };
+
   const deleteProduct = async (id: number) => {
     db.deleteProduct(id);
     hapticImpact('medium');
@@ -830,6 +851,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         getLineMargin,
         addProduct,
         updateProduct,
+        bulkUpdateProductImage,
         deleteProduct,
         addCategory,
         deleteCategory,
