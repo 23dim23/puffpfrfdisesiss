@@ -316,7 +316,10 @@ class CloudDatabase {
       onSnapshot(
         collection(firestore, FS_COLS.BRANDS),
         (snapshot) => {
-          const list = snapshot.docs.map((d) => d.data() as Brand);
+          const list = snapshot.docs.map((d) => {
+            const data = d.data() as Brand;
+            return { ...data, is_active: data.is_active ?? true };
+          });
           setStoredItem(DB_KEYS.BRANDS, list);
           this.notify();
         },
@@ -703,13 +706,14 @@ class CloudDatabase {
 
   // ================= BRANDS & MODELS =================
   public getBrands(): Brand[] {
-    return getStoredItem<Brand[]>(DB_KEYS.BRANDS, INITIAL_BRANDS);
+    const list = getStoredItem<Brand[]>(DB_KEYS.BRANDS, INITIAL_BRANDS);
+    return list.map((b) => ({ ...b, is_active: b.is_active ?? true }));
   }
 
   public addBrand(brand: Omit<Brand, 'id'>): Brand {
     const brands = this.getBrands();
     const nextId = brands.length > 0 ? Math.max(...brands.map((b) => b.id)) + 1 : 1;
-    const newBrand: Brand = { ...brand, id: nextId };
+    const newBrand: Brand = { ...brand, id: nextId, is_active: brand.is_active ?? true };
     const updated = [...brands, newBrand];
     setStoredItem(DB_KEYS.BRANDS, updated);
     this.notify();

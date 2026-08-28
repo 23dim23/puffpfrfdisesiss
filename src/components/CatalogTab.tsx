@@ -31,11 +31,26 @@ export const CatalogTab: React.FC<CatalogTabProps> = ({ initialCategory = 'all',
 
   // Dynamic brand list for current category
   const availableBrands = useMemo(() => {
+    const activeBrands = brands.filter((b) => b.is_active !== false);
     if (selectedCategory === 'all' || selectedCategory === 'on-sale') {
-      return brands.filter((b) => b.is_active);
+      return activeBrands;
     }
-    return brands.filter((b) => b.category_slug === selectedCategory && b.is_active);
-  }, [brands, selectedCategory]);
+    // Return brands that either belong to this category, OR have products in this category
+    return activeBrands.filter((b) => {
+      const belongsToCategory = b.category_slug === selectedCategory;
+      const hasProductsInThisCategory = products.some(
+        (p) =>
+          p.category_slug === selectedCategory &&
+          p.in_stock &&
+          (p.brand_slug === b.slug ||
+            (p.brand_slug &&
+              (p.brand_slug.toLowerCase() === b.name.toLowerCase() ||
+                p.brand_slug.toLowerCase().replace(/[^a-z0-9а-яё]/gi, '-') === b.slug ||
+                p.brand_slug.toLowerCase().replace(/\s+/g, '-') === b.slug)))
+      );
+      return belongsToCategory || hasProductsInThisCategory;
+    });
+  }, [brands, selectedCategory, products]);
 
   // Liquid / Snus lines
   const liquidLines = useMemo(() => {
@@ -65,7 +80,11 @@ export const CatalogTab: React.FC<CatalogTabProps> = ({ initialCategory = 'all',
       if (selectedBrand !== 'all') {
         const brandObj = brands.find((b) => b.slug === selectedBrand);
         const matchSlug = product.brand_slug === selectedBrand;
-        const matchName = brandObj && product.brand_slug && product.brand_slug.toLowerCase() === brandObj.name.toLowerCase();
+        const matchName = brandObj && product.brand_slug && (
+          product.brand_slug.toLowerCase() === brandObj.name.toLowerCase() ||
+          product.brand_slug.toLowerCase().replace(/[^a-z0-9а-яё]/gi, '-') === brandObj.slug ||
+          product.brand_slug.toLowerCase().replace(/\s+/g, '-') === brandObj.slug
+        );
         if (!matchSlug && !matchName) return false;
       }
 

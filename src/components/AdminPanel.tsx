@@ -2090,6 +2090,7 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
                   slug,
                   category_slug: brandForm.category_slug,
                   sort_order: brands.length + 1,
+                  is_active: true,
                 });
                 setBrandForm({ name: '', category_slug: 'liquid' });
               }}
