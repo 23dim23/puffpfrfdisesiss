@@ -407,7 +407,7 @@ class CloudDatabase {
     this.notify();
 
     // Async write to Cloud Firestore
-    setDoc(doc(firestore, FS_COLS.SETTINGS, 'global'), updated).catch((err) => {
+    setDoc(doc(firestore, FS_COLS.SETTINGS, 'global'), cleanFirestoreData(updated), { merge: true }).catch((err) => {
       console.error('Error saving settings to Firestore:', err);
     });
 

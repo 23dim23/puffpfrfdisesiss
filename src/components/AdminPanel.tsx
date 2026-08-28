@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useStore } from '../services/store';
 import {
   BarChart3,
@@ -179,6 +179,22 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
     delivery_card_conditions: settings.delivery_card_conditions || 'Стоимость 5.0 BYN • От 4 позиций в заказе — БЕСПЛАТНО',
     delivery_card_note: settings.delivery_card_note || 'Итоговая стоимость доставки может измениться в зависимости от района Могилева.',
   });
+
+  // Keep settingsForm in sync with global store settings
+  useEffect(() => {
+    setSettingsForm({
+      welcome_title: settings.welcome_title || '',
+      welcome_description: settings.welcome_description || '',
+      logo_url: settings.logo_url || '',
+      delivery_price: (settings.delivery_price ?? 5).toString(),
+      free_delivery_min_items: (settings.free_delivery_min_items ?? 4).toString(),
+      manager_username: settings.manager_username || '',
+      delivery_card_title: settings.delivery_card_title || 'Доставка курьером по Могилеву и области',
+      delivery_card_subtitle: settings.delivery_card_subtitle || 'По будням и выходным с 13:00',
+      delivery_card_conditions: settings.delivery_card_conditions || 'Стоимость 5.0 BYN • От 4 позиций в заказе — БЕСПЛАТНО',
+      delivery_card_note: settings.delivery_card_note || 'Итоговая стоимость доставки может измениться в зависимости от района Могилева.',
+    });
+  }, [settings]);
 
   // Promocode form state
   const [promoForm, setPromoForm] = useState({

@@ -15,6 +15,7 @@ from telegram import (
     WebAppInfo,
     ReplyKeyboardMarkup,
     KeyboardButton,
+    MenuButtonWebApp,
 )
 from telegram.ext import (
     Application,
@@ -154,7 +155,7 @@ def get_main_keyboard(user_id: int) -> ReplyKeyboardMarkup:
     if is_admin(user_id):
         buttons.append([KeyboardButton("👑 Панель управления")])
         
-    return ReplyKeyboardMarkup(buttons, resize_keyboard=True)
+    return ReplyKeyboardMarkup(buttons, resize_keyboard=True, is_persistent=True)
 
 
 def get_admin_order_keyboard(order_id: int, user_id: int) -> InlineKeyboardMarkup:
@@ -545,6 +546,17 @@ def run_flask():
     flask_app.run(host="0.0.0.0", port=8080, debug=False, use_reloader=False)
 
 
+async def post_init(application: Application):
+    """Настройка кнопки меню чата (MenuButtonWebApp) при старте бота"""
+    try:
+        await application.bot.set_chat_menu_button(
+            menu_button=MenuButtonWebApp(text="🛒 Магазин", web_app=WebAppInfo(url=WEBAPP_URL))
+        )
+        logger.info(f"✅ WebApp MenuButton успешно установлен: {WEBAPP_URL}")
+    except Exception as e:
+        logger.warning(f"Не удалось установить MenuButton: {e}")
+
+
 # ================= ОСНОВНОЙ ТОЧКА ВХОДА =================
 def main():
     global tg_app
@@ -555,7 +567,7 @@ def main():
     logger.info("🌐 Flask API запущен на порту 8080")
 
     # 2. Инициализируем бота
-    tg_app = Application.builder().token(TOKEN).build()
+    tg_app = Application.builder().token(TOKEN).post_init(post_init).build()
 
     # Команды
     tg_app.add_handler(CommandHandler("start", start))

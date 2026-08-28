@@ -63,7 +63,10 @@ export const CatalogTab: React.FC<CatalogTabProps> = ({ initialCategory = 'all',
 
       // Brand filter
       if (selectedBrand !== 'all') {
-        if (product.brand_slug !== selectedBrand) return false;
+        const brandObj = brands.find((b) => b.slug === selectedBrand);
+        const matchSlug = product.brand_slug === selectedBrand;
+        const matchName = brandObj && product.brand_slug && product.brand_slug.toLowerCase() === brandObj.name.toLowerCase();
+        if (!matchSlug && !matchName) return false;
       }
 
       // Strength filter
@@ -385,7 +388,7 @@ export const CatalogTab: React.FC<CatalogTabProps> = ({ initialCategory = 'all',
       <div className="space-y-2.5">
         {filteredProducts.length > 0 ? (
           filteredProducts.map((product) => {
-            const brand = brands.find((b) => b.slug === product.brand_slug);
+            const brand = brands.find((b) => b.slug === product.brand_slug || b.name.toLowerCase() === product.brand_slug?.toLowerCase());
             const isDiscount = product.discount_price && product.discount_price > 0;
             const effectivePrice = product.discount_price || product.price;
             const isJustAdded = recentlyAddedId === product.id;
@@ -413,7 +416,7 @@ export const CatalogTab: React.FC<CatalogTabProps> = ({ initialCategory = 'all',
                 <div className="flex-1 min-w-0">
                   <h4 className="text-xs font-bold text-white truncate">{product.name}</h4>
                   <p className="text-[11px] text-zinc-400 truncate mt-0.5">
-                    {brand?.name || 'Puff Paradise'}
+                    {brand?.name || product.brand_slug || ''}
                     {product.description ? ` · ${product.description.split('.')[0]}` : ''}
                   </p>
 

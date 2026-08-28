@@ -3,6 +3,7 @@ import { Product, ProductColor } from '../types';
 import { useStore } from '../services/store';
 import { X, ShoppingBag, Check, Flame, Sparkles, ShieldAlert } from 'lucide-react';
 import { hapticImpact } from '../services/telegram';
+import { ProductImage } from './ProductImage';
 
 interface ProductDetailModalProps {
   product: Product | null;
@@ -17,7 +18,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product,
 
   if (!product) return null;
 
-  const brand = brands.find((b) => b.slug === product.brand_slug);
+  const brand = brands.find((b) => b.slug === product.brand_slug || b.name.toLowerCase() === product.brand_slug?.toLowerCase());
   const model = models.find((m) => m.slug === product.model_slug);
   const availableColors = productColors.filter((c) => c.product_id === product.id && c.stock_quantity > 0);
 
@@ -53,15 +54,14 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product,
           <X className="w-4 h-4" />
         </button>
 
-        {/* Product Image / Emoji Banner */}
-        <div className="relative w-full h-44 rounded-2xl bg-gradient-to-b from-purple-950/40 via-purple-900/10 to-zinc-900/40 border border-white/5 flex items-center justify-center overflow-hidden mb-4">
-          {product.image_url ? (
-            <img src={product.image_url} alt={product.name} className="w-full h-full object-contain p-3" />
-          ) : (
-            <span className="text-7xl filter drop-shadow-[0_10px_25px_rgba(168,85,247,0.3)] animate-pulse">
-              {product.emoji || '📦'}
-            </span>
-          )}
+        {/* Product Image Banner */}
+        <div className="relative w-full h-48 rounded-2xl bg-[#0e0c18] border border-white/5 flex items-center justify-center overflow-hidden mb-4 shadow-inner">
+          <ProductImage
+            src={product.image_url}
+            alt={product.name}
+            className="w-full h-full"
+            imageClassName="w-full h-full object-contain p-3"
+          />
 
           {/* Badges */}
           <div className="absolute top-3 left-3 flex flex-col gap-1.5">
@@ -86,7 +86,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product,
         {/* Title and brand */}
         <div className="mb-3">
           <div className="text-xs font-semibold text-purple-400 uppercase tracking-wider mb-1">
-            {brand?.name || 'Puff Paradise'} {model ? `· ${model.name}` : ''}
+            {brand?.name || product.brand_slug || ''} {model ? `· ${model.name}` : ''}
           </div>
           <h2 className="text-lg font-bold text-white leading-snug">{product.name}</h2>
         </div>

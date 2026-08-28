@@ -230,7 +230,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
         <div className="flex gap-3 overflow-x-auto no-scrollbar pb-3 pt-1 -mx-4 px-4 snap-x">
           {discountProducts.length > 0 ? (
             discountProducts.map((product) => {
-              const brand = brands.find((b) => b.slug === product.brand_slug);
+              const brand = brands.find((b) => b.slug === product.brand_slug || b.name.toLowerCase() === product.brand_slug?.toLowerCase());
               const discountPercent = product.discount_price
                 ? Math.round(((product.price - product.discount_price) / product.price) * 100)
                 : 0;
@@ -260,7 +260,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
 
                   <div>
                     <div className="text-[10px] font-semibold text-purple-400 uppercase truncate mb-0.5">
-                      {brand?.name || 'Puff Paradise'}
+                      {brand?.name || product.brand_slug || ''}
                     </div>
                     <h4 className="text-xs font-bold text-white truncate mb-1.5">{product.name}</h4>
 
@@ -306,7 +306,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
 
         <div className="flex gap-3 overflow-x-auto no-scrollbar pb-3 pt-1 -mx-4 px-4 snap-x">
           {popularProducts.slice(0, 10).map((product) => {
-            const brand = brands.find((b) => b.slug === product.brand_slug);
+            const brand = brands.find((b) => b.slug === product.brand_slug || b.name.toLowerCase() === product.brand_slug?.toLowerCase());
 
             return (
               <div
@@ -333,7 +333,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
 
                 <div>
                   <div className="text-[10px] font-semibold text-zinc-400 uppercase truncate mb-0.5">
-                    {brand?.name || 'Puff Paradise'}
+                    {brand?.name || product.brand_slug || ''}
                   </div>
                   <h4 className="text-xs font-bold text-white truncate mb-1.5">{product.name}</h4>
 
