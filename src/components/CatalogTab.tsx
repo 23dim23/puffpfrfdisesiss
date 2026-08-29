@@ -11,7 +11,7 @@ interface CatalogTabProps {
 }
 
 export const CatalogTab: React.FC<CatalogTabProps> = ({ initialCategory = 'all', onSelectProduct }) => {
-  const { categories, brands, products, attributeValues, addToCart } = useStore();
+  const { categories, brands, catalogProducts, attributeValues, addToCart } = useStore();
 
   const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory);
   const [selectedBrand, setSelectedBrand] = useState<string>('all');
@@ -38,7 +38,7 @@ export const CatalogTab: React.FC<CatalogTabProps> = ({ initialCategory = 'all',
     // Return brands that either belong to this category, OR have products in this category
     return activeBrands.filter((b) => {
       const belongsToCategory = b.category_slug === selectedCategory;
-      const hasProductsInThisCategory = products.some(
+      const hasProductsInThisCategory = catalogProducts.some(
         (p) =>
           p.category_slug === selectedCategory &&
           p.in_stock &&
@@ -50,7 +50,7 @@ export const CatalogTab: React.FC<CatalogTabProps> = ({ initialCategory = 'all',
       );
       return belongsToCategory || hasProductsInThisCategory;
     });
-  }, [brands, selectedCategory, products]);
+  }, [brands, selectedCategory, catalogProducts]);
 
   // Liquid / Snus lines
   const liquidLines = useMemo(() => {
@@ -63,7 +63,7 @@ export const CatalogTab: React.FC<CatalogTabProps> = ({ initialCategory = 'all',
 
   // Filtered Products
   const filteredProducts = useMemo(() => {
-    return products.filter((product) => {
+    return catalogProducts.filter((product) => {
       // Hide out of stock / sold out items from customer catalog
       if (!product.in_stock || (product.stock_quantity !== undefined && product.stock_quantity <= 0)) {
         return false;
@@ -150,7 +150,7 @@ export const CatalogTab: React.FC<CatalogTabProps> = ({ initialCategory = 'all',
 
       return true;
     });
-  }, [products, selectedCategory, selectedBrand, selectedStrength, selectedLine, searchQuery, brands]);
+  }, [catalogProducts, selectedCategory, selectedBrand, selectedStrength, selectedLine, searchQuery, brands]);
 
   const handleQuickAdd = (e: React.MouseEvent, product: Product) => {
     e.stopPropagation();

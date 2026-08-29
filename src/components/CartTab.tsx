@@ -107,7 +107,7 @@ export const CartTab: React.FC<CartTabProps> = ({ onGoToCatalog, onOrderComplete
         </div>
         <h3 className="text-lg font-bold text-white mb-1.5">Корзина пуста</h3>
         <p className="text-xs text-zinc-400 max-w-[280px] mx-auto mb-6 leading-relaxed">
-          В каталоге представлен полный ассортимент оригинальных жидкостей, подов Vaporesso, картриджей и снюса в Могилеве.
+          В каталоге представлен полный ассортимент оригинальных жидкостей, POD систем, картриджей и снюса в Могилеве.
         </p>
         <button
           onClick={() => {

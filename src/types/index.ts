@@ -176,6 +176,14 @@ export interface Promocode {
   created_at?: string;
 }
 
+export interface ProductReservation {
+  id: string; // userId_productId_colorId
+  user_id: number;
+  product_id: number;
+  quantity: number;
+  expires_at: number; // timestamp
+}
+
 export interface PickupPoint {
   id: number;
   name: string;

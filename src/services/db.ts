@@ -21,6 +21,7 @@ import {
   Order,
   Promotion,
   Promocode,
+  ProductReservation,
   PickupPoint,
   ShopSettings,
   AdminUser,
@@ -60,6 +61,7 @@ const DB_KEYS = {
   PICKUP_POINTS: 'puff_db_pickup_points_v5',
   ADMINS: 'puff_db_admins_v5',
   USERS: 'puff_db_users_v5',
+  RESERVATIONS: 'puff_db_reservations_v5',
 };
 
 // Firestore Collection Names
@@ -78,6 +80,7 @@ const FS_COLS = {
   PICKUP_POINTS: 'shop_pickup_points',
   ADMINS: 'shop_admins',
   USERS: 'shop_users',
+  RESERVATIONS: 'shop_reservations',
 };
 
 // Local Storage Helper
@@ -176,6 +179,9 @@ class CloudDatabase {
     }
     if (!localStorage.getItem(DB_KEYS.ORDERS)) {
       setStoredItem(DB_KEYS.ORDERS, []);
+    }
+    if (!localStorage.getItem(DB_KEYS.RESERVATIONS)) {
+      setStoredItem(DB_KEYS.RESERVATIONS, []);
     }
   }
 
@@ -332,6 +338,17 @@ class CloudDatabase {
           this.notify();
         },
         (err) => console.warn('Firestore attr values listener:', err)
+      );
+
+      // 11. Reservations Listener
+      onSnapshot(
+        collection(firestore, FS_COLS.RESERVATIONS),
+        (snapshot) => {
+          const list = snapshot.docs.map((d) => d.data() as any);
+          setStoredItem(DB_KEYS.RESERVATIONS, list);
+          this.notify();
+        },
+        (err) => console.warn('Firestore reservations listener:', err)
       );
 
       this.isInitialized = true;
@@ -827,6 +844,48 @@ class CloudDatabase {
 
     deleteDoc(doc(firestore, FS_COLS.PROMOCODES, String(id))).catch(() => {});
     return true;
+  }
+
+  // ================= RESERVATIONS =================
+  public getReservations(): ProductReservation[] {
+    return getStoredItem<ProductReservation[]>(DB_KEYS.RESERVATIONS, []);
+  }
+
+  public addOrUpdateReservation(res: ProductReservation): void {
+    const list = this.getReservations();
+    const existingIndex = list.findIndex((r) => r.id === res.id);
+    let updated: ProductReservation[];
+    if (existingIndex > -1) {
+      updated = [...list];
+      updated[existingIndex] = res;
+    } else {
+      updated = [...list, res];
+    }
+    setStoredItem(DB_KEYS.RESERVATIONS, updated);
+    this.notify();
+
+    setDoc(doc(firestore, FS_COLS.RESERVATIONS, res.id), res).catch(() => {});
+  }
+
+  public removeReservation(id: string): void {
+    const list = this.getReservations();
+    const filtered = list.filter((r) => r.id !== id);
+    setStoredItem(DB_KEYS.RESERVATIONS, filtered);
+    this.notify();
+
+    deleteDoc(doc(firestore, FS_COLS.RESERVATIONS, id)).catch(() => {});
+  }
+
+  public clearUserReservations(userId: number): void {
+    const list = this.getReservations();
+    const userRes = list.filter((r) => r.user_id === userId);
+    const filtered = list.filter((r) => r.user_id !== userId);
+    setStoredItem(DB_KEYS.RESERVATIONS, filtered);
+    this.notify();
+
+    for (const res of userRes) {
+      deleteDoc(doc(firestore, FS_COLS.RESERVATIONS, res.id)).catch(() => {});
+    }
   }
 
   // ================= PICKUP POINTS =================

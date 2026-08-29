@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Category,
   Brand,
@@ -11,6 +11,7 @@ import {
   Order,
   Promotion,
   Promocode,
+  ProductReservation,
   PickupPoint,
   ShopSettings,
   AdminUser,
@@ -47,11 +48,13 @@ interface StoreContextType {
   attributeGroups: AttributeGroup[];
   attributeValues: AttributeValue[];
   products: Product[];
+  catalogProducts: Product[];
   productColors: ProductColor[];
   cart: CartItem[];
   orders: Order[];
   promotions: Promotion[];
   promocodes: Promocode[];
+  reservations: ProductReservation[];
   pickupPoints: PickupPoint[];
   admins: AdminUser[];
   users: ShopUser[];
@@ -146,6 +149,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [pickupPoints, setPickupPoints] = useState<PickupPoint[]>(() => db.getPickupPoints());
   const [admins, setAdmins] = useState<AdminUser[]>(() => db.getAdmins());
   const [users, setUsers] = useState<ShopUser[]>(() => db.getUsers());
+  const [reservations, setReservations] = useState<ProductReservation[]>(() => db.getReservations());
 
   const [cart, setCart] = useState<CartItem[]>(() => {
     try {
@@ -173,6 +177,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setPickupPoints(db.getPickupPoints());
     setAdmins(db.getAdmins());
     setUsers(db.getUsers());
+    setReservations(db.getReservations());
   }, []);
 
   useEffect(() => {
@@ -182,10 +187,65 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return unsubscribe;
   }, [syncFromDb]);
 
+  // Dynamic catalogProducts with non-expired reservations subtracted
+  const catalogProducts = useMemo(() => {
+    const now = Date.now();
+    const activeRes = reservations.filter((r) => r.expires_at > now);
+
+    return products.map((p) => {
+      const reservedQty = activeRes
+        .filter((r) => r.product_id === p.id)
+        .reduce((sum, r) => sum + r.quantity, 0);
+
+      const effectiveStock = Math.max(0, (p.stock_quantity ?? 0) - reservedQty);
+      return {
+        ...p,
+        stock_quantity: effectiveStock,
+        in_stock: effectiveStock > 0 && p.in_stock,
+      };
+    });
+  }, [products, reservations]);
+
   // Persist cart
   useEffect(() => {
     localStorage.setItem('puff_cart_items_v4', JSON.stringify(cart));
   }, [cart]);
+
+  // Background self-cleaning expired reservations
+  useEffect(() => {
+    const checkExpiredReservations = () => {
+      const now = Date.now();
+      const currentUserId = currentUser?.id || 999999;
+      
+      // 1. Delete all expired reservations from Firestore
+      const expiredList = reservations.filter((r) => r.expires_at <= now);
+      for (const res of expiredList) {
+        db.removeReservation(res.id);
+      }
+      
+      // 2. Clear items from cart whose reservations have expired or are missing
+      if (cart.length > 0) {
+        const activeRes = reservations.filter((r) => r.expires_at > now && r.user_id === currentUserId);
+        setCart((prevCart) => {
+          let changed = false;
+          const nextCart = prevCart.filter((cItem) => {
+            const resId = `${currentUserId}_${cItem.id}_${cItem.color_id || 'none'}`;
+            const hasRes = activeRes.some((r) => r.id === resId);
+            if (!hasRes) {
+              changed = true;
+              return false; // remove
+            }
+            return true;
+          });
+          return changed ? nextCart : prevCart;
+        });
+      }
+    };
+
+    const interval = setInterval(checkExpiredReservations, 10000); // every 10 seconds
+    checkExpiredReservations();
+    return () => clearInterval(interval);
+  }, [reservations, currentUser, cart.length]);
 
   // Check admin privileges strictly by ID or username
   const verifyAdmin = useCallback((user: TelegramUser | null) => {
@@ -343,7 +403,15 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     colorId: number | null = null,
     selectedColorName?: string
   ) => {
-    const availableStock = product.stock_quantity !== undefined ? product.stock_quantity : 999;
+    const currentUserId = currentUser?.id || 999999;
+    const resId = `${currentUserId}_${product.id}_${colorId || 'none'}`;
+    const activeRes = db.getReservations().filter((r) => r.expires_at > Date.now());
+
+    const totalReservedByOthers = activeRes
+      .filter((r) => r.product_id === product.id && r.id !== resId)
+      .reduce((sum, r) => sum + r.quantity, 0);
+
+    const availableStock = Math.max(0, (product.stock_quantity ?? 0) - totalReservedByOthers);
     if (availableStock <= 0 || !product.in_stock) {
       return;
     }
@@ -352,16 +420,31 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const existingIndex = prev.findIndex(
         (item) => item.id === product.id && (item.color_id || null) === (colorId || null)
       );
+      let newQty = quantity;
+      if (existingIndex > -1) {
+        newQty = Math.min(availableStock, prev[existingIndex].quantity + quantity);
+      } else {
+        newQty = Math.min(availableStock, Math.max(1, quantity));
+      }
+
+      // Upsert the reservation in Firestore
+      const reservation: ProductReservation = {
+        id: resId,
+        user_id: currentUserId,
+        product_id: product.id,
+        quantity: newQty,
+        expires_at: Date.now() + 10 * 60 * 1000, // 10 minutes
+      };
+      db.addOrUpdateReservation(reservation);
+
       if (existingIndex > -1) {
         const copy = [...prev];
-        const newTotalQty = Math.min(availableStock, copy[existingIndex].quantity + quantity);
-        copy[existingIndex].quantity = newTotalQty;
+        copy[existingIndex].quantity = newQty;
         return copy;
       }
-      const initialQty = Math.min(availableStock, Math.max(1, quantity));
       const newItem: CartItem = {
         ...product,
-        quantity: initialQty,
+        quantity: newQty,
         color_id: colorId,
         selected_color_name: selectedColorName,
       };
@@ -371,7 +454,15 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const removeFromCart = (index: number) => {
-    setCart((prev) => prev.filter((_, i) => i !== index));
+    setCart((prev) => {
+      const item = prev[index];
+      if (item) {
+        const currentUserId = currentUser?.id || 999999;
+        const resId = `${currentUserId}_${item.id}_${item.color_id || 'none'}`;
+        db.removeReservation(resId);
+      }
+      return prev.filter((_, i) => i !== index);
+    });
     hapticImpact('light');
   };
 
@@ -380,23 +471,43 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const copy = [...prev];
       if (!copy[index]) return prev;
       const targetItem = copy[index];
-      const maxStock = targetItem.stock_quantity !== undefined ? targetItem.stock_quantity : 999;
+      const currentUserId = currentUser?.id || 999999;
+      const resId = `${currentUserId}_${targetItem.id}_${targetItem.color_id || 'none'}`;
+      const activeRes = db.getReservations().filter((r) => r.expires_at > Date.now());
+
+      const totalReservedByOthers = activeRes
+        .filter((r) => r.product_id === targetItem.id && r.id !== resId)
+        .reduce((sum, r) => sum + r.quantity, 0);
+
+      const maxStock = Math.max(0, (targetItem.stock_quantity ?? 999) - totalReservedByOthers);
       const newQty = targetItem.quantity + delta;
 
       if (newQty <= 0) {
+        db.removeReservation(resId);
         return copy.filter((_, i) => i !== index);
       }
-      if (newQty > maxStock) {
-        targetItem.quantity = maxStock;
-        return copy;
-      }
-      targetItem.quantity = newQty;
+
+      const finalQty = Math.min(maxStock, newQty);
+
+      // Update reservation
+      const reservation: ProductReservation = {
+        id: resId,
+        user_id: currentUserId,
+        product_id: targetItem.id,
+        quantity: finalQty,
+        expires_at: Date.now() + 10 * 60 * 1000, // 10 minutes
+      };
+      db.addOrUpdateReservation(reservation);
+
+      targetItem.quantity = finalQty;
       return copy;
     });
     hapticImpact('light');
   };
 
   const clearCart = () => {
+    const currentUserId = currentUser?.id || 999999;
+    db.clearUserReservations(currentUserId);
     setCart([]);
     setAppliedPromocode(null);
   };
@@ -826,11 +937,13 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         attributeGroups,
         attributeValues,
         products,
+        catalogProducts,
         productColors,
         cart,
         orders,
         promotions,
         promocodes,
+        reservations,
         pickupPoints,
         admins,
         users,

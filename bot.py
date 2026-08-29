@@ -149,7 +149,6 @@ def update_order_status(order_id: int, new_status: str) -> Optional[Dict[str, An
 def get_main_keyboard(user_id: int) -> ReplyKeyboardMarkup:
     """Главная нижняя клавиатура"""
     buttons = [
-        [KeyboardButton("🛒 Открыть магазин", web_app=WebAppInfo(url=WEBAPP_URL))],
         [KeyboardButton("📦 Мои заказы"), KeyboardButton("📖 Помощь / Связь")],
     ]
     if is_admin(user_id):

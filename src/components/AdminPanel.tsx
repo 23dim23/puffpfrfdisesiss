@@ -1561,6 +1561,27 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
               </div>
             </div>
 
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="text-[10px] text-zinc-400 block mb-1">Минимальная сумма заказа (BYN)</label>
+                <input
+                  type="number"
+                  value={promoForm.min_order_amount}
+                  onChange={(e) => setPromoForm((prev) => ({ ...prev, min_order_amount: e.target.value }))}
+                  className="w-full py-2 px-3 rounded-xl bg-white/5 border border-white/10 text-white text-xs"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] text-zinc-400 block mb-1">Макс. использований</label>
+                <input
+                  type="number"
+                  value={promoForm.max_uses}
+                  onChange={(e) => setPromoForm((prev) => ({ ...prev, max_uses: e.target.value }))}
+                  className="w-full py-2 px-3 rounded-xl bg-white/5 border border-white/10 text-white text-xs"
+                />
+              </div>
+            </div>
+
             <button
               onClick={() => {
                 if (!promoForm.code.trim()) return;
@@ -1591,7 +1612,7 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
                   <span className="font-mono text-xs font-bold text-purple-300">{promo.code}</span>
                   <span className="text-[11px] text-zinc-400 ml-2">
                     -{promo.discount_value}
-                    {promo.discount_type === 'percent' ? '%' : ' BYN'} (исп.: {promo.used_count}/{promo.max_uses || '∞'})
+                    {promo.discount_type === 'percent' ? '%' : ' BYN'} (исп.: {promo.used_count}/{promo.max_uses || '∞'} | от {promo.min_order_amount || 0} BYN)
                   </span>
                 </div>
                 <button

@@ -18,15 +18,15 @@ export const HomeTab: React.FC<HomeTabProps> = ({
   onSelectProduct,
   onSelectPromotion,
 }) => {
-  const { settings, categories, products, promotions, brands } = useStore();
+  const { settings, categories, catalogProducts, promotions, brands } = useStore();
 
   // Discount products (only in-stock items)
-  const discountProducts = products.filter(
+  const discountProducts = catalogProducts.filter(
     (p) => p.in_stock && (p.stock_quantity === undefined || p.stock_quantity > 0) && p.discount_price && p.discount_price > 0
   );
 
   // Popular products (sorted by is_hit first to help sell specified items, then sold_count, only in-stock items)
-  const popularProducts = [...products]
+  const popularProducts = [...catalogProducts]
     .filter((p) => p.in_stock && (p.stock_quantity === undefined || p.stock_quantity > 0))
     .sort((a, b) => {
       const aHit = a.is_hit ? 1 : 0;
