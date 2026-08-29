@@ -4,6 +4,7 @@ import { ShoppingBag, Trash2, Plus, Minus, AlertTriangle, Truck, MapPin, CheckCi
 import { DeliveryType } from '../types';
 import { hapticImpact } from '../services/telegram';
 import { ProductImage } from './ProductImage';
+import { calculateBundlePromotions } from '../utils/promo';
 
 interface CartTabProps {
   onGoToCatalog: () => void;
@@ -21,6 +22,7 @@ export const CartTab: React.FC<CartTabProps> = ({ onGoToCatalog, onOrderComplete
     applyPromocode,
     removePromocode,
     placeOrder,
+    bundlePromotions,
   } = useStore();
 
   const [deliveryType, setDeliveryType] = useState<DeliveryType>('pickup');
@@ -53,7 +55,15 @@ export const CartTab: React.FC<CartTabProps> = ({ onGoToCatalog, onOrderComplete
     }
   }
 
-  const grandTotal = Math.max(0, subtotal - discountAmount + deliveryCost);
+  // Calculate bundle promotions
+  const bundlePromoResult = calculateBundlePromotions(cart, bundlePromotions);
+  const bundleDiscount = bundlePromoResult.totalDiscount;
+
+  // Check if promo code should be blocked by active bundle promotions
+  const isPromoBlockedByBundle = settings.block_promo_on_bundle && bundleDiscount > 0;
+  const effectiveDiscountAmount = isPromoBlockedByBundle ? 0 : discountAmount;
+
+  const grandTotal = Math.max(0, subtotal - (effectiveDiscountAmount + bundleDiscount) + deliveryCost);
 
   const handleApplyPromo = () => {
     if (!promocodeInput.trim()) return;
@@ -356,16 +366,33 @@ export const CartTab: React.FC<CartTabProps> = ({ onGoToCatalog, onOrderComplete
           </div>
 
           {appliedPromocode && (
-            <div className="mt-2 flex items-center justify-between p-2 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-xs text-emerald-300 font-semibold">
-              <span className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4" />
-                Промокод {appliedPromocode.code} активен (-{appliedPromocode.discount_value}
-                {appliedPromocode.discount_type === 'percent' ? '%' : ' BYN'})
-              </span>
-              <button onClick={removePromocode} className="text-zinc-400 hover:text-white underline text-[10px]">
-                Отменить
-              </button>
-            </div>
+            isPromoBlockedByBundle ? (
+              <div className="mt-2 p-2.5 rounded-xl bg-orange-500/15 border border-orange-500/30 text-xs text-orange-300 font-medium space-y-1">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 font-bold">
+                    <AlertTriangle className="w-4 h-4 text-orange-400" />
+                    Промокод {appliedPromocode.code} отключен
+                  </div>
+                  <button onClick={removePromocode} className="text-zinc-400 hover:text-white underline text-[10px]">
+                    Сбросить
+                  </button>
+                </div>
+                <p className="text-[10px] text-zinc-400 leading-tight">
+                  Промокоды не суммируются с комбо-акциями согласно правилам магазина.
+                </p>
+              </div>
+            ) : (
+              <div className="mt-2 flex items-center justify-between p-2 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-xs text-emerald-300 font-semibold">
+                <span className="flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4" />
+                  Промокод {appliedPromocode.code} активен (-{appliedPromocode.discount_value}
+                  {appliedPromocode.discount_type === 'percent' ? '%' : ' BYN'})
+                </span>
+                <button onClick={removePromocode} className="text-zinc-400 hover:text-white underline text-[10px]">
+                  Отменить
+                </button>
+              </div>
+            )
           )}
 
           {promocodeMsg && !appliedPromocode && (
@@ -383,9 +410,20 @@ export const CartTab: React.FC<CartTabProps> = ({ onGoToCatalog, onOrderComplete
           </div>
 
           {discountAmount > 0 && (
-            <div className="flex justify-between text-xs text-emerald-400 font-semibold">
-              <span>Скидка по промокоду</span>
-              <span>−{discountAmount.toFixed(2)} BYN</span>
+            <div className={`flex justify-between text-xs font-semibold ${isPromoBlockedByBundle ? 'text-zinc-500' : 'text-emerald-400'}`}>
+              <span>Скидка по промокоду {isPromoBlockedByBundle && '(не применилась)'}</span>
+              {isPromoBlockedByBundle ? (
+                <span className="line-through">−{discountAmount.toFixed(2)} BYN</span>
+              ) : (
+                <span>−{discountAmount.toFixed(2)} BYN</span>
+              )}
+            </div>
+          )}
+
+          {bundleDiscount > 0 && (
+            <div className="flex justify-between text-xs text-orange-400 font-semibold">
+              <span>Скидка по акциям (Комбо)</span>
+              <span>−{bundleDiscount.toFixed(2)} BYN</span>
             </div>
           )}
 
@@ -399,6 +437,21 @@ export const CartTab: React.FC<CartTabProps> = ({ onGoToCatalog, onOrderComplete
               )}
             </span>
           </div>
+
+          {bundlePromoResult.applied.length > 0 && (
+            <div className="pt-2 border-t border-white/5 space-y-1">
+              <span className="text-[10px] font-bold text-orange-400 block uppercase tracking-wider">Примененные акции:</span>
+              {bundlePromoResult.applied.map((a) => (
+                <div key={a.promoId} className="flex justify-between text-[11px] text-zinc-300">
+                  <span className="flex items-center gap-1">
+                    <CheckCircle2 className="w-3 h-3 text-orange-400 shrink-0" />
+                    {a.name} (x{a.count})
+                  </span>
+                  <span className="font-semibold text-white">−{a.discount.toFixed(2)} BYN</span>
+                </div>
+              ))}
+            </div>
+          )}
 
           <div className="w-full h-px bg-white/10 my-2" />
 

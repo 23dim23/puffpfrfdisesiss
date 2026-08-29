@@ -163,6 +163,17 @@ export interface Promotion {
   created_at?: string;
 }
 
+export interface BundlePromotion {
+  id: number;
+  name: string;
+  product_a_id: number;
+  product_b_id: number;
+  discount_type: 'percent' | 'fixed_price';
+  discount_value: number; // e.g., 20 for 20% off B, or 15 for B costs 15 BYN
+  is_active: boolean;
+  created_at?: string;
+}
+
 export interface Promocode {
   id: number;
   code: string;
@@ -226,6 +237,7 @@ export interface ShopSettings {
   delivery_card_subtitle?: string; // Время / график доставки
   delivery_card_conditions?: string; // Условия / тарифы
   delivery_card_note?: string; // Примечание / предупреждение
+  block_promo_on_bundle?: boolean; // Блокировать промокоды при наличии комбо-акций
 }
 
 export interface TelegramUser {

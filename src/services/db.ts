@@ -21,6 +21,7 @@ import {
   Order,
   Promotion,
   Promocode,
+  BundlePromotion,
   ProductReservation,
   PickupPoint,
   ShopSettings,
@@ -62,6 +63,7 @@ const DB_KEYS = {
   ADMINS: 'puff_db_admins_v5',
   USERS: 'puff_db_users_v5',
   RESERVATIONS: 'puff_db_reservations_v5',
+  BUNDLE_PROMOTIONS: 'puff_db_bundle_promotions_v5',
 };
 
 // Firestore Collection Names
@@ -81,6 +83,7 @@ const FS_COLS = {
   ADMINS: 'shop_admins',
   USERS: 'shop_users',
   RESERVATIONS: 'shop_reservations',
+  BUNDLE_PROMOTIONS: 'shop_bundle_promotions',
 };
 
 // Local Storage Helper
@@ -183,11 +186,25 @@ class CloudDatabase {
     if (!localStorage.getItem(DB_KEYS.RESERVATIONS)) {
       setStoredItem(DB_KEYS.RESERVATIONS, []);
     }
+    if (!localStorage.getItem(DB_KEYS.BUNDLE_PROMOTIONS)) {
+      setStoredItem(DB_KEYS.BUNDLE_PROMOTIONS, []);
+    }
   }
 
   // Set up realtime Firestore subscribers for multi-device sync
   private setupFirestoreRealtimeSync(): void {
     try {
+      // 0. Bundle Promotions Listener
+      onSnapshot(
+        collection(firestore, FS_COLS.BUNDLE_PROMOTIONS),
+        (snapshot) => {
+          const list = snapshot.docs.map((d) => d.data() as BundlePromotion);
+          setStoredItem(DB_KEYS.BUNDLE_PROMOTIONS, list);
+          this.notify();
+        },
+        (err) => console.warn('Firestore bundle promotions listener:', err)
+      );
+
       // 1. Settings Listener
       onSnapshot(
         doc(firestore, FS_COLS.SETTINGS, 'global'),
@@ -1078,6 +1095,72 @@ class CloudDatabase {
 
   public cancelOrder(orderId: number): boolean {
     return this.updateOrderStatus(orderId, 'cancelled');
+  }
+
+  // ================= UPDATE ORDER FINANCES =================
+  public updateOrderFinances(orderId: number, total: number, totalMargin: number): boolean {
+    const orders = this.getOrders();
+    const index = orders.findIndex((o) => o.id === orderId);
+    if (index === -1) return false;
+
+    const order = orders[index];
+    const updatedOrder: Order = {
+      ...order,
+      total: Number(total),
+      total_margin: Number(totalMargin),
+    };
+
+    orders[index] = updatedOrder;
+    setStoredItem(DB_KEYS.ORDERS, orders);
+    this.notify();
+
+    // Persist immediately to Cloud Firestore
+    setDoc(doc(firestore, FS_COLS.ORDERS, String(orderId)), cleanFirestoreData(updatedOrder)).catch((err) => {
+      console.error('Error saving order finances to Firestore:', err);
+    });
+
+    return true;
+  }
+
+  // ================= BUNDLE PROMOTIONS =================
+  public getBundlePromotions(): BundlePromotion[] {
+    return getStoredItem<BundlePromotion[]>(DB_KEYS.BUNDLE_PROMOTIONS, []);
+  }
+
+  public addBundlePromotion(promo: Omit<BundlePromotion, 'id'>): BundlePromotion {
+    const promos = this.getBundlePromotions();
+    const nextId = promos.length > 0 ? Math.max(...promos.map((p) => p.id)) + 1 : 1;
+    const newPromo: BundlePromotion = { ...promo, id: nextId, created_at: new Date().toISOString() };
+    const updated = [newPromo, ...promos];
+    setStoredItem(DB_KEYS.BUNDLE_PROMOTIONS, updated);
+    this.notify();
+
+    setDoc(doc(firestore, FS_COLS.BUNDLE_PROMOTIONS, String(nextId)), cleanFirestoreData(newPromo)).catch(() => {});
+    return newPromo;
+  }
+
+  public updateBundlePromotion(id: number, promo: Partial<BundlePromotion>): boolean {
+    const promos = this.getBundlePromotions();
+    const index = promos.findIndex((p) => p.id === id);
+    if (index === -1) return false;
+
+    const updatedPromo = { ...promos[index], ...promo };
+    promos[index] = updatedPromo;
+    setStoredItem(DB_KEYS.BUNDLE_PROMOTIONS, promos);
+    this.notify();
+
+    setDoc(doc(firestore, FS_COLS.BUNDLE_PROMOTIONS, String(id)), cleanFirestoreData(updatedPromo)).catch(() => {});
+    return true;
+  }
+
+  public deleteBundlePromotion(id: number): boolean {
+    const promos = this.getBundlePromotions();
+    const filtered = promos.filter((p) => p.id !== id);
+    setStoredItem(DB_KEYS.BUNDLE_PROMOTIONS, filtered);
+    this.notify();
+
+    deleteDoc(doc(firestore, FS_COLS.BUNDLE_PROMOTIONS, String(id))).catch(() => {});
+    return true;
   }
 
   // ================= USERS & TRAFFIC ANALYTICS =================

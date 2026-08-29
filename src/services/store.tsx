@@ -11,6 +11,7 @@ import {
   Order,
   Promotion,
   Promocode,
+  BundlePromotion,
   ProductReservation,
   PickupPoint,
   ShopSettings,
@@ -22,6 +23,7 @@ import {
 } from '../types';
 import { db, HARDCODED_ADMIN_IDS } from './db';
 import { getTelegramWebApp, hapticImpact, hapticNotification } from './telegram';
+import { calculateBundlePromotions } from '../utils/promo';
 
 export const BOT_TOKEN = '8870349321:AAEXFersNinRpHnPETbR_vGFn_TnGWOCums';
 export const HARDCODED_ADMINS = HARDCODED_ADMIN_IDS;
@@ -54,6 +56,7 @@ interface StoreContextType {
   orders: Order[];
   promotions: Promotion[];
   promocodes: Promocode[];
+  bundlePromotions: BundlePromotion[];
   reservations: ProductReservation[];
   pickupPoints: PickupPoint[];
   admins: AdminUser[];
@@ -77,6 +80,7 @@ interface StoreContextType {
   }) => Promise<{ success: boolean; orderId?: number; total?: number; error?: string }>;
   updateOrderStatus: (orderId: number, newStatus: OrderStatus) => Promise<boolean>;
   cancelOrder: (orderId: number) => Promise<boolean>;
+  updateOrderFinances: (orderId: number, total: number, totalMargin: number) => Promise<boolean>;
 
   // Database Management Actions (CRUD)
   saveSettings: (newSettings: Partial<ShopSettings>) => Promise<boolean>;
@@ -96,6 +100,8 @@ interface StoreContextType {
   deleteModel: (id: number) => Promise<boolean>;
   addPromotion: (promo: Omit<Promotion, 'id'>) => Promise<boolean>;
   deletePromotion: (id: number) => Promise<boolean>;
+  addBundlePromotion: (promo: Omit<BundlePromotion, 'id'>) => Promise<boolean>;
+  deleteBundlePromotion: (id: number) => Promise<boolean>;
   addPromocode: (code: Omit<Promocode, 'id' | 'used_count'>) => Promise<boolean>;
   deletePromocode: (id: number) => Promise<boolean>;
   addPickupPoint: (point: Omit<PickupPoint, 'id'>) => Promise<boolean>;
@@ -146,6 +152,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [orders, setOrders] = useState<Order[]>(() => db.getOrders());
   const [promotions, setPromotions] = useState<Promotion[]>(() => db.getPromotions());
   const [promocodes, setPromocodes] = useState<Promocode[]>(() => db.getPromocodes());
+  const [bundlePromotions, setBundlePromotions] = useState<BundlePromotion[]>(() => db.getBundlePromotions());
   const [pickupPoints, setPickupPoints] = useState<PickupPoint[]>(() => db.getPickupPoints());
   const [admins, setAdmins] = useState<AdminUser[]>(() => db.getAdmins());
   const [users, setUsers] = useState<ShopUser[]>(() => db.getUsers());
@@ -174,6 +181,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setOrders(db.getOrders());
     setPromotions(db.getPromotions());
     setPromocodes(db.getPromocodes());
+    setBundlePromotions(db.getBundlePromotions());
     setPickupPoints(db.getPickupPoints());
     setAdmins(db.getAdmins());
     setUsers(db.getUsers());
@@ -514,6 +522,16 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Promocode validation
   const applyPromocode = (code: string) => {
+    if (settings.block_promo_on_bundle) {
+      const bundlePromoResult = calculateBundlePromotions(cart, db.getBundlePromotions());
+      if (bundlePromoResult.totalDiscount > 0) {
+        return {
+          success: false,
+          message: 'Промокоды не суммируются с комбо-акциями!',
+        };
+      }
+    }
+
     const cleanCode = code.trim().toUpperCase();
     const found = promocodes.find((p) => p.code.toUpperCase() === cleanCode && p.is_active);
 
@@ -584,8 +602,32 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         deliveryPrice = isFree ? 0 : settings.delivery_price;
       }
 
-      const total = Math.max(0, subtotal - discountAmount + deliveryPrice);
+      // Calculate bundle promotions discount
+      const bundlePromoResult = calculateBundlePromotions(cart, db.getBundlePromotions());
+      const bundleDiscount = bundlePromoResult.totalDiscount;
+
+      // Check if promo code should be blocked by active bundle promotions
+      const isPromoBlockedByBundle = settings.block_promo_on_bundle && bundleDiscount > 0;
+      const finalDiscountAmount = isPromoBlockedByBundle ? 0 : discountAmount;
+
+      const total = Math.max(0, subtotal - (finalDiscountAmount + bundleDiscount) + deliveryPrice);
       const selectedPickup = pickupPoints.find((p) => p.id === params.pickupPointId);
+
+      let finalComment = params.comment || undefined;
+      if (bundlePromoResult.applied.length > 0) {
+        const promoNotes = bundlePromoResult.applied
+          .map((a) => `Акция "${a.name}" (x${a.count}): -${a.discount} BYN`)
+          .join(', ');
+        finalComment = finalComment
+          ? `${finalComment} | [Акция: ${promoNotes}]`
+          : `[Акция: ${promoNotes}]`;
+      }
+
+      if (isPromoBlockedByBundle && appliedPromocode) {
+        finalComment = finalComment
+          ? `${finalComment} | [Промокод ${appliedPromocode.code} отключен: не суммируется с акциями]`
+          : `[Промокод ${appliedPromocode.code} отключен: не суммируется с акциями]`;
+      }
 
       const newOrder = db.createOrder({
         user_id: currentUser?.id || 999999,
@@ -604,7 +646,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         })),
         total,
         subtotal,
-        discount_amount: discountAmount,
+        discount_amount: finalDiscountAmount + bundleDiscount,
         delivery_price: deliveryPrice,
         currency: 'BYN',
         status: 'pending',
@@ -612,9 +654,9 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         pickup_point_id: params.pickupPointId || undefined,
         pickup_point_name: selectedPickup?.name || (params.deliveryType === 'pickup' ? 'Точка самовывоза' : undefined),
         delivery_address: params.deliveryAddress || undefined,
-        comment: params.comment || undefined,
-        promocode_id: appliedPromocode?.id,
-        promocode_code: appliedPromocode?.code,
+        comment: finalComment,
+        promocode_id: isPromoBlockedByBundle ? undefined : appliedPromocode?.id,
+        promocode_code: isPromoBlockedByBundle ? undefined : appliedPromocode?.code,
       });
 
       // Send Telegram WebApp Data to connected Python Bot (if supported)
@@ -733,6 +775,12 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return success;
   };
 
+  const updateOrderFinances = async (orderId: number, total: number, totalMargin: number) => {
+    const success = db.updateOrderFinances(orderId, total, totalMargin);
+    if (success) hapticNotification('success');
+    return success;
+  };
+
   // Admin Database CRUD Operations
   const saveSettings = async (newSettings: Partial<ShopSettings>) => {
     db.updateSettings(newSettings);
@@ -835,6 +883,18 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const deletePromotion = async (id: number) => {
     db.deletePromotion(id);
+    hapticImpact('medium');
+    return true;
+  };
+
+  const addBundlePromotion = async (promo: Omit<BundlePromotion, 'id'>) => {
+    db.addBundlePromotion(promo);
+    hapticNotification('success');
+    return true;
+  };
+
+  const deleteBundlePromotion = async (id: number) => {
+    db.deleteBundlePromotion(id);
     hapticImpact('medium');
     return true;
   };
@@ -943,6 +1003,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         orders,
         promotions,
         promocodes,
+        bundlePromotions,
         reservations,
         pickupPoints,
         admins,
@@ -959,6 +1020,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         placeOrder,
         updateOrderStatus,
         cancelOrder,
+        updateOrderFinances,
         saveSettings,
         setLineMargin,
         getLineMargin,
@@ -976,6 +1038,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         deleteModel,
         addPromotion,
         deletePromotion,
+        addBundlePromotion,
+        deleteBundlePromotion,
         addPromocode,
         deletePromocode,
         addPickupPoint,

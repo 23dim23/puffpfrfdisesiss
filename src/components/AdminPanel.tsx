@@ -73,11 +73,13 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
     attributeValues,
     promotions,
     promocodes,
+    bundlePromotions,
     pickupPoints,
     admins,
     users,
     settings,
     updateOrderStatus,
+    updateOrderFinances,
     saveSettings,
     addProduct,
     updateProduct,
@@ -93,6 +95,8 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
     deleteModel,
     addPromotion,
     deletePromotion,
+    addBundlePromotion,
+    deleteBundlePromotion,
     addPromocode,
     deletePromocode,
     addPickupPoint,
@@ -106,6 +110,17 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
   } = useStore();
 
   const [activeSubpage, setActiveSubpage] = useState<AdminSubpage>('menu');
+  const [promoTab, setPromoTab] = useState<'promocodes' | 'bundles'>('promocodes');
+  const [bundleForm, setBundleForm] = useState({
+    name: '',
+    product_a_id: '',
+    product_b_id: '',
+    discount_type: 'percent' as 'percent' | 'fixed_price',
+    discount_value: '',
+  });
+  const [editingOrderId, setEditingOrderId] = useState<number | null>(null);
+  const [editOrderTotal, setEditOrderTotal] = useState<string>('');
+  const [editOrderMargin, setEditOrderMargin] = useState<string>('');
   const [dbDumpInput, setDbDumpInput] = useState<string>('');
   const [showDbTools, setShowDbTools] = useState<boolean>(false);
 
@@ -786,12 +801,94 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
                         : `🚚 Доставка: ${order.delivery_address}`}
                     </div>
                     {order.comment && <div className="text-zinc-400 italic">💬 {order.comment}</div>}
-                    <div className="pt-1 font-mono text-[11px] text-zinc-400 border-t border-white/5">
-                      {order.items_json.map((i) => `${i.name} ×${i.quantity}`).join(', ')}
+                    <div className="pt-1 font-mono text-[11px] text-zinc-400 border-t border-white/5 space-y-0.5">
+                      {order.items_json.map((i) => {
+                        const prod = products.find((p) => p.id === i.id);
+                        const brand = prod && prod.brand_slug ? brands.find((b) => b.slug === prod.brand_slug) : null;
+                        const brandPrefix = brand ? `[${brand.name}] ` : '';
+                        return (
+                          <div key={i.id}>
+                            <span className="text-purple-300">{brandPrefix}</span>
+                            <span>{i.name} ×{i.quantity}</span>
+                          </div>
+                        );
+                      })}
                     </div>
                     {isAdmin && (
-                      <div className="pt-1 text-[11px] text-emerald-400 font-semibold">
-                        💎 Расчетная прибыль: +{(order.total_margin ?? (order.total * 0.6)).toFixed(2)} BYN
+                      <div className="pt-1 border-t border-white/5 mt-1">
+                        {editingOrderId === order.id ? (
+                          <div className="p-2.5 rounded-xl bg-purple-950/40 border border-purple-500/30 space-y-2.5 mt-1.5">
+                            <p className="text-[10px] font-bold text-purple-300 uppercase tracking-wider">Редактирование финансов:</p>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div>
+                                <label className="text-[9px] text-zinc-400 block mb-0.5">Выручка (BYN)</label>
+                                <input
+                                  type="number"
+                                  step="0.01"
+                                  value={editOrderTotal}
+                                  onChange={(e) => setEditOrderTotal(e.target.value)}
+                                  className="w-full py-1 px-2 rounded-lg bg-black/40 border border-white/10 text-white font-mono text-xs"
+                                />
+                              </div>
+                              <div>
+                                <label className="text-[9px] text-zinc-400 block mb-0.5">Чистая прибыль (BYN)</label>
+                                <input
+                                  type="number"
+                                  step="0.01"
+                                  value={editOrderMargin}
+                                  onChange={(e) => setEditOrderMargin(e.target.value)}
+                                  className="w-full py-1 px-2 rounded-lg bg-black/40 border border-white/10 text-white font-mono text-xs"
+                                />
+                              </div>
+                            </div>
+                            <div className="flex gap-2 justify-end pt-0.5">
+                              <button
+                                onClick={() => {
+                                  setEditingOrderId(null);
+                                }}
+                                className="px-2.5 py-1 text-[10px] rounded-lg bg-white/5 border border-white/10 text-zinc-300 font-bold tap-active"
+                              >
+                                Отмена
+                              </button>
+                              <button
+                                onClick={async () => {
+                                  const t = parseFloat(editOrderTotal);
+                                  const m = parseFloat(editOrderMargin);
+                                  if (isNaN(t) || isNaN(m)) {
+                                    alert('Пожалуйста, введите корректные числа!');
+                                    return;
+                                  }
+                                  const ok = await updateOrderFinances(order.id, t, m);
+                                  if (ok) {
+                                    setEditingOrderId(null);
+                                  } else {
+                                    alert('Ошибка при сохранении');
+                                  }
+                                }}
+                                className="px-2.5 py-1 text-[10px] rounded-lg bg-emerald-600 text-white font-bold tap-active"
+                              >
+                                Сохранить
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex items-center justify-between">
+                            <span className="text-[11px] text-emerald-400 font-semibold">
+                              💎 Расчетная прибыль: +{(order.total_margin ?? (order.total * 0.6)).toFixed(2)} BYN
+                            </span>
+                            <button
+                              onClick={() => {
+                                setEditingOrderId(order.id);
+                                setEditOrderTotal(order.total.toString());
+                                setEditOrderMargin((order.total_margin ?? (order.total * 0.6)).toFixed(2));
+                                hapticImpact('light');
+                              }}
+                              className="text-[10px] text-purple-400 hover:text-purple-300 underline font-semibold flex items-center gap-0.5"
+                            >
+                              ✏️ Редактировать
+                            </button>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
@@ -1520,110 +1617,303 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
       {/* SUBPAGE: PROMOCODES */}
       {activeSubpage === 'promocodes' && (
         <div className="space-y-4">
-          <div className="p-4 rounded-2xl bg-white/[0.03] border border-purple-500/20 space-y-3">
-            <h4 className="text-xs font-bold text-white uppercase tracking-wider">Создать промокод</h4>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={promoForm.code}
-                onChange={(e) => setPromoForm((prev) => ({ ...prev, code: e.target.value.toUpperCase() }))}
-                placeholder="КОД ПРОМОКОДА"
-                className="flex-1 py-2 px-3 rounded-xl bg-white/5 border border-white/10 text-white font-mono text-xs"
-              />
-              <button
-                onClick={handleGenerateRandomPromo}
-                className="px-3 py-2 rounded-xl bg-purple-500/20 text-purple-300 text-xs font-bold border border-purple-500/30"
-              >
-                Рандом
-              </button>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <label className="text-[10px] text-zinc-400 block mb-1">Скидка (% или BYN)</label>
-                <input
-                  type="number"
-                  value={promoForm.discount_value}
-                  onChange={(e) => setPromoForm((prev) => ({ ...prev, discount_value: e.target.value }))}
-                  className="w-full py-2 px-3 rounded-xl bg-white/5 border border-white/10 text-white text-xs"
-                />
-              </div>
-              <div>
-                <label className="text-[10px] text-zinc-400 block mb-1">Тип скидки</label>
-                <select
-                  value={promoForm.discount_type}
-                  onChange={(e) => setPromoForm((prev) => ({ ...prev, discount_type: e.target.value as 'percent' | 'fixed' }))}
-                  className="w-full py-2 px-2 rounded-xl bg-[#181628] border border-white/10 text-white text-xs"
-                >
-                  <option value="percent">Процент (%)</option>
-                  <option value="fixed">Фикс (BYN)</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <label className="text-[10px] text-zinc-400 block mb-1">Минимальная сумма заказа (BYN)</label>
-                <input
-                  type="number"
-                  value={promoForm.min_order_amount}
-                  onChange={(e) => setPromoForm((prev) => ({ ...prev, min_order_amount: e.target.value }))}
-                  className="w-full py-2 px-3 rounded-xl bg-white/5 border border-white/10 text-white text-xs"
-                />
-              </div>
-              <div>
-                <label className="text-[10px] text-zinc-400 block mb-1">Макс. использований</label>
-                <input
-                  type="number"
-                  value={promoForm.max_uses}
-                  onChange={(e) => setPromoForm((prev) => ({ ...prev, max_uses: e.target.value }))}
-                  className="w-full py-2 px-3 rounded-xl bg-white/5 border border-white/10 text-white text-xs"
-                />
-              </div>
-            </div>
-
+          {/* Tab Selector */}
+          <div className="flex bg-white/[0.04] p-1 rounded-xl border border-white/5">
             <button
-              onClick={() => {
-                if (!promoForm.code.trim()) return;
-                addPromocode({
-                  code: promoForm.code.trim().toUpperCase(),
-                  discount_type: promoForm.discount_type,
-                  discount_value: parseFloat(promoForm.discount_value) || 0,
-                  min_order_amount: parseFloat(promoForm.min_order_amount) || 0,
-                  max_uses: parseInt(promoForm.max_uses) || 100,
-                  valid_until: promoForm.valid_until,
-                  is_active: true,
-                });
-                setPromoForm((prev) => ({ ...prev, code: '' }));
-              }}
-              className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-purple-600 to-orange-500 text-white text-xs font-bold tap-active"
+              onClick={() => setPromoTab('promocodes')}
+              className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+                promoTab === 'promocodes' ? 'bg-purple-600 text-white shadow' : 'text-zinc-400 hover:text-white'
+              }`}
             >
-              Сохранить промокод
+              Промокоды
+            </button>
+            <button
+              onClick={() => setPromoTab('bundles')}
+              className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+                promoTab === 'bundles' ? 'bg-purple-600 text-white shadow' : 'text-zinc-400 hover:text-white'
+              }`}
+            >
+              Комбо-акции (1+1 со скидкой)
             </button>
           </div>
 
-          <div className="space-y-2">
-            {promocodes.map((promo) => (
-              <div
-                key={promo.id}
-                className="flex items-center justify-between p-3 rounded-2xl bg-white/[0.03] border border-white/[0.06]"
-              >
-                <div>
-                  <span className="font-mono text-xs font-bold text-purple-300">{promo.code}</span>
-                  <span className="text-[11px] text-zinc-400 ml-2">
-                    -{promo.discount_value}
-                    {promo.discount_type === 'percent' ? '%' : ' BYN'} (исп.: {promo.used_count}/{promo.max_uses || '∞'} | от {promo.min_order_amount || 0} BYN)
+          {promoTab === 'promocodes' ? (
+            <>
+              <div className="p-4 rounded-2xl bg-white/[0.03] border border-purple-500/20 space-y-3">
+                <h4 className="text-xs font-bold text-white uppercase tracking-wider">Создать промокод</h4>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={promoForm.code}
+                    onChange={(e) => setPromoForm((prev) => ({ ...prev, code: e.target.value.toUpperCase() }))}
+                    placeholder="КОД ПРОМОКОДА"
+                    className="flex-1 py-2 px-3 rounded-xl bg-white/5 border border-white/10 text-white font-mono text-xs"
+                  />
+                  <button
+                    onClick={handleGenerateRandomPromo}
+                    className="px-3 py-2 rounded-xl bg-purple-500/20 text-purple-300 text-xs font-bold border border-purple-500/30"
+                  >
+                    Рандом
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-[10px] text-zinc-400 block mb-1">Скидка (% или BYN)</label>
+                    <input
+                      type="number"
+                      value={promoForm.discount_value}
+                      onChange={(e) => setPromoForm((prev) => ({ ...prev, discount_value: e.target.value }))}
+                      className="w-full py-2 px-3 rounded-xl bg-white/5 border border-white/10 text-white text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-zinc-400 block mb-1">Тип скидки</label>
+                    <select
+                      value={promoForm.discount_type}
+                      onChange={(e) => setPromoForm((prev) => ({ ...prev, discount_type: e.target.value as 'percent' | 'fixed' }))}
+                      className="w-full py-2 px-2 rounded-xl bg-[#181628] border border-white/10 text-white text-xs"
+                    >
+                      <option value="percent">Процент (%)</option>
+                      <option value="fixed">Фикс (BYN)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-[10px] text-zinc-400 block mb-1">Минимальная сумма заказа (BYN)</label>
+                    <input
+                      type="number"
+                      value={promoForm.min_order_amount}
+                      onChange={(e) => setPromoForm((prev) => ({ ...prev, min_order_amount: e.target.value }))}
+                      className="w-full py-2 px-3 rounded-xl bg-white/5 border border-white/10 text-white text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-zinc-400 block mb-1">Макс. использований</label>
+                    <input
+                      type="number"
+                      value={promoForm.max_uses}
+                      onChange={(e) => setPromoForm((prev) => ({ ...prev, max_uses: e.target.value }))}
+                      className="w-full py-2 px-3 rounded-xl bg-white/5 border border-white/10 text-white text-xs"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => {
+                    if (!promoForm.code.trim()) return;
+                    addPromocode({
+                      code: promoForm.code.trim().toUpperCase(),
+                      discount_type: promoForm.discount_type,
+                      discount_value: parseFloat(promoForm.discount_value) || 0,
+                      min_order_amount: parseFloat(promoForm.min_order_amount) || 0,
+                      max_uses: parseInt(promoForm.max_uses) || 100,
+                      valid_until: promoForm.valid_until,
+                      is_active: true,
+                    });
+                    setPromoForm((prev) => ({ ...prev, code: '' }));
+                  }}
+                  className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-purple-600 to-orange-500 text-white text-xs font-bold tap-active"
+                >
+                  Сохранить промокод
+                </button>
+              </div>
+
+              <div className="space-y-2">
+                {promocodes.map((promo) => (
+                  <div
+                    key={promo.id}
+                    className="flex items-center justify-between p-3 rounded-2xl bg-white/[0.03] border border-white/[0.06]"
+                  >
+                    <div>
+                      <span className="font-mono text-xs font-bold text-purple-300">{promo.code}</span>
+                      <span className="text-[11px] text-zinc-400 ml-2">
+                        -{promo.discount_value}
+                        {promo.discount_type === 'percent' ? '%' : ' BYN'} (исп.: {promo.used_count}/{promo.max_uses || '∞'} | от {promo.min_order_amount || 0} BYN)
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => deletePromocode(promo.id)}
+                      className="p-1.5 rounded-lg text-red-400 hover:bg-red-500/10"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            <>
+              {/* BUNDLE PROMOTIONS TAB */}
+              {/* Promo Code Protection Setting Toggle */}
+              <div className="p-4 rounded-2xl bg-[#2a1b18]/40 border border-orange-500/30 flex items-center justify-between gap-4">
+                <div className="space-y-0.5">
+                  <span className="text-xs font-bold text-white block">🚫 Запретить промокоды при акциях</span>
+                  <span className="text-[10px] text-zinc-400 block leading-tight">
+                    Блокировать применение промокодов покупателями, если в их корзине сработала комбо-акция (не суммировать скидки)
                   </span>
                 </div>
                 <button
-                  onClick={() => deletePromocode(promo.id)}
-                  className="p-1.5 rounded-lg text-red-400 hover:bg-red-500/10"
+                  onClick={() => {
+                    saveSettings({ block_promo_on_bundle: !settings.block_promo_on_bundle });
+                    hapticImpact('light');
+                  }}
+                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                    settings.block_promo_on_bundle ? 'bg-orange-500' : 'bg-zinc-700'
+                  }`}
                 >
-                  <Trash2 className="w-3.5 h-3.5" />
+                  <span
+                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                      settings.block_promo_on_bundle ? 'translate-x-5' : 'translate-x-0'
+                    }`}
+                  />
                 </button>
               </div>
-            ))}
-          </div>
+
+              <div className="p-4 rounded-2xl bg-white/[0.03] border border-purple-500/20 space-y-3">
+                <h4 className="text-xs font-bold text-white uppercase tracking-wider">Создать комбо-акцию</h4>
+                
+                <div>
+                  <label className="text-[10px] text-zinc-400 block mb-1">Название акции (описание покупателю)</label>
+                  <input
+                    type="text"
+                    value={bundleForm.name}
+                    onChange={(e) => setBundleForm((prev) => ({ ...prev, name: e.target.value }))}
+                    placeholder="Например: Скидка 50% на вторую жидкость"
+                    className="w-full py-2 px-3 rounded-xl bg-white/5 border border-white/10 text-white text-xs"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-[10px] text-zinc-400 block mb-1">Товар 1 (Берёт покупатель)</label>
+                    <select
+                      value={bundleForm.product_a_id}
+                      onChange={(e) => setBundleForm((prev) => ({ ...prev, product_a_id: e.target.value }))}
+                      className="w-full py-2 px-2 rounded-xl bg-[#181628] border border-white/10 text-white text-xs"
+                    >
+                      <option value="">-- Выберите товар 1 --</option>
+                      {[...products]
+                        .sort((a, b) => a.name.localeCompare(b.name))
+                        .map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {p.name} ({p.price} BYN)
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] text-zinc-400 block mb-1">Товар 2 (Идёт со скидкой)</label>
+                    <select
+                      value={bundleForm.product_b_id}
+                      onChange={(e) => setBundleForm((prev) => ({ ...prev, product_b_id: e.target.value }))}
+                      className="w-full py-2 px-2 rounded-xl bg-[#181628] border border-white/10 text-white text-xs"
+                    >
+                      <option value="">-- Выберите товар 2 --</option>
+                      {[...products]
+                        .sort((a, b) => a.name.localeCompare(b.name))
+                        .map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {p.name} ({p.price} BYN)
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-[10px] text-zinc-400 block mb-1">Скидка или Новая цена на Товар 2</label>
+                    <input
+                      type="number"
+                      value={bundleForm.discount_value}
+                      onChange={(e) => setBundleForm((prev) => ({ ...prev, discount_value: e.target.value }))}
+                      placeholder="Значение"
+                      className="w-full py-2 px-3 rounded-xl bg-white/5 border border-white/10 text-white text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-zinc-400 block mb-1">Тип скидки</label>
+                    <select
+                      value={bundleForm.discount_type}
+                      onChange={(e) => setBundleForm((prev) => ({ ...prev, discount_type: e.target.value as 'percent' | 'fixed_price' }))}
+                      className="w-full py-2 px-2 rounded-xl bg-[#181628] border border-white/10 text-white text-xs"
+                    >
+                      <option value="percent">Процент скидки (%)</option>
+                      <option value="fixed_price">Новая фиксированная цена (BYN)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => {
+                    if (!bundleForm.name.trim() || !bundleForm.product_a_id || !bundleForm.product_b_id || !bundleForm.discount_value) {
+                      alert('Пожалуйста, заполните все поля!');
+                      return;
+                    }
+                    addBundlePromotion({
+                      name: bundleForm.name.trim(),
+                      product_a_id: parseInt(bundleForm.product_a_id),
+                      product_b_id: parseInt(bundleForm.product_b_id),
+                      discount_type: bundleForm.discount_type,
+                      discount_value: parseFloat(bundleForm.discount_value) || 0,
+                      is_active: true,
+                    });
+                    setBundleForm({
+                      name: '',
+                      product_a_id: '',
+                      product_b_id: '',
+                      discount_type: 'percent',
+                      discount_value: '',
+                    });
+                  }}
+                  className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-purple-600 to-orange-500 text-white text-xs font-bold tap-active"
+                >
+                  Сохранить акцию
+                </button>
+              </div>
+
+              <div className="space-y-2">
+                {bundlePromotions.length === 0 ? (
+                  <p className="text-center text-xs text-zinc-500 py-4">Нет активных комбо-акций</p>
+                ) : (
+                  bundlePromotions.map((bp) => {
+                    const prodA = products.find((p) => p.id === bp.product_a_id);
+                    const prodB = products.find((p) => p.id === bp.product_b_id);
+                    return (
+                      <div
+                        key={bp.id}
+                        className="flex items-center justify-between p-3 rounded-2xl bg-white/[0.03] border border-white/[0.06]"
+                      >
+                        <div className="space-y-0.5 max-w-[85%]">
+                          <p className="text-xs font-bold text-white">{bp.name}</p>
+                          <p className="text-[10px] text-zinc-400">
+                            Если покупает: <span className="text-purple-300 font-semibold">{prodA?.name || `Товар #${bp.product_a_id}`}</span>
+                          </p>
+                          <p className="text-[10px] text-zinc-400">
+                            То на второй: <span className="text-purple-300 font-semibold">{prodB?.name || `Товар #${bp.product_b_id}`}</span>{' '}
+                            идет со скидкой{' '}
+                            <span className="text-orange-400 font-bold">
+                              {bp.discount_type === 'percent' ? `${bp.discount_value}%` : `${bp.discount_value} BYN (цена)`}
+                            </span>
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => deleteBundlePromotion(bp.id)}
+                          className="p-1.5 rounded-lg text-red-400 hover:bg-red-500/10 shrink-0"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </>
+          )}
         </div>
       )}
 

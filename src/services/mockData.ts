@@ -25,6 +25,7 @@ export const INITIAL_SETTINGS: ShopSettings = {
   delivery_card_subtitle: 'По будням и выходным с 13:00',
   delivery_card_conditions: 'Стоимость 5.0 BYN • От 4 позиций в заказе — БЕСПЛАТНО',
   delivery_card_note: 'Итоговая стоимость доставки может измениться в зависимости от района Могилева.',
+  block_promo_on_bundle: false,
 };
 
 export const INITIAL_CATEGORIES: Category[] = [
