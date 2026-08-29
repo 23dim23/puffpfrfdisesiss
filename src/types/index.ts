@@ -166,8 +166,12 @@ export interface Promotion {
 export interface BundlePromotion {
   id: number;
   name: string;
-  product_a_id: number;
-  product_b_id: number;
+  type_a: 'product' | 'brand';
+  product_a_id?: number | null;
+  brand_a_slug?: string | null;
+  type_b: 'product' | 'brand';
+  product_b_id?: number | null;
+  brand_b_slug?: string | null;
   discount_type: 'percent' | 'fixed_price';
   discount_value: number; // e.g., 20 for 20% off B, or 15 for B costs 15 BYN
   is_active: boolean;

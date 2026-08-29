@@ -113,11 +113,20 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
   const [promoTab, setPromoTab] = useState<'promocodes' | 'bundles'>('promocodes');
   const [bundleForm, setBundleForm] = useState({
     name: '',
+    type_a: 'product' as 'product' | 'brand',
     product_a_id: '',
+    brand_a_slug: '',
+    type_b: 'product' as 'product' | 'brand',
     product_b_id: '',
+    brand_b_slug: '',
     discount_type: 'percent' as 'percent' | 'fixed_price',
     discount_value: '',
   });
+
+  const [filterA_category, setFilterA_category] = useState('all');
+  const [filterA_brand, setFilterA_brand] = useState('all');
+  const [filterB_category, setFilterB_category] = useState('all');
+  const [filterB_brand, setFilterB_brand] = useState('all');
   const [editingOrderId, setEditingOrderId] = useState<number | null>(null);
   const [editOrderTotal, setEditOrderTotal] = useState<string>('');
   const [editOrderMargin, setEditOrderMargin] = useState<string>('');
@@ -1747,171 +1756,345 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
           ) : (
             <>
               {/* BUNDLE PROMOTIONS TAB */}
-              {/* Promo Code Protection Setting Toggle */}
-              <div className="p-4 rounded-2xl bg-[#2a1b18]/40 border border-orange-500/30 flex items-center justify-between gap-4">
-                <div className="space-y-0.5">
-                  <span className="text-xs font-bold text-white block">🚫 Запретить промокоды при акциях</span>
-                  <span className="text-[10px] text-zinc-400 block leading-tight">
-                    Блокировать применение промокодов покупателями, если в их корзине сработала комбо-акция (не суммировать скидки)
-                  </span>
-                </div>
-                <button
-                  onClick={() => {
-                    saveSettings({ block_promo_on_bundle: !settings.block_promo_on_bundle });
-                    hapticImpact('light');
-                  }}
-                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                    settings.block_promo_on_bundle ? 'bg-orange-500' : 'bg-zinc-700'
-                  }`}
-                >
-                  <span
-                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                      settings.block_promo_on_bundle ? 'translate-x-5' : 'translate-x-0'
-                    }`}
-                  />
-                </button>
-              </div>
+              {(() => {
+                const filteredProductsA = products.filter(p => {
+                  if (filterA_category !== 'all' && p.category_slug !== filterA_category) return false;
+                  if (filterA_brand !== 'all' && p.brand_slug !== filterA_brand) return false;
+                  return true;
+                });
 
-              <div className="p-4 rounded-2xl bg-white/[0.03] border border-purple-500/20 space-y-3">
-                <h4 className="text-xs font-bold text-white uppercase tracking-wider">Создать комбо-акцию</h4>
-                
-                <div>
-                  <label className="text-[10px] text-zinc-400 block mb-1">Название акции (описание покупателю)</label>
-                  <input
-                    type="text"
-                    value={bundleForm.name}
-                    onChange={(e) => setBundleForm((prev) => ({ ...prev, name: e.target.value }))}
-                    placeholder="Например: Скидка 50% на вторую жидкость"
-                    className="w-full py-2 px-3 rounded-xl bg-white/5 border border-white/10 text-white text-xs"
-                  />
-                </div>
+                const filteredProductsB = products.filter(p => {
+                  if (filterB_category !== 'all' && p.category_slug !== filterB_category) return false;
+                  if (filterB_brand !== 'all' && p.brand_slug !== filterB_brand) return false;
+                  return true;
+                });
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-[10px] text-zinc-400 block mb-1">Товар 1 (Берёт покупатель)</label>
-                    <select
-                      value={bundleForm.product_a_id}
-                      onChange={(e) => setBundleForm((prev) => ({ ...prev, product_a_id: e.target.value }))}
-                      className="w-full py-2 px-2 rounded-xl bg-[#181628] border border-white/10 text-white text-xs"
-                    >
-                      <option value="">-- Выберите товар 1 --</option>
-                      {[...products]
-                        .sort((a, b) => a.name.localeCompare(b.name))
-                        .map((p) => (
-                          <option key={p.id} value={p.id}>
-                            {p.name} ({p.price} BYN)
-                          </option>
-                        ))}
-                    </select>
-                  </div>
+                const isFormValid =
+                  bundleForm.name.trim() &&
+                  (bundleForm.type_a === 'product' ? bundleForm.product_a_id : bundleForm.brand_a_slug) &&
+                  (bundleForm.type_b === 'product' ? bundleForm.product_b_id : bundleForm.brand_b_slug) &&
+                  bundleForm.discount_value;
 
-                  <div>
-                    <label className="text-[10px] text-zinc-400 block mb-1">Товар 2 (Идёт со скидкой)</label>
-                    <select
-                      value={bundleForm.product_b_id}
-                      onChange={(e) => setBundleForm((prev) => ({ ...prev, product_b_id: e.target.value }))}
-                      className="w-full py-2 px-2 rounded-xl bg-[#181628] border border-white/10 text-white text-xs"
-                    >
-                      <option value="">-- Выберите товар 2 --</option>
-                      {[...products]
-                        .sort((a, b) => a.name.localeCompare(b.name))
-                        .map((p) => (
-                          <option key={p.id} value={p.id}>
-                            {p.name} ({p.price} BYN)
-                          </option>
-                        ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="text-[10px] text-zinc-400 block mb-1">Скидка или Новая цена на Товар 2</label>
-                    <input
-                      type="number"
-                      value={bundleForm.discount_value}
-                      onChange={(e) => setBundleForm((prev) => ({ ...prev, discount_value: e.target.value }))}
-                      placeholder="Значение"
-                      className="w-full py-2 px-3 rounded-xl bg-white/5 border border-white/10 text-white text-xs"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[10px] text-zinc-400 block mb-1">Тип скидки</label>
-                    <select
-                      value={bundleForm.discount_type}
-                      onChange={(e) => setBundleForm((prev) => ({ ...prev, discount_type: e.target.value as 'percent' | 'fixed_price' }))}
-                      className="w-full py-2 px-2 rounded-xl bg-[#181628] border border-white/10 text-white text-xs"
-                    >
-                      <option value="percent">Процент скидки (%)</option>
-                      <option value="fixed_price">Новая фиксированная цена (BYN)</option>
-                    </select>
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => {
-                    if (!bundleForm.name.trim() || !bundleForm.product_a_id || !bundleForm.product_b_id || !bundleForm.discount_value) {
-                      alert('Пожалуйста, заполните все поля!');
-                      return;
-                    }
-                    addBundlePromotion({
-                      name: bundleForm.name.trim(),
-                      product_a_id: parseInt(bundleForm.product_a_id),
-                      product_b_id: parseInt(bundleForm.product_b_id),
-                      discount_type: bundleForm.discount_type,
-                      discount_value: parseFloat(bundleForm.discount_value) || 0,
-                      is_active: true,
-                    });
-                    setBundleForm({
-                      name: '',
-                      product_a_id: '',
-                      product_b_id: '',
-                      discount_type: 'percent',
-                      discount_value: '',
-                    });
-                  }}
-                  className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-purple-600 to-orange-500 text-white text-xs font-bold tap-active"
-                >
-                  Сохранить акцию
-                </button>
-              </div>
-
-              <div className="space-y-2">
-                {bundlePromotions.length === 0 ? (
-                  <p className="text-center text-xs text-zinc-500 py-4">Нет активных комбо-акций</p>
-                ) : (
-                  bundlePromotions.map((bp) => {
-                    const prodA = products.find((p) => p.id === bp.product_a_id);
-                    const prodB = products.find((p) => p.id === bp.product_b_id);
-                    return (
-                      <div
-                        key={bp.id}
-                        className="flex items-center justify-between p-3 rounded-2xl bg-white/[0.03] border border-white/[0.06]"
-                      >
-                        <div className="space-y-0.5 max-w-[85%]">
-                          <p className="text-xs font-bold text-white">{bp.name}</p>
-                          <p className="text-[10px] text-zinc-400">
-                            Если покупает: <span className="text-purple-300 font-semibold">{prodA?.name || `Товар #${bp.product_a_id}`}</span>
-                          </p>
-                          <p className="text-[10px] text-zinc-400">
-                            То на второй: <span className="text-purple-300 font-semibold">{prodB?.name || `Товар #${bp.product_b_id}`}</span>{' '}
-                            идет со скидкой{' '}
-                            <span className="text-orange-400 font-bold">
-                              {bp.discount_type === 'percent' ? `${bp.discount_value}%` : `${bp.discount_value} BYN (цена)`}
-                            </span>
-                          </p>
-                        </div>
-                        <button
-                          onClick={() => deleteBundlePromotion(bp.id)}
-                          className="p-1.5 rounded-lg text-red-400 hover:bg-red-500/10 shrink-0"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                return (
+                  <div className="space-y-4">
+                    {/* Promo Code Protection Setting Toggle */}
+                    <div className="p-4 rounded-2xl bg-[#2a1b18]/40 border border-orange-500/30 flex items-center justify-between gap-4">
+                      <div className="space-y-0.5">
+                        <span className="text-xs font-bold text-white block">🚫 Запретить промокоды при акциях</span>
+                        <span className="text-[10px] text-zinc-400 block leading-tight">
+                          Блокировать применение промокодов покупателями, если в их корзине сработала комбо-акция (не суммировать скидки)
+                        </span>
                       </div>
-                    );
-                  })
-                )}
-              </div>
+                      <button
+                        onClick={() => {
+                          saveSettings({ block_promo_on_bundle: !settings.block_promo_on_bundle });
+                          hapticImpact?.('light');
+                        }}
+                        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                          settings.block_promo_on_bundle ? 'bg-orange-500' : 'bg-zinc-700'
+                        }`}
+                      >
+                        <span
+                          className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                            settings.block_promo_on_bundle ? 'translate-x-5' : 'translate-x-0'
+                          }`}
+                        />
+                      </button>
+                    </div>
+
+                    <div className="p-4 rounded-2xl bg-white/[0.03] border border-purple-500/20 space-y-3">
+                      <h4 className="text-xs font-bold text-white uppercase tracking-wider">Создать комбо-акцию</h4>
+                      
+                      <div>
+                        <label className="text-[10px] text-zinc-400 block mb-1">Название акции (описание покупателю)</label>
+                        <input
+                          type="text"
+                          value={bundleForm.name}
+                          onChange={(e) => setBundleForm((prev) => ({ ...prev, name: e.target.value }))}
+                          placeholder="Например: Скидка 50% на вторую жидкость"
+                          className="w-full py-2 px-3 rounded-xl bg-white/5 border border-white/10 text-white text-xs"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* ITEM A */}
+                        <div className="space-y-2 p-3 rounded-xl bg-white/[0.02] border border-white/5">
+                          <label className="text-xs font-bold text-zinc-300 block">Товар 1 (Берёт покупатель)</label>
+                          
+                          <div className="flex gap-1 bg-white/5 p-0.5 rounded-lg text-[10px] font-semibold mb-2">
+                            <button
+                              type="button"
+                              onClick={() => setBundleForm(p => ({ ...p, type_a: 'product' }))}
+                              className={`flex-1 py-1 rounded-md text-center transition-all ${bundleForm.type_a === 'product' ? 'bg-purple-600 text-white' : 'text-zinc-400 hover:text-white'}`}
+                            >
+                              Конкретный товар
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setBundleForm(p => ({ ...p, type_a: 'brand' }))}
+                              className={`flex-1 py-1 rounded-md text-center transition-all ${bundleForm.type_a === 'brand' ? 'bg-purple-600 text-white' : 'text-zinc-400 hover:text-white'}`}
+                            >
+                              Весь бренд
+                            </button>
+                          </div>
+
+                          {bundleForm.type_a === 'brand' ? (
+                            <div>
+                              <select
+                                value={bundleForm.brand_a_slug || ''}
+                                onChange={(e) => setBundleForm((prev) => ({ ...prev, brand_a_slug: e.target.value }))}
+                                className="w-full py-2 px-2 rounded-xl bg-[#181628] border border-white/10 text-white text-xs"
+                              >
+                                <option value="">-- Выберите бренд 1 --</option>
+                                {brands.map((b) => (
+                                  <option key={b.id} value={b.slug}>
+                                    {b.name}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                          ) : (
+                            <div className="space-y-2">
+                              {/* Filters */}
+                              <div className="grid grid-cols-2 gap-1.5">
+                                <select
+                                  value={filterA_category}
+                                  onChange={(e) => setFilterA_category(e.target.value)}
+                                  className="py-1.5 px-2 rounded-lg bg-[#110e1e] border border-white/10 text-white text-[10px]"
+                                >
+                                  <option value="all">Все категории</option>
+                                  {categories.map(c => (
+                                    <option key={c.id} value={c.slug}>{c.name}</option>
+                                  ))}
+                                </select>
+                                <select
+                                  value={filterA_brand}
+                                  onChange={(e) => setFilterA_brand(e.target.value)}
+                                  className="py-1.5 px-2 rounded-lg bg-[#110e1e] border border-white/10 text-white text-[10px]"
+                                >
+                                  <option value="all">Все бренды</option>
+                                  {brands.map(b => (
+                                    <option key={b.id} value={b.slug}>{b.name}</option>
+                                  ))}
+                                </select>
+                              </div>
+                              {/* Product Select */}
+                              <select
+                                value={bundleForm.product_a_id || ''}
+                                onChange={(e) => setBundleForm((prev) => ({ ...prev, product_a_id: e.target.value }))}
+                                className="w-full py-2 px-2 rounded-xl bg-[#181628] border border-white/10 text-white text-xs"
+                              >
+                                <option value="">-- Выберите товар 1 --</option>
+                                {[...filteredProductsA]
+                                  .sort((a, b) => a.name.localeCompare(b.name))
+                                  .map((p) => {
+                                    const bName = p.brand_slug ? (brands.find(b => b.slug === p.brand_slug)?.name || p.brand_slug) : '';
+                                    const prefix = bName ? `[${bName}] ` : '';
+                                    return (
+                                      <option key={p.id} value={p.id}>
+                                        {prefix}{p.name} ({p.price} BYN) {p.stock_quantity <= 0 ? ' (Нет в наличии)' : ` (ост: ${p.stock_quantity})`}
+                                      </option>
+                                    );
+                                  })}
+                              </select>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* ITEM B */}
+                        <div className="space-y-2 p-3 rounded-xl bg-white/[0.02] border border-white/5">
+                          <label className="text-xs font-bold text-zinc-300 block">Товар 2 (Идёт со скидкой)</label>
+                          
+                          <div className="flex gap-1 bg-white/5 p-0.5 rounded-lg text-[10px] font-semibold mb-2">
+                            <button
+                              type="button"
+                              onClick={() => setBundleForm(p => ({ ...p, type_b: 'product' }))}
+                              className={`flex-1 py-1 rounded-md text-center transition-all ${bundleForm.type_b === 'product' ? 'bg-purple-600 text-white' : 'text-zinc-400 hover:text-white'}`}
+                            >
+                              Конкретный товар
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setBundleForm(p => ({ ...p, type_b: 'brand' }))}
+                              className={`flex-1 py-1 rounded-md text-center transition-all ${bundleForm.type_b === 'brand' ? 'bg-purple-600 text-white' : 'text-zinc-400 hover:text-white'}`}
+                            >
+                              Весь бренд
+                            </button>
+                          </div>
+
+                          {bundleForm.type_b === 'brand' ? (
+                            <div>
+                              <select
+                                value={bundleForm.brand_b_slug || ''}
+                                onChange={(e) => setBundleForm((prev) => ({ ...prev, brand_b_slug: e.target.value }))}
+                                className="w-full py-2 px-2 rounded-xl bg-[#181628] border border-white/10 text-white text-xs"
+                              >
+                                <option value="">-- Выберите бренд 2 --</option>
+                                {brands.map((b) => (
+                                  <option key={b.id} value={b.slug}>
+                                    {b.name}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                          ) : (
+                            <div className="space-y-2">
+                              {/* Filters */}
+                              <div className="grid grid-cols-2 gap-1.5">
+                                <select
+                                  value={filterB_category}
+                                  onChange={(e) => setFilterB_category(e.target.value)}
+                                  className="py-1.5 px-2 rounded-lg bg-[#110e1e] border border-white/10 text-white text-[10px]"
+                                >
+                                  <option value="all">Все категории</option>
+                                  {categories.map(c => (
+                                    <option key={c.id} value={c.slug}>{c.name}</option>
+                                  ))}
+                                </select>
+                                <select
+                                  value={filterB_brand}
+                                  onChange={(e) => setFilterB_brand(e.target.value)}
+                                  className="py-1.5 px-2 rounded-lg bg-[#110e1e] border border-white/10 text-white text-[10px]"
+                                >
+                                  <option value="all">Все бренды</option>
+                                  {brands.map(b => (
+                                    <option key={b.id} value={b.slug}>{b.name}</option>
+                                  ))}
+                                </select>
+                              </div>
+                              {/* Product Select */}
+                              <select
+                                value={bundleForm.product_b_id || ''}
+                                onChange={(e) => setBundleForm((prev) => ({ ...prev, product_b_id: e.target.value }))}
+                                className="w-full py-2 px-2 rounded-xl bg-[#181628] border border-white/10 text-white text-xs"
+                              >
+                                <option value="">-- Выберите товар 2 --</option>
+                                {[...filteredProductsB]
+                                  .sort((a, b) => a.name.localeCompare(b.name))
+                                  .map((p) => {
+                                    const bName = p.brand_slug ? (brands.find(b => b.slug === p.brand_slug)?.name || p.brand_slug) : '';
+                                    const prefix = bName ? `[${bName}] ` : '';
+                                    return (
+                                      <option key={p.id} value={p.id}>
+                                        {prefix}{p.name} ({p.price} BYN) {p.stock_quantity <= 0 ? ' (Нет в наличии)' : ` (ост: ${p.stock_quantity})`}
+                                      </option>
+                                    );
+                                  })}
+                              </select>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="text-[10px] text-zinc-400 block mb-1">Скидка или Новая цена на Товар 2</label>
+                          <input
+                            type="number"
+                            value={bundleForm.discount_value}
+                            onChange={(e) => setBundleForm((prev) => ({ ...prev, discount_value: e.target.value }))}
+                            placeholder="Значение"
+                            className="w-full py-2 px-3 rounded-xl bg-white/5 border border-white/10 text-white text-xs"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] text-zinc-400 block mb-1">Тип скидки</label>
+                          <select
+                            value={bundleForm.discount_type}
+                            onChange={(e) => setBundleForm((prev) => ({ ...prev, discount_type: e.target.value as 'percent' | 'fixed_price' }))}
+                            className="w-full py-2 px-2 rounded-xl bg-[#181628] border border-white/10 text-white text-xs"
+                          >
+                            <option value="percent">Процент скидки (%)</option>
+                            <option value="fixed_price">Новая фиксированная цена (BYN)</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() => {
+                          if (!isFormValid) {
+                            alert('Пожалуйста, заполните все поля!');
+                            return;
+                          }
+                          addBundlePromotion({
+                            name: bundleForm.name.trim(),
+                            type_a: bundleForm.type_a,
+                            product_a_id: bundleForm.type_a === 'product' ? parseInt(bundleForm.product_a_id) : null,
+                            brand_a_slug: bundleForm.type_a === 'brand' ? bundleForm.brand_a_slug : null,
+                            type_b: bundleForm.type_b,
+                            product_b_id: bundleForm.type_b === 'product' ? parseInt(bundleForm.product_b_id) : null,
+                            brand_b_slug: bundleForm.type_b === 'brand' ? bundleForm.brand_b_slug : null,
+                            discount_type: bundleForm.discount_type,
+                            discount_value: parseFloat(bundleForm.discount_value) || 0,
+                            is_active: true,
+                          });
+                          setBundleForm({
+                            name: '',
+                            type_a: 'product',
+                            product_a_id: '',
+                            brand_a_slug: '',
+                            type_b: 'product',
+                            product_b_id: '',
+                            brand_b_slug: '',
+                            discount_type: 'percent',
+                            discount_value: '',
+                          });
+                        }}
+                        className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-purple-600 to-orange-500 text-white text-xs font-bold tap-active mt-2"
+                      >
+                        Сохранить акцию
+                      </button>
+                    </div>
+
+                    <div className="space-y-2">
+                      {bundlePromotions.length === 0 ? (
+                        <p className="text-center text-xs text-zinc-500 py-4">Нет активных комбо-акций</p>
+                      ) : (
+                        bundlePromotions.map((bp) => {
+                          const getPromoTargetText = (type: 'product' | 'brand', prodId?: number | null, brandSlug?: string | null) => {
+                            if (type === 'brand') {
+                              const brandName = brandSlug ? (brands.find(b => b.slug === brandSlug)?.name || brandSlug) : '';
+                              return `Любой товар бренда «${brandName}»`;
+                            } else {
+                              const prod = products.find(p => p.id === prodId);
+                              const bName = prod?.brand_slug ? (brands.find(b => b.slug === prod.brand_slug)?.name || prod.brand_slug) : '';
+                              const formattedBrand = bName ? `[${bName}] ` : '';
+                              return prod ? `${formattedBrand}${prod.name}` : `Товар #${prodId}`;
+                            }
+                          };
+
+                          return (
+                            <div
+                              key={bp.id}
+                              className="flex items-center justify-between p-3 rounded-2xl bg-white/[0.03] border border-white/[0.06]"
+                            >
+                              <div className="space-y-0.5 max-w-[85%]">
+                                <p className="text-xs font-bold text-white">{bp.name}</p>
+                                <p className="text-[10px] text-zinc-400">
+                                  Если покупает: <span className="text-purple-300 font-semibold">{getPromoTargetText(bp.type_a, bp.product_a_id, bp.brand_a_slug)}</span>
+                                </p>
+                                <p className="text-[10px] text-zinc-400">
+                                  То на второй: <span className="text-purple-300 font-semibold">{getPromoTargetText(bp.type_b, bp.product_b_id, bp.brand_b_slug)}</span>{' '}
+                                  идет со скидкой{' '}
+                                  <span className="text-orange-400 font-bold">
+                                    {bp.discount_type === 'percent' ? `${bp.discount_value}%` : `${bp.discount_value} BYN (цена)`}
+                                  </span>
+                                </p>
+                              </div>
+                              <button
+                                onClick={() => deleteBundlePromotion(bp.id)}
+                                className="p-1.5 rounded-lg text-red-400 hover:bg-red-500/10 shrink-0"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
             </>
           )}
         </div>
