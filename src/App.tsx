@@ -53,7 +53,7 @@ const MainContent: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#07060c] text-zinc-100 flex justify-center selection:bg-purple-500 selection:text-white relative overflow-hidden">
+    <div className="min-h-screen bg-[#07060c] text-zinc-100 flex justify-center selection:bg-purple-500 selection:text-white relative overflow-x-hidden">
       {/* Background Dynamic Violet & Deep Purple Eclipses */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
         {/* Deep Violet Eclipse Orb 1 */}

@@ -4,6 +4,7 @@ import { Product } from '../types';
 import { Search, Plus, Filter, Flame, Sparkles, Check, X } from 'lucide-react';
 import { hapticImpact } from '../services/telegram';
 import { ProductImage } from './ProductImage';
+import { useHorizontalScroll } from '../hooks/useHorizontalScroll';
 
 interface CatalogTabProps {
   initialCategory?: string;
@@ -12,6 +13,13 @@ interface CatalogTabProps {
 
 export const CatalogTab: React.FC<CatalogTabProps> = ({ initialCategory = 'all', onSelectProduct }) => {
   const { categories, brands, catalogProducts, attributeValues, addToCart } = useStore();
+
+  const catScrollRef = useHorizontalScroll();
+  const brandScrollRef = useHorizontalScroll();
+  const liquidStrScrollRef = useHorizontalScroll();
+  const liquidLineScrollRef = useHorizontalScroll();
+  const snusStrScrollRef = useHorizontalScroll();
+  const snusLineScrollRef = useHorizontalScroll();
 
   const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory);
   const [selectedBrand, setSelectedBrand] = useState<string>('all');
@@ -195,7 +203,7 @@ export const CatalogTab: React.FC<CatalogTabProps> = ({ initialCategory = 'all',
       </div>
 
       {/* Main Category Tabs */}
-      <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1 -mx-4 px-4">
+      <div ref={catScrollRef} className="flex gap-2 overflow-x-auto no-scrollbar pb-1 -mx-4 px-4">
         {categoryTabs.map((cat) => {
           const isActive = selectedCategory === cat.slug;
           return (
@@ -223,7 +231,7 @@ export const CatalogTab: React.FC<CatalogTabProps> = ({ initialCategory = 'all',
             <div className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-1.5 px-1">
               Ассортимент / Бренды
             </div>
-            <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-1">
+            <div ref={brandScrollRef} className="flex gap-1.5 overflow-x-auto no-scrollbar pb-1">
               <button
                 onClick={() => {
                   setSelectedBrand('all');
@@ -267,7 +275,7 @@ export const CatalogTab: React.FC<CatalogTabProps> = ({ initialCategory = 'all',
               <div className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-1.5 px-1">
                 Крепость жидкости
               </div>
-              <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-1">
+              <div ref={liquidStrScrollRef} className="flex gap-1.5 overflow-x-auto no-scrollbar pb-1">
                 {['all', '0 мг', '20-50 мг', '60-70 мг', '80+ мг'].map((str) => (
                   <button
                     key={str}
@@ -290,7 +298,7 @@ export const CatalogTab: React.FC<CatalogTabProps> = ({ initialCategory = 'all',
             {liquidLines.length > 0 && (
               <div>
                 <div className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-1.5 px-1">Линейки</div>
-                <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-1">
+                <div ref={liquidLineScrollRef} className="flex gap-1.5 overflow-x-auto no-scrollbar pb-1">
                   <button
                     onClick={() => {
                       setSelectedLine('all');
@@ -333,7 +341,7 @@ export const CatalogTab: React.FC<CatalogTabProps> = ({ initialCategory = 'all',
               <div className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-1.5 px-1">
                 Крепость снюса
               </div>
-              <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-1">
+              <div ref={snusStrScrollRef} className="flex gap-1.5 overflow-x-auto no-scrollbar pb-1">
                 {['all', '75 мг', '150 мг', '200 мг'].map((str) => (
                   <button
                     key={str}
@@ -356,7 +364,7 @@ export const CatalogTab: React.FC<CatalogTabProps> = ({ initialCategory = 'all',
             {snusLines.length > 0 && (
               <div>
                 <div className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-1.5 px-1">Линейки</div>
-                <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-1">
+                <div ref={snusLineScrollRef} className="flex gap-1.5 overflow-x-auto no-scrollbar pb-1">
                   <button
                     onClick={() => {
                       setSelectedLine('all');

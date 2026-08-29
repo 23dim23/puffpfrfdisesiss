@@ -4,6 +4,7 @@ import { Product, Promotion } from '../types';
 import { Sparkles, Tag, MessageCircle, ArrowRight, Flame, Percent, ChevronRight } from 'lucide-react';
 import { openTelegramOrWeb, hapticImpact } from '../services/telegram';
 import { ProductImage } from './ProductImage';
+import { useHorizontalScroll } from '../hooks/useHorizontalScroll';
 
 interface HomeTabProps {
   onNavigateToCatalog: (categorySlug?: string) => void;
@@ -19,6 +20,11 @@ export const HomeTab: React.FC<HomeTabProps> = ({
   onSelectPromotion,
 }) => {
   const { settings, categories, catalogProducts, promotions, brands } = useStore();
+
+  const promoScrollRef = useHorizontalScroll();
+  const categoryScrollRef = useHorizontalScroll();
+  const discountScrollRef = useHorizontalScroll();
+  const popularScrollRef = useHorizontalScroll();
 
   // Discount products (only in-stock items)
   const discountProducts = catalogProducts.filter(
@@ -147,7 +153,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
           </button>
         </div>
 
-        <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2 pt-1 -mx-4 px-4 snap-x">
+        <div ref={promoScrollRef} className="flex gap-3 overflow-x-auto no-scrollbar pb-2 pt-1 -mx-4 px-4 snap-x">
           {promotions.length > 0 ? (
             promotions.map((promo) => (
               <div
@@ -193,7 +199,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
           <span className="text-[11px] text-zinc-400 font-medium">Свайп вправо →</span>
         </div>
 
-        <div className="flex gap-2.5 overflow-x-auto no-scrollbar pb-2 -mx-4 px-4 snap-x">
+        <div ref={categoryScrollRef} className="flex gap-2.5 overflow-x-auto no-scrollbar pb-2 -mx-4 px-4 snap-x">
           {categories.map((cat) => (
             <button
               key={cat.id}
@@ -234,7 +240,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
           </button>
         </div>
 
-        <div className="flex gap-3 overflow-x-auto no-scrollbar pb-3 pt-1 -mx-4 px-4 snap-x">
+        <div ref={discountScrollRef} className="flex gap-3 overflow-x-auto no-scrollbar pb-3 pt-1 -mx-4 px-4 snap-x">
           {discountProducts.length > 0 ? (
             discountProducts.map((product) => {
               const brand = brands.find((b) => b.slug === product.brand_slug || b.name.toLowerCase() === product.brand_slug?.toLowerCase());
@@ -311,7 +317,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
           </button>
         </div>
 
-        <div className="flex gap-3 overflow-x-auto no-scrollbar pb-3 pt-1 -mx-4 px-4 snap-x">
+        <div ref={popularScrollRef} className="flex gap-3 overflow-x-auto no-scrollbar pb-3 pt-1 -mx-4 px-4 snap-x">
           {popularProducts.slice(0, 10).map((product) => {
             const brand = brands.find((b) => b.slug === product.brand_slug || b.name.toLowerCase() === product.brand_slug?.toLowerCase());
 
