@@ -43,19 +43,33 @@ export function calculateBundlePromotions(cart: CartItem[], bundlePromotions: Bu
   });
 
   // Helper matching functions
+  const matchId = (id1: any, id2: any) => {
+    if (id1 === null || id1 === undefined || id2 === null || id2 === undefined) return false;
+    return String(id1) === String(id2);
+  };
+
+  const matchBrandSlug = (slug1: string | null | undefined, slug2: string | null | undefined) => {
+    if (!slug1 || !slug2) return false;
+    const s1 = slug1.toLowerCase().trim().replace(/[^a-z0-9а-яё]/gi, '-').replace(/-+/g, '-');
+    const s2 = slug2.toLowerCase().trim().replace(/[^a-z0-9а-яё]/gi, '-').replace(/-+/g, '-');
+    return s1 === s2;
+  };
+
   const matchesA = (unit: ExpandedUnit, promo: BundlePromotion) => {
-    if (promo.type_a === 'product') {
-      return unit.cartItem.id === promo.product_a_id;
+    const type_a = promo.type_a || 'product';
+    if (type_a === 'product') {
+      return matchId(unit.cartItem.id, promo.product_a_id);
     } else {
-      return unit.cartItem.brand_slug === promo.brand_a_slug;
+      return matchBrandSlug(unit.cartItem.brand_slug, promo.brand_a_slug);
     }
   };
 
   const matchesB = (unit: ExpandedUnit, promo: BundlePromotion) => {
-    if (promo.type_b === 'product') {
-      return unit.cartItem.id === promo.product_b_id;
+    const type_b = promo.type_b || 'product';
+    if (type_b === 'product') {
+      return matchId(unit.cartItem.id, promo.product_b_id);
     } else {
-      return unit.cartItem.brand_slug === promo.brand_b_slug;
+      return matchBrandSlug(unit.cartItem.brand_slug, promo.brand_b_slug);
     }
   };
 
@@ -88,10 +102,11 @@ export function calculateBundlePromotions(cart: CartItem[], bundlePromotions: Bu
 
       const unitB = units[idxB];
       let singleDiscount = 0;
+      const discValue = Number(promo.discount_value) || 0;
       if (promo.discount_type === 'percent') {
-        singleDiscount = (unitB.price * promo.discount_value) / 100;
+        singleDiscount = (unitB.price * discValue) / 100;
       } else if (promo.discount_type === 'fixed_price') {
-        singleDiscount = Math.max(0, unitB.price - promo.discount_value);
+        singleDiscount = Math.max(0, unitB.price - discValue);
       }
 
       promoDiscount += singleDiscount;
