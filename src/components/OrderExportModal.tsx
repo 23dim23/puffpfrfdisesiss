@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useStore } from '../services/store';
 import { Order } from '../types';
+import { parseDate } from '../utils/date';
 import {
   X,
   FileSpreadsheet,
@@ -33,7 +34,7 @@ export const OrderExportModal: React.FC<OrderExportModalProps> = ({ isOpen, onCl
     const thirtyDaysAgo = now.getTime() - 30 * 24 * 60 * 60 * 1000;
 
     return orders.filter((o) => {
-      const orderTime = o.created_at ? new Date(o.created_at).getTime() : now.getTime();
+      const orderTime = o.created_at ? parseDate(o.created_at).getTime() : now.getTime();
 
       if (period === 'today' && orderTime < startOfToday) return false;
       if (period === 'week' && orderTime < sevenDaysAgo) return false;

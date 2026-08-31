@@ -37,6 +37,7 @@ import {
 } from 'lucide-react';
 import { OrderStatus, DeliveryType, Product, Category, Brand, ProductModel, Promotion, Promocode, PickupPoint } from '../types';
 import { hapticImpact, hapticNotification, openTelegramOrWeb } from '../services/telegram';
+import { parseDate } from '../utils/date';
 import { DetailedStatsModal } from './DetailedStatsModal';
 import { MassImportModal } from './MassImportModal';
 import { OrderExportModal } from './OrderExportModal';
@@ -57,7 +58,8 @@ type AdminSubpage =
   | 'pickup'
   | 'moderators'
   | 'import'
-  | 'settings';
+  | 'settings'
+  | 'parser';
 
 export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHome }) => {
   const {
@@ -150,6 +152,73 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
   const [statsModalPeriod, setStatsModalPeriod] = useState<'today' | 'week' | 'month' | 'total'>('today');
   const [isMassImportModalOpen, setIsMassImportModalOpen] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+
+  // Parser States
+  const [parserConfig, setParserConfig] = useState<{
+    enabled: boolean;
+    keywords: string[];
+    stop_words: string[];
+    blacklist: number[];
+    chats: (string | number)[];
+    group_id: number;
+  }>({
+    enabled: true,
+    keywords: [],
+    stop_words: [],
+    blacklist: [],
+    chats: [],
+    group_id: -4995013422,
+  });
+  const [isParserLoading, setIsParserLoading] = useState(false);
+  const [newKeyword, setNewKeyword] = useState('');
+  const [newStopWord, setNewStopWord] = useState('');
+  const [newBlacklistId, setNewBlacklistId] = useState('');
+  const [newChat, setNewChat] = useState('');
+
+  const fetchParserConfig = async () => {
+    setIsParserLoading(true);
+    try {
+      const res = await fetch('/api/parser/config');
+      if (res.ok) {
+        const data = await res.json();
+        setParserConfig(data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch parser config:', err);
+    } finally {
+      setIsParserLoading(false);
+    }
+  };
+
+  const saveParserConfig = async (updatedConfig: typeof parserConfig) => {
+    setIsParserLoading(true);
+    try {
+      const res = await fetch('/api/parser/config', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedConfig),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success) {
+          setParserConfig(updatedConfig);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to save parser config:', err);
+      alert('Ошибка при сохранении конфигурации парсера');
+    } finally {
+      setIsParserLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeSubpage === 'parser') {
+      fetchParserConfig();
+    }
+  }, [activeSubpage]);
 
   // Orders filters
   const [orderStatusFilter, setOrderStatusFilter] = useState<string>('all');
@@ -293,7 +362,7 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
     });
 
     completedOrders.forEach((order) => {
-      const time = new Date(order.created_at).getTime();
+      const time = parseDate(order.created_at).getTime();
       const orderMargin = order.total_margin ?? (order.total * 0.6);
 
       revenueTotal += order.total;
@@ -502,6 +571,7 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
     { id: 'moderators', label: 'Модераторы & Админы', icon: Users, color: 'text-indigo-400', desc: `${admins.length} сотрудников` },
     { id: 'import', label: 'Пакетный импорт товаров', icon: FileSpreadsheet, color: 'text-teal-400', desc: 'Вставка списком через |' },
     { id: 'settings', label: 'Настройки магазина', icon: SettingsIcon, color: 'text-zinc-300', desc: 'Тексты, доставка, менеджер' },
+    { id: 'parser', label: 'Твинк-парсер чатов', icon: MessageCircle, color: 'text-indigo-400', desc: 'Управление парсером сообщений' },
   ];
 
   return (
@@ -2366,6 +2436,300 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* SUBPAGE: PARSER */}
+      {activeSubpage === 'parser' && (
+        <div className="space-y-4">
+          <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="text-sm font-black text-white">Твинк-парсер чатов</h4>
+                <p className="text-[10px] text-zinc-400">Автоматический мониторинг Telegram групп и каналов</p>
+              </div>
+              <button
+                onClick={() => {
+                  const updated = { ...parserConfig, enabled: !parserConfig.enabled };
+                  saveParserConfig(updated);
+                  hapticImpact('medium');
+                }}
+                disabled={isParserLoading}
+                className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-colors ${
+                  parserConfig.enabled
+                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                    : 'bg-zinc-500/20 text-zinc-400 border border-zinc-500/30'
+                }`}
+              >
+                {parserConfig.enabled ? '🟢 Активен' : '🔴 Приостановлен'}
+              </button>
+            </div>
+
+            {isParserLoading && (
+              <div className="py-2 text-center text-[11px] text-purple-300 font-medium animate-pulse">
+                Синхронизация настроек с сервером...
+              </div>
+            )}
+
+            {/* 1. Watched Chats */}
+            <div className="space-y-2 pt-2 border-t border-white/5">
+              <h5 className="text-xs font-bold text-white flex items-center gap-1.5">
+                <MessageCircle className="w-3.5 h-3.5 text-indigo-400" />
+                Отслеживаемые чаты ({parserConfig.chats.length})
+              </h5>
+              <p className="text-[10px] text-zinc-400 leading-normal">
+                Укажите юзернеймы каналов (напр. <code>@group_name</code>) или ID групп (напр. <code>-1001234567890</code>).
+              </p>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={newChat}
+                  onChange={(e) => setNewChat(e.target.value)}
+                  placeholder="Добавить @username или ID..."
+                  className="flex-1 py-1.5 px-3 rounded-lg bg-white/5 border border-white/10 text-white text-xs placeholder-zinc-500"
+                />
+                <button
+                  onClick={() => {
+                    const clean = newChat.trim();
+                    if (!clean) return;
+                    let val: string | number = clean;
+                    if (/^-?\d+$/.test(clean)) {
+                      val = parseInt(clean, 10);
+                    }
+                    if (parserConfig.chats.includes(val)) {
+                      alert('Этот чат уже в списке!');
+                      return;
+                    }
+                    const updated = { ...parserConfig, chats: [...parserConfig.chats, val] };
+                    saveParserConfig(updated);
+                    setNewChat('');
+                    hapticImpact('light');
+                  }}
+                  className="px-3 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs"
+                >
+                  Добавить
+                </button>
+              </div>
+              <div className="max-h-36 overflow-y-auto space-y-1 pt-1">
+                {parserConfig.chats.length === 0 ? (
+                  <p className="text-[10px] text-zinc-500 italic">Список отслеживаемых чатов пуст</p>
+                ) : (
+                  parserConfig.chats.map((chat, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-1.5 px-2.5 rounded-lg bg-white/[0.02] border border-white/5">
+                      <span className="text-xs font-mono text-indigo-200">{String(chat)}</span>
+                      <button
+                        onClick={() => {
+                          const updated = {
+                            ...parserConfig,
+                            chats: parserConfig.chats.filter((_, i) => i !== idx),
+                          };
+                          saveParserConfig(updated);
+                          hapticImpact('light');
+                        }}
+                        className="p-1 text-zinc-500 hover:text-rose-400 transition-colors"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* 2. Keywords */}
+            <div className="space-y-2 pt-2 border-t border-white/5">
+              <h5 className="text-xs font-bold text-white flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                Ключевые слова ({parserConfig.keywords.length})
+              </h5>
+              <p className="text-[10px] text-zinc-400 leading-normal">
+                Слова-триггеры. При совпадении сообщение пользователя будет отправлено в группу.
+              </p>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={newKeyword}
+                  onChange={(e) => setNewKeyword(e.target.value)}
+                  placeholder="Напр. куплю, ищу, puff, paradise..."
+                  className="flex-1 py-1.5 px-3 rounded-lg bg-white/5 border border-white/10 text-white text-xs placeholder-zinc-500"
+                />
+                <button
+                  onClick={() => {
+                    const clean = newKeyword.trim().toLowerCase();
+                    if (!clean) return;
+                    if (parserConfig.keywords.includes(clean)) {
+                      alert('Это слово уже в списке!');
+                      return;
+                    }
+                    const updated = { ...parserConfig, keywords: [...parserConfig.keywords, clean] };
+                    saveParserConfig(updated);
+                    setNewKeyword('');
+                    hapticImpact('light');
+                  }}
+                  className="px-3 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs"
+                >
+                  Добавить
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto pt-1">
+                {parserConfig.keywords.length === 0 ? (
+                  <p className="text-[10px] text-zinc-500 italic">Список ключевых слов пуст</p>
+                ) : (
+                  parserConfig.keywords.map((kw, idx) => (
+                    <span
+                      key={idx}
+                      className="inline-flex items-center gap-1 py-1 px-2 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300 text-[10px] font-medium"
+                    >
+                      {kw}
+                      <button
+                        onClick={() => {
+                          const updated = {
+                            ...parserConfig,
+                            keywords: parserConfig.keywords.filter((_, i) => i !== idx),
+                          };
+                          saveParserConfig(updated);
+                          hapticImpact('light');
+                        }}
+                        className="text-amber-500 hover:text-rose-400"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* 3. Stop Words */}
+            <div className="space-y-2 pt-2 border-t border-white/5">
+              <h5 className="text-xs font-bold text-white flex items-center gap-1.5">
+                <X className="w-3.5 h-3.5 text-rose-400" />
+                Стоп-слова ({parserConfig.stop_words.length})
+              </h5>
+              <p className="text-[10px] text-zinc-400 leading-normal">
+                Если сообщение содержит стоп-слово, оно будет проигнорировано.
+              </p>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={newStopWord}
+                  onChange={(e) => setNewStopWord(e.target.value)}
+                  placeholder="Напр. продам, обмен, оптом..."
+                  className="flex-1 py-1.5 px-3 rounded-lg bg-white/5 border border-white/10 text-white text-xs placeholder-zinc-500"
+                />
+                <button
+                  onClick={() => {
+                    const clean = newStopWord.trim().toLowerCase();
+                    if (!clean) return;
+                    if (parserConfig.stop_words.includes(clean)) {
+                      alert('Это слово уже в списке!');
+                      return;
+                    }
+                    const updated = { ...parserConfig, stop_words: [...parserConfig.stop_words, clean] };
+                    saveParserConfig(updated);
+                    setNewStopWord('');
+                    hapticImpact('light');
+                  }}
+                  className="px-3 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs"
+                >
+                  Добавить
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto pt-1">
+                {parserConfig.stop_words.length === 0 ? (
+                  <p className="text-[10px] text-zinc-500 italic">Список стоп-слов пуст</p>
+                ) : (
+                  parserConfig.stop_words.map((sw, idx) => (
+                    <span
+                      key={idx}
+                      className="inline-flex items-center gap-1 py-1 px-2 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-300 text-[10px] font-medium"
+                    >
+                      {sw}
+                      <button
+                        onClick={() => {
+                          const updated = {
+                            ...parserConfig,
+                            stop_words: parserConfig.stop_words.filter((_, i) => i !== idx),
+                          };
+                          saveParserConfig(updated);
+                          hapticImpact('light');
+                        }}
+                        className="text-rose-500 hover:text-rose-400"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* 4. Blacklist */}
+            <div className="space-y-2 pt-2 border-t border-white/5">
+              <h5 className="text-xs font-bold text-white flex items-center gap-1.5">
+                <Shield className="w-3.5 h-3.5 text-zinc-400" />
+                Чёрный список пользователей ({parserConfig.blacklist.length})
+              </h5>
+              <p className="text-[10px] text-zinc-400 leading-normal">
+                Сообщения от пользователей с этими Telegram User ID будут полностью игнорироваться.
+              </p>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={newBlacklistId}
+                  onChange={(e) => setNewBlacklistId(e.target.value)}
+                  placeholder="Вставьте числовой Telegram User ID..."
+                  className="flex-1 py-1.5 px-3 rounded-lg bg-white/5 border border-white/10 text-white text-xs placeholder-zinc-500"
+                />
+                <button
+                  onClick={() => {
+                    const clean = newBlacklistId.trim();
+                    if (!clean) return;
+                    if (!/^\d+$/.test(clean)) {
+                      alert('ID пользователя должен быть положительным числом!');
+                      return;
+                    }
+                    const num = parseInt(clean, 10);
+                    if (parserConfig.blacklist.includes(num)) {
+                      alert('Этот пользователь уже в чёрном списке!');
+                      return;
+                    }
+                    const updated = { ...parserConfig, blacklist: [...parserConfig.blacklist, num] };
+                    saveParserConfig(updated);
+                    setNewBlacklistId('');
+                    hapticImpact('light');
+                  }}
+                  className="px-3 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs"
+                >
+                  Добавить
+                </button>
+              </div>
+              <div className="max-h-36 overflow-y-auto space-y-1 pt-1">
+                {parserConfig.blacklist.length === 0 ? (
+                  <p className="text-[10px] text-zinc-500 italic">Чёрный список пуст</p>
+                ) : (
+                  parserConfig.blacklist.map((uid, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-1.5 px-2.5 rounded-lg bg-white/[0.02] border border-white/5">
+                      <span className="text-xs font-mono text-zinc-300">{uid}</span>
+                      <button
+                        onClick={() => {
+                          const updated = {
+                            ...parserConfig,
+                            blacklist: parserConfig.blacklist.filter((_, i) => i !== idx),
+                          };
+                          saveParserConfig(updated);
+                          hapticImpact('light');
+                        }}
+                        className="p-1 text-zinc-500 hover:text-rose-400 transition-colors"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
           </div>
         </div>
       )}

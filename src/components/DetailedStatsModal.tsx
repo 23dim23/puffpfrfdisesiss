@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useStore } from '../services/store';
 import { Order, Product } from '../types';
+import { parseDate } from '../utils/date';
 import {
   X,
   TrendingUp,
@@ -52,7 +53,7 @@ export const DetailedStatsModal: React.FC<DetailedStatsModalProps> = ({
     return orders.filter((o) => {
       // Exclude cancelled orders from financial stats
       if (o.status === 'cancelled') return false;
-      const orderTime = o.created_at ? new Date(o.created_at).getTime() : now.getTime();
+      const orderTime = o.created_at ? parseDate(o.created_at).getTime() : now.getTime();
 
       if (period === 'today') return orderTime >= startOfToday;
       if (period === 'week') return orderTime >= sevenDaysAgo;
@@ -179,7 +180,7 @@ export const DetailedStatsModal: React.FC<DetailedStatsModalProps> = ({
     else if (period === 'month') periodFilterTime = thirtyDaysAgo;
 
     const newUsersPeriod = users.filter((u) => {
-      const created = u.created_at ? new Date(u.created_at).getTime() : now.getTime();
+      const created = u.created_at ? parseDate(u.created_at).getTime() : now.getTime();
       return created >= periodFilterTime;
     });
 
