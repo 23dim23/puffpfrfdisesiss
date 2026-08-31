@@ -77,14 +77,6 @@ export const initTelegramApp = () => {
       tg.ready();
       tg.expand();
 
-      // Prevent closing on swipe down (Telegram Mini Apps API 7.7+)
-      if (typeof tg.disableVerticalSwipes === 'function') {
-        tg.disableVerticalSwipes();
-      }
-      if ('isVerticalSwipesEnabled' in tg) {
-        tg.isVerticalSwipesEnabled = false;
-      }
-
       // Enable closing confirmation to prevent accidental closing
       if (typeof tg.enableClosingConfirmation === 'function') {
         tg.enableClosingConfirmation();

@@ -175,10 +175,19 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
   const [newBlacklistId, setNewBlacklistId] = useState('');
   const [newChat, setNewChat] = useState('');
 
+  const [parserApiUrl, setParserApiUrl] = useState(() => {
+    return localStorage.getItem('puff_parser_api_url') || '';
+  });
+
+  const getApiUrl = (path: string) => {
+    const base = parserApiUrl.trim().replace(/\/+$/, '');
+    return base ? `${base}${path}` : path;
+  };
+
   const fetchParserConfig = async () => {
     setIsParserLoading(true);
     try {
-      const res = await fetch('/api/parser/config');
+      const res = await fetch(getApiUrl('/api/parser/config'));
       if (res.ok) {
         const data = await res.json();
         setParserConfig(data);
@@ -193,7 +202,7 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
   const saveParserConfig = async (updatedConfig: typeof parserConfig) => {
     setIsParserLoading(true);
     try {
-      const res = await fetch('/api/parser/config', {
+      const res = await fetch(getApiUrl('/api/parser/config'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -208,7 +217,7 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
       }
     } catch (err) {
       console.error('Failed to save parser config:', err);
-      alert('Ошибка при сохранении конфигурации парсера');
+      alert('Ошибка при сохранении конфигурации парсера. Проверьте правильность Адреса API.');
     } finally {
       setIsParserLoading(false);
     }
@@ -2471,6 +2480,41 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
                 Синхронизация настроек с сервером...
               </div>
             )}
+
+            {/* Настройка адреса API для раздельного хостинга */}
+            <div className="p-3 rounded-xl bg-white/[0.02] border border-white/5 space-y-2">
+              <label className="block text-[11px] font-bold text-zinc-300">
+                🌐 Адрес API бота/парсера (для раздельного хостинга):
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={parserApiUrl}
+                  onChange={(e) => setParserApiUrl(e.target.value)}
+                  onBlur={() => {
+                    const clean = parserApiUrl.trim().replace(/\/+$/, '');
+                    localStorage.setItem('puff_parser_api_url', clean);
+                    fetchParserConfig();
+                  }}
+                  placeholder="Оставьте пустым (относительный /api) или введите http://IP:8080"
+                  className="flex-1 py-1 px-2.5 rounded-lg bg-white/5 border border-white/10 text-white text-[11px] font-mono placeholder-zinc-600"
+                />
+                <button
+                  onClick={() => {
+                    const clean = parserApiUrl.trim().replace(/\/+$/, '');
+                    localStorage.setItem('puff_parser_api_url', clean);
+                    fetchParserConfig();
+                    alert('Адрес API успешно сохранен локально!');
+                  }}
+                  className="px-2.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-[10px] transition-colors border border-white/10"
+                >
+                  Ок
+                </button>
+              </div>
+              <p className="text-[9px] text-zinc-500 leading-normal">
+                Если ваш Telegram-бот запущен на отдельном VPS или хостинге, укажите его полный адрес (например, <code>https://bot-domain.com</code>), чтобы сайт мог связываться с парсером напрямую.
+              </p>
+            </div>
 
             {/* 1. Watched Chats */}
             <div className="space-y-2 pt-2 border-t border-white/5">

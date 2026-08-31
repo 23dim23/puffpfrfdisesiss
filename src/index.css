@@ -13,8 +13,7 @@
     overflow-x: hidden;
     margin: 0;
     padding: 0;
-    overscroll-behavior-y: contain;
-    overscroll-behavior-x: contain;
+    touch-action: pan-y;
   }
 
   input, textarea, select {
