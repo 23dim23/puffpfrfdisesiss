@@ -119,6 +119,8 @@ export interface OrderItem {
   emoji?: string;
   color_id?: number | null;
   color_name?: string;
+  brand_name?: string | null;
+  brand_slug?: string | null;
 }
 
 export interface Order {

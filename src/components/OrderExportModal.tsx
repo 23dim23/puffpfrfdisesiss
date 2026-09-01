@@ -49,7 +49,7 @@ export const OrderExportModal: React.FC<OrderExportModalProps> = ({ isOpen, onCl
   const generateExportData = () => {
     return filteredOrders.map((o) => {
       const itemsList = o.items_json
-        .map((i) => `${i.name} (x${i.quantity}) — ${i.price} BYN`)
+        .map((i) => `${i.brand_name ? `[${i.brand_name}] ` : ''}${i.name} (x${i.quantity}) — ${i.price} BYN`)
         .join('; ');
 
       const totalMargin = o.total_margin ?? (o.total * 0.6);

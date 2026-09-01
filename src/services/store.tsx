@@ -635,15 +635,20 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         first_name: currentUser?.first_name || '',
         last_name: currentUser?.last_name || '',
         phone: currentUser?.username ? `@${currentUser.username}` : 'Не указан',
-        items_json: cart.map((c) => ({
-          id: c.id,
-          name: c.name,
-          price: c.discount_price && c.discount_price > 0 ? c.discount_price : c.price,
-          cost_price: c.cost_price,
-          margin_profit: c.margin_profit,
-          quantity: c.quantity,
-          emoji: c.emoji || '📦',
-        })),
+        items_json: cart.map((c) => {
+          const brandObj = brands.find((b) => b.slug === c.brand_slug);
+          return {
+            id: c.id,
+            name: c.name,
+            price: c.discount_price && c.discount_price > 0 ? c.discount_price : c.price,
+            cost_price: c.cost_price,
+            margin_profit: c.margin_profit,
+            quantity: c.quantity,
+            emoji: c.emoji || '📦',
+            brand_slug: c.brand_slug || null,
+            brand_name: brandObj ? brandObj.name : null,
+          };
+        }),
         total,
         subtotal,
         discount_amount: finalDiscountAmount + bundleDiscount,
@@ -725,7 +730,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       if (BOT_TOKEN) {
         try {
           const itemsListText = (newOrder.items_json || [])
-            .map((it) => `  • ${it.emoji || '📦'} ${it.name} × ${it.quantity} — ${it.price} BYN`)
+            .map((it) => `  • ${it.emoji || '📦'} ${it.brand_name ? `<b>[${it.brand_name}]</b> ` : ''}${it.name} × ${it.quantity} — ${it.price} BYN`)
             .join('\n');
 
           const deliveryInfo =

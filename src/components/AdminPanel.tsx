@@ -890,12 +890,13 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
                     </div>
                     {order.comment && <div className="text-zinc-400 italic">💬 {order.comment}</div>}
                     <div className="pt-1 font-mono text-[11px] text-zinc-400 border-t border-white/5 space-y-0.5">
-                      {order.items_json.map((i) => {
+                      {order.items_json.map((i, idx) => {
                         const prod = products.find((p) => p.id === i.id);
                         const brand = prod && prod.brand_slug ? brands.find((b) => b.slug === prod.brand_slug) : null;
-                        const brandPrefix = brand ? `[${brand.name}] ` : '';
+                        const brandName = i.brand_name || (brand ? brand.name : null);
+                        const brandPrefix = brandName ? `[${brandName}] ` : '';
                         return (
-                          <div key={i.id}>
+                          <div key={`${i.id}-${idx}`}>
                             <span className="text-purple-300">{brandPrefix}</span>
                             <span>{i.name} ×{i.quantity}</span>
                           </div>

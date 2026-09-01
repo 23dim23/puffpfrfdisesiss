@@ -187,7 +187,7 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({ onGoToCatalog }) => {
                   {order.items_json.map((item, idx) => (
                     <div key={idx} className="flex items-center justify-between text-zinc-300 py-0.5">
                       <span className="truncate pr-2">
-                        {item.emoji || '📦'} {item.name}
+                        {item.emoji || '📦'} {item.brand_name ? `[${item.brand_name}] ` : ''}{item.name}
                         {item.color_name ? ` (${item.color_name})` : ''}
                       </span>
                       <span className="shrink-0 font-semibold text-white">×{item.quantity}</span>
