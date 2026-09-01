@@ -42,6 +42,7 @@ import { DetailedStatsModal } from './DetailedStatsModal';
 import { MassImportModal } from './MassImportModal';
 import { OrderExportModal } from './OrderExportModal';
 import { ProductImage } from './ProductImage';
+import { formatBrandSlug } from '../utils/brand';
 
 type AdminSubpage =
   | 'menu'
@@ -893,7 +894,7 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
                       {order.items_json.map((i, idx) => {
                         const prod = products.find((p) => p.id === i.id);
                         const brand = prod && prod.brand_slug ? brands.find((b) => b.slug === prod.brand_slug) : null;
-                        const brandName = i.brand_name || (brand ? brand.name : null);
+                        const brandName = i.brand_name || (brand ? brand.name : null) || (i.brand_slug ? formatBrandSlug(i.brand_slug) : (prod && prod.brand_slug ? formatBrandSlug(prod.brand_slug) : null));
                         const brandPrefix = brandName ? `[${brandName}] ` : '';
                         return (
                           <div key={`${i.id}-${idx}`}>

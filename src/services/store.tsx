@@ -24,6 +24,7 @@ import {
 import { db, HARDCODED_ADMIN_IDS } from './db';
 import { getTelegramWebApp, hapticImpact, hapticNotification } from './telegram';
 import { calculateBundlePromotions } from '../utils/promo';
+import { formatBrandSlug } from '../utils/brand';
 
 export const BOT_TOKEN = '8648233320:AAHqnWppOqFTogRR7szthQSclkq3caT8_8Y';
 export const HARDCODED_ADMINS = HARDCODED_ADMIN_IDS;
@@ -646,7 +647,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             quantity: c.quantity,
             emoji: c.emoji || '📦',
             brand_slug: c.brand_slug || null,
-            brand_name: brandObj ? brandObj.name : null,
+            brand_name: brandObj ? brandObj.name : (c.brand_slug ? formatBrandSlug(c.brand_slug) : null),
           };
         }),
         total,

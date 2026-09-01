@@ -3,13 +3,14 @@ import { useStore } from '../services/store';
 import { OrderStatus } from '../types';
 import { PackageCheck, MessageCircle, XCircle, Clock, CheckCircle2, Truck, AlertCircle, ShoppingBag } from 'lucide-react';
 import { openTelegramOrWeb, hapticImpact } from '../services/telegram';
+import { formatBrandSlug } from '../utils/brand';
 
 interface OrdersTabProps {
   onGoToCatalog: () => void;
 }
 
 export const OrdersTab: React.FC<OrdersTabProps> = ({ onGoToCatalog }) => {
-  const { orders, currentUser, settings, cancelOrder } = useStore();
+  const { orders, currentUser, settings, cancelOrder, products, brands } = useStore();
 
   // User orders or all orders if dev
   const userOrders = currentUser
@@ -184,15 +185,20 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({ onGoToCatalog }) => {
                 {/* Items List */}
                 <div className="space-y-1 text-xs">
                   <span className="font-semibold text-zinc-400 block text-[11px] uppercase tracking-wider">Товары:</span>
-                  {order.items_json.map((item, idx) => (
-                    <div key={idx} className="flex items-center justify-between text-zinc-300 py-0.5">
-                      <span className="truncate pr-2">
-                        {item.emoji || '📦'} {item.brand_name ? `[${item.brand_name}] ` : ''}{item.name}
-                        {item.color_name ? ` (${item.color_name})` : ''}
-                      </span>
-                      <span className="shrink-0 font-semibold text-white">×{item.quantity}</span>
-                    </div>
-                  ))}
+                  {order.items_json.map((item, idx) => {
+                    const prod = products.find((p) => p.id === item.id);
+                    const brand = prod && prod.brand_slug ? brands.find((b) => b.slug === prod.brand_slug) : null;
+                    const brandName = item.brand_name || (brand ? brand.name : null) || (item.brand_slug ? formatBrandSlug(item.brand_slug) : (prod && prod.brand_slug ? formatBrandSlug(prod.brand_slug) : null));
+                    return (
+                      <div key={idx} className="flex items-center justify-between text-zinc-300 py-0.5">
+                        <span className="truncate pr-2">
+                          {item.emoji || '📦'} {brandName ? `[${brandName}] ` : ''}{item.name}
+                          {item.color_name ? ` (${item.color_name})` : ''}
+                        </span>
+                        <span className="shrink-0 font-semibold text-white">×{item.quantity}</span>
+                      </div>
+                    );
+                  })}
                 </div>
 
                 {/* Actions */}
