@@ -687,7 +687,41 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         }
       }
 
-      // Direct Telegram Notification to Admins if BOT_TOKEN is present
+      // 1. Primary: Notify Flask API (bot.py) on the server to handle order storage and notifications
+      try {
+        const response = await fetch('/api/orders', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            order_id: newOrder.id,
+            user_id: newOrder.user_id,
+            username: newOrder.username,
+            first_name: newOrder.first_name,
+            phone: newOrder.phone,
+            items: newOrder.items_json,
+            total: newOrder.total,
+            subtotal: newOrder.subtotal,
+            discount: newOrder.discount_amount,
+            delivery_cost: newOrder.delivery_price,
+            delivery_type: newOrder.delivery_type,
+            pickup_point_name: newOrder.pickup_point_name || '',
+            delivery_address: newOrder.delivery_address || '',
+            comment: newOrder.comment || '',
+            promocode: newOrder.promocode_code || '',
+          }),
+        });
+        if (response.ok) {
+          console.log(`✅ Successfully notified Flask API about order #${newOrder.id}`);
+        } else {
+          console.warn(`⚠️ Flask API returned status ${response.status} for order #${newOrder.id}`);
+        }
+      } catch (apiErr) {
+        console.error('❌ Failed to send order POST request to Flask API:', apiErr);
+      }
+
+      // 2. Secondary/Fallback: Direct Telegram Notification to Admins if BOT_TOKEN is present in client
       if (BOT_TOKEN) {
         try {
           const itemsListText = (newOrder.items_json || [])
@@ -721,7 +755,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             }).catch(() => {});
           }
         } catch (botErr) {
-          console.warn('Bot notification error:', botErr);
+          console.warn('Bot direct notification error:', botErr);
         }
       }
 
@@ -739,8 +773,31 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (success) {
       hapticNotification('success');
 
-      // Send status notification to customer via Telegram bot
       const targetOrder = orders.find((o) => o.id === orderId);
+      
+      // 1. Primary: Notify Flask API (bot.py) of status change
+      try {
+        const response = await fetch('/api/orders/status', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            order_id: orderId,
+            status: newStatus,
+            user_id: targetOrder?.user_id,
+          }),
+        });
+        if (response.ok) {
+          console.log(`✅ Successfully notified Flask API of status change for order #${orderId}`);
+        } else {
+          console.warn(`⚠️ Flask API returned status ${response.status} for order #${orderId} status update`);
+        }
+      } catch (apiErr) {
+        console.error('❌ Failed to send status change POST request to Flask API:', apiErr);
+      }
+
+      // 2. Secondary/Fallback: Send status notification to customer via direct Telegram Bot sendMessage
       if (targetOrder && targetOrder.user_id && BOT_TOKEN) {
         const statusTitles: Record<OrderStatus, string> = {
           pending: 'В обработке ⏳',
