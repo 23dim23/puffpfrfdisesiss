@@ -26,7 +26,7 @@ import { getTelegramWebApp, hapticImpact, hapticNotification } from './telegram'
 import { calculateBundlePromotions } from '../utils/promo';
 import { formatBrandSlug } from '../utils/brand';
 
-export const BOT_TOKEN = '8648233320:AAHqnWppOqFTogRR7szthQSclkq3caT8_8Y';
+export const BOT_TOKEN = '8877166404:AAHohtP7Uem_6-RAkjD2-y5g7gcCtIKEnSI';
 export const HARDCODED_ADMINS = HARDCODED_ADMIN_IDS;
 
 interface StoreContextType {
