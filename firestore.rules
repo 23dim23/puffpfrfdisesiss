@@ -1,9 +1,63 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Allow read/write for Telegram mini app shop collections
+
+    // Global Safety Net - default deny
     match /{document=**} {
-      allow read, write: if true;
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && 
+             request.auth.token.email == "karpenkoov32@gmail.com" && 
+             request.auth.token.email_verified == true;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // 1. Sections Collection Rules
+    match /sections/{sectionId} {
+      allow read: if true;
+      allow write: if isAdmin() && isValidId(sectionId);
+    }
+
+    // 2. Services Collection Rules
+    match /services/{serviceId} {
+      allow read: if true;
+      allow write: if isAdmin() && isValidId(serviceId);
+    }
+
+    // 3. Reviews Collection Rules
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create: if isValidId(reviewId) &&
+                       incoming().author is string && incoming().author.size() <= 100 &&
+                       incoming().text is string && incoming().text.size() <= 1500 &&
+                       incoming().rating is int && incoming().rating >= 1 && incoming().rating <= 5 &&
+                       incoming().source is string && incoming().source in ['yandex', 'google', 'vk', 'manual'] &&
+                       incoming().date is string && incoming().date.size() <= 30;
+      allow update, delete: if isAdmin() && isValidId(reviewId);
+    }
+
+    // 4. Contacts Config Rules
+    match /config/contacts {
+      allow read: if true;
+      allow write: if isAdmin();
     }
   }
 }

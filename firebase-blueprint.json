@@ -1,0 +1,91 @@
+{
+  "entities": {
+    "Section": {
+      "title": "Section",
+      "description": "A website section containing content and pricing packages",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "isActive": { "type": "boolean" },
+        "heroTitle": { "type": "string" },
+        "heroSubtitle": { "type": "string" },
+        "description": { "type": "string" },
+        "contentMarkdown": { "type": "string" },
+        "packages": {
+          "type": "array",
+          "description": "Pricing packages associated with this section"
+        }
+      },
+      "required": ["id", "title", "isActive", "heroTitle", "heroSubtitle", "description", "contentMarkdown"]
+    },
+    "Service": {
+      "title": "Service",
+      "description": "An interactive service or product offered by the club",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "category": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "price": { "type": "number" },
+        "oldPrice": { "type": "number" },
+        "duration": { "type": "string" },
+        "image": { "type": "string" },
+        "isPopular": { "type": "boolean" },
+        "availability": { "type": "string" }
+      },
+      "required": ["id", "category", "name", "description", "price"]
+    },
+    "Review": {
+      "title": "Review",
+      "description": "A review of the club left by customers",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "author": { "type": "string" },
+        "date": { "type": "string" },
+        "rating": { "type": "number" },
+        "text": { "type": "string" },
+        "avatarUrl": { "type": "string" },
+        "source": { "type": "string", "enum": ["yandex", "google", "vk", "manual"] },
+        "sourceUrl": { "type": "string" }
+      },
+      "required": ["id", "author", "date", "rating", "text", "source"]
+    },
+    "ContactInfo": {
+      "title": "ContactInfo",
+      "description": "Contact details of the laser tag arena",
+      "type": "object",
+      "properties": {
+        "phone": { "type": "string" },
+        "email": { "type": "string" },
+        "address": { "type": "string" },
+        "workingHours": { "type": "string" },
+        "yandexMapWidgetUrl": { "type": "string" },
+        "vkUrl": { "type": "string" },
+        "telegramUrl": { "type": "string" },
+        "instagramUrl": { "type": "string" }
+      },
+      "required": ["phone", "email", "address", "workingHours", "yandexMapWidgetUrl"]
+    }
+  },
+  "firestore": {
+    "/sections/{sectionId}": {
+      "schema": { "$ref": "#/entities/Section" },
+      "description": "Interactive website page sections"
+    },
+    "/services/{serviceId}": {
+      "schema": { "$ref": "#/entities/Service" },
+      "description": "Available products and services in the catalogue"
+    },
+    "/reviews/{reviewId}": {
+      "schema": { "$ref": "#/entities/Review" },
+      "description": "Verified and custom customer reviews"
+    },
+    "/config/contacts": {
+      "schema": { "$ref": "#/entities/ContactInfo" },
+      "description": "Global club contact details and map settings"
+    }
+  }
+}
