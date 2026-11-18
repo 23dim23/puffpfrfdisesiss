@@ -147,6 +147,10 @@ export interface Order {
   items_json: OrderItem[];
   status: OrderStatus;
   stock_deducted?: boolean;
+  bonus_points_used?: number;
+  bonus_discount_byn?: number;
+  delivery_paid_by_bonus?: boolean;
+  bonus_points_earned?: number;
   created_at: string;
 }
 
@@ -229,6 +233,11 @@ export interface ShopUser {
   created_at: string;
   last_seen_at: string;
   orders_count?: number;
+  bonus_balance?: number;
+  wheel_spins?: number;
+  total_spent_byn?: number;
+  claimed_tiers?: string[];
+  spin_history?: Array<{ id: string; bonuses: number; created_at: string }>;
 }
 
 export interface ShopSettings {

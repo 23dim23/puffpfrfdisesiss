@@ -1,0 +1,5152 @@
+<html><head><meta charset="utf-8"><style>
+    table { border-collapse: collapse; font-family: sans-serif; font-size: 12px; }
+    th { background-color: #7c3aed; color: #ffffff; padding: 8px; border: 1px solid #ddd; }
+    td { padding: 6px 8px; border: 1px solid #ddd; }
+    .num { text-align: right; }
+    .profit { color: #059669; font-weight: bold; }
+  </style></head><body><h3>Полная выгрузка всех заказов Puff Shop Mogilev (Всего: 342)</h3><table><thead><tr>
+    <th>#</th>
+    <th>Дата</th>
+    <th>Статус</th>
+    <th>Клиент</th>
+    <th>TG ID</th>
+    <th>Телефон</th>
+    <th>Способ доставки</th>
+    <th>Адрес / Точка</th>
+    <th>Товары</th>
+    <th>Товары (BYN)</th>
+    <th>Скидка</th>
+    <th>Доставка</th>
+    <th>Итого (BYN)</th>
+    <th>Прибыль (BYN)</th>
+    <th>Комментарий</th></tr></thead><tbody><tr>
+      <td>1342</td>
+      <td>2026-11-12T12:25:05.370Z</td>
+      <td>pending</td>
+      <td>@anytki_i</td>
+      <td>1824430681</td>
+      <td>@anytki_i</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Арбат</td>
+      <td>[ANIMA LOVE 18+] Малиновый лимонад (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+9.00</td>
+      <td>+-17:00, возле тцАрбат, желательно там где вход в «соседи»</td></tr><tr>
+      <td>1341</td>
+      <td>2026-11-12T10:38:21.553Z</td>
+      <td>pending</td>
+      <td>@Slavyantiy</td>
+      <td>1541382250</td>
+      <td>@Slavyantiy</td>
+      <td>Доставка курьером</td>
+      <td>Могилёвский район, Могилёвская область, деревня Большие Белевичи, Улица Южная, дом 21. 213154, +375298414573</td>
+      <td>[Rick and Morty Bad Trip] Садовые ягоды (x1) — 17 BYN; [Rick and Morty Bad Trip] Черника Ежевика (x1) — 17 BYN; [Rick and Morty Bad Trip] Виноградный энергетик (x1) — 17 BYN; [Rick and Morty Bad Trip] Арбуз Малина (x1) — 17 BYN</td>
+      <td class="num">68.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>68.00</b></td>
+      <td class="num profit">+31.00</td>
+      <td></td></tr><tr>
+      <td>1340</td>
+      <td>2026-11-12T07:53:37.864Z</td>
+      <td>pending</td>
+      <td>@wpartjom5</td>
+      <td>2049688063</td>
+      <td>@wpartjom5</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Арбат</td>
+      <td>[Podonki podgon] Малина ежевика (x1) — 15 BYN</td>
+      <td class="num">15.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>15.00</b></td>
+      <td class="num profit">+9.25</td>
+      <td>В 17:00</td></tr><tr>
+      <td>1339</td>
+      <td>2026-11-12T06:23:17.084Z</td>
+      <td>pending</td>
+      <td>@zubenkomihailpetrovich0</td>
+      <td>1768552946</td>
+      <td>@zubenkomihailpetrovich0</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Обл. Больница</td>
+      <td>[Mckeese 7000] McKeese 7000 - Grape (x1) — 25 BYN</td>
+      <td class="num">25.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>25.00</b></td>
+      <td class="num profit">+16.00</td>
+      <td>10.30</td></tr><tr>
+      <td>1338</td>
+      <td>2026-11-11T11:40:17.113Z</td>
+      <td>cancelled</td>
+      <td>@your_immortal6</td>
+      <td>7756302917</td>
+      <td>@your_immortal6</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Юбилейный</td>
+      <td>[УБИВАШКА] Ежевика клубника (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+9.00</td>
+      <td></td></tr><tr>
+      <td>1337</td>
+      <td>2026-11-11T09:03:38.414Z</td>
+      <td>pending</td>
+      <td>@user</td>
+      <td>1836888846</td>
+      <td>Не указан</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[УБИВАШКА] Ред Булл (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+8.75</td>
+      <td>12:35</td></tr><tr>
+      <td>1336</td>
+      <td>2026-11-10T20:12:07.687Z</td>
+      <td>cancelled</td>
+      <td>@olxew</td>
+      <td>358507025</td>
+      <td>@olxew</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[BJORN ZLOY V1] Лесные ягоды (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+9.00</td>
+      <td></td></tr><tr>
+      <td>1335</td>
+      <td>2026-11-10T15:25:36.934Z</td>
+      <td>pending</td>
+      <td>@murvmurvvm</td>
+      <td>6299075354</td>
+      <td>@murvmurvvm</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[BJORN ZLOY V1] Скитлс (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+9.00</td>
+      <td></td></tr><tr>
+      <td>1334</td>
+      <td>2026-11-10T13:17:30.337Z</td>
+      <td>cancelled</td>
+      <td>@wpartjom5</td>
+      <td>2049688063</td>
+      <td>@wpartjom5</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Арбат</td>
+      <td>[VAPORESSO] Картридж XROS 0.6 ohm 3мл (x1) — 13 BYN</td>
+      <td class="num">13.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>13.00</b></td>
+      <td class="num profit">+7.00</td>
+      <td>В 18:30 будет удобно </td></tr><tr>
+      <td>1333</td>
+      <td>2026-11-10T13:09:30.771Z</td>
+      <td>cancelled</td>
+      <td>@dddd_kgdrr</td>
+      <td>1217496323</td>
+      <td>@dddd_kgdrr</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[Podonki podgon] Малина ежевика (x1) — 15 BYN</td>
+      <td class="num">15.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>15.00</b></td>
+      <td class="num profit">+9.25</td>
+      <td>17:00</td></tr><tr>
+      <td>1332</td>
+      <td>2026-11-10T11:35:20.601Z</td>
+      <td>pending</td>
+      <td>@wpartjom5</td>
+      <td>2049688063</td>
+      <td>@wpartjom5</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Арбат</td>
+      <td>[VAPORESSO] Картридж XROS 0.6 ohm 3мл (x1) — 13 BYN</td>
+      <td class="num">13.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>13.00</b></td>
+      <td class="num profit">+7.00</td>
+      <td>В 18:30</td></tr><tr>
+      <td>1331</td>
+      <td>2026-11-10T10:09:33.603Z</td>
+      <td>pending</td>
+      <td>@dirtyshoottatoncho</td>
+      <td>641880387</td>
+      <td>@dirtyshoottatoncho</td>
+      <td>Доставка курьером</td>
+      <td>г.Горки, ул.Вокзальная 2а</td>
+      <td>[Rick and Morty Bad Trip] Садовые ягоды (x1) — 17 BYN; [VAPORESSO] Картридж XROS 0.4 омм 3 мл (x1) — 13 BYN; [XROS 6 MINI] Vaporesso Xros 6 Mini - Jelly Orange (Ярко-оранжевый) (x1) — 75 BYN; [УБИВАШКА] Ежевика клубника (x1) — 18 BYN</td>
+      <td class="num">123.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>123.00</b></td>
+      <td class="num profit">+59.50</td>
+      <td></td></tr><tr>
+      <td>1330</td>
+      <td>2026-11-10T07:15:23.162Z</td>
+      <td>cancelled</td>
+      <td>@osirisplayers</td>
+      <td>5576634448</td>
+      <td>@osirisplayers</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Театр Кукол</td>
+      <td>[BJORN ZLOY V1] Лесные ягоды (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+9.00</td>
+      <td></td></tr><tr>
+      <td>1329</td>
+      <td>2026-11-09T13:56:12.351Z</td>
+      <td>cancelled</td>
+      <td>@sigmacriper15</td>
+      <td>7496185354</td>
+      <td>@sigmacriper15</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[Mckeese 7000] McKeese 7000 - Grape (x1) — 25 BYN</td>
+      <td class="num">25.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>25.00</b></td>
+      <td class="num profit">+16.00</td>
+      <td></td></tr><tr>
+      <td>1328</td>
+      <td>2026-11-09T11:55:46.124Z</td>
+      <td>cancelled</td>
+      <td>@gemoroy1924</td>
+      <td>6675372448</td>
+      <td>@gemoroy1924</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Театр Кукол</td>
+      <td>[VAPORESSO] Картридж XROS 0.4 омм 3 мл (x1) — 13 BYN</td>
+      <td class="num">13.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>13.00</b></td>
+      <td class="num profit">+7.00</td>
+      <td>В 15:30, могу чуть опоздать если не придёт транспорт</td></tr><tr>
+      <td>1327</td>
+      <td>2026-11-09T03:51:38.809Z</td>
+      <td>cancelled</td>
+      <td>@mog_fisherman</td>
+      <td>1830027766</td>
+      <td>@mog_fisherman</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[УБИВАШКА] Кислая вишня ред булл смородина (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+9.00</td>
+      <td></td></tr><tr>
+      <td>1326</td>
+      <td>2026-11-08T15:33:17.122Z</td>
+      <td>cancelled</td>
+      <td>@saweti8</td>
+      <td>8388957158</td>
+      <td>@saweti8</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[Rick and Morty Bad Trip] Ягодный энергетик (x1) — 17 BYN</td>
+      <td class="num">17.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>17.00</b></td>
+      <td class="num profit">+8.00</td>
+      <td></td></tr><tr>
+      <td>1325</td>
+      <td>2026-11-08T13:32:26.044Z</td>
+      <td>cancelled</td>
+      <td>@harik1060</td>
+      <td>8028142196</td>
+      <td>@harik1060</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[Podonki podgon] Малина ежевика (x1) — 15 BYN; [GeekVape] Испаритель GeekVape Hero/Boost  0.2 омм (x1) — 12 BYN; [VAPORESSO] Картридж XROS 0.6 ohm 3мл (x1) — 13 BYN</td>
+      <td class="num">40.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>40.00</b></td>
+      <td class="num profit">+22.25</td>
+      <td></td></tr><tr>
+      <td>1324</td>
+      <td>2026-11-08T13:30:51.407Z</td>
+      <td>cancelled</td>
+      <td>@harik1060</td>
+      <td>8028142196</td>
+      <td>@harik1060</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[PODONKI PODGON] Малиновая конфета (x1) — 15 BYN; [GeekVape] Испаритель GeekVape Hero/Boost  0.2 омм (x1) — 12 BYN; [VAPORESSO] Картридж XROS 0.6 ohm 3мл (x1) — 13 BYN</td>
+      <td class="num">40.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>40.00</b></td>
+      <td class="num profit">+22.25</td>
+      <td></td></tr><tr>
+      <td>1323</td>
+      <td>2026-11-08T11:27:44.422Z</td>
+      <td>completed</td>
+      <td>@Martine_Roze</td>
+      <td>8256873738</td>
+      <td>@Martine_Roze</td>
+      <td>Доставка курьером</td>
+      <td>д.грибаны ул. Новая 3</td>
+      <td>[ANIMA LOVE 18+] Черника ежевика (x1) — 18 BYN; [ANIMA LOVE 18+] Сочный персик (x1) — 18 BYN</td>
+      <td class="num">36.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>41.00</b></td>
+      <td class="num profit">+18.00</td>
+      <td>к 17:00 - 17:30</td></tr><tr>
+      <td>1322</td>
+      <td>2026-11-06T10:32:47.168Z</td>
+      <td>completed</td>
+      <td>@ostys04</td>
+      <td>1596438945</td>
+      <td>@ostys04</td>
+      <td>Доставка курьером</td>
+      <td>Г. Могилёв ул. Криулино д. 35А 3 подъезд</td>
+      <td>[Rick and Morty Bad Trip] Ягодный энергетик (x1) — 17 BYN; [ANIMA LOVE 18+] Морозные лесные ягоды (x1) — 18 BYN</td>
+      <td class="num">35.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>40.00</b></td>
+      <td class="num profit">+17.00</td>
+      <td></td></tr><tr>
+      <td>1321</td>
+      <td>2026-11-05T07:38:51.392Z</td>
+      <td>cancelled</td>
+      <td>@SweeetlyCU</td>
+      <td>7755352264</td>
+      <td>@SweeetlyCU</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>Морозный ред бул (x1) — 18 BYN; [DRYMOST STORM] Ананасовый джем (x1) — 15 BYN; [DRYMOST STORM] Банановый взрыв (x1) — 15 BYN</td>
+      <td class="num">48.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>48.00</b></td>
+      <td class="num profit">+22.50</td>
+      <td></td></tr><tr>
+      <td>1320</td>
+      <td>2026-11-03T13:11:34.036Z</td>
+      <td>completed</td>
+      <td>@kittyGUCCI</td>
+      <td>8465629980</td>
+      <td>@kittyGUCCI</td>
+      <td>Доставка курьером</td>
+      <td>Вильчицкий переулок  остановка автобуса </td>
+      <td>[VAPORESSO] Картридж XROS 0.6 ohm 3мл (x1) — 13 BYN</td>
+      <td class="num">13.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+7.00</td>
+      <td>желательно к 16:30</td></tr><tr>
+      <td>1319</td>
+      <td>2026-11-02T08:01:27.891Z</td>
+      <td>pending</td>
+      <td>@floverryyy</td>
+      <td>5414611584</td>
+      <td>@floverryyy</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[Rick and Morty Bad Trip] Виноградный энергетик (x1) — 17 BYN</td>
+      <td class="num">17.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>17.00</b></td>
+      <td class="num profit">+7.50</td>
+      <td>12.30</td></tr><tr>
+      <td>1318</td>
+      <td>2026-11-02T06:51:10.280Z</td>
+      <td>cancelled</td>
+      <td>@floverryyy</td>
+      <td>5414611584</td>
+      <td>@floverryyy</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[Rick and Morty Bad Trip] Виноградный энергетик (x1) — 17 BYN</td>
+      <td class="num">17.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>17.00</b></td>
+      <td class="num profit">+7.50</td>
+      <td>10.30</td></tr><tr>
+      <td>1317</td>
+      <td>2026-11-01T10:21:28.137Z</td>
+      <td>completed</td>
+      <td>@ouseen</td>
+      <td>2058633082</td>
+      <td>@ouseen</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[ANIMA LOVE 18+] Кислый скитлс (x1) — 18 BYN; [VAPORESSO] Картридж XROS 0.4 омм 3 мл (x1) — 13 BYN</td>
+      <td class="num">31.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>31.00</b></td>
+      <td class="num profit">+16.00</td>
+      <td></td></tr><tr>
+      <td>1316</td>
+      <td>2026-10-31T10:39:43.836Z</td>
+      <td>cancelled</td>
+      <td>@kittyGUCCI</td>
+      <td>8465629980</td>
+      <td>@kittyGUCCI</td>
+      <td>Доставка курьером</td>
+      <td>4-й Июньский переулок остановка автобуса </td>
+      <td>[VAPORESSO] Картридж XROS 0.6 ohm 3мл (x1) — 13 BYN</td>
+      <td class="num">13.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+7.00</td>
+      <td></td></tr><tr>
+      <td>1315</td>
+      <td>2026-10-29T16:05:36.653Z</td>
+      <td>completed</td>
+      <td>@verhoxnyi</td>
+      <td>1867414341</td>
+      <td>@verhoxnyi</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Юбилейный</td>
+      <td>[УБИВАШКА] Ред Булл (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+8.75</td>
+      <td></td></tr><tr>
+      <td>1314</td>
+      <td>2026-10-29T11:22:49.923Z</td>
+      <td>completed</td>
+      <td>@milor_ik</td>
+      <td>1643664033</td>
+      <td>@milor_ik</td>
+      <td>Доставка курьером</td>
+      <td>Жемчужная 35 кв58</td>
+      <td>[VAPORESSO] Картридж XROS 0.4 омм 3 мл (x1) — 13 BYN; [BJORN ZLOY V1] Кислая малина (x1) — 18 BYN</td>
+      <td class="num">31.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>36.00</b></td>
+      <td class="num profit">+16.00</td>
+      <td></td></tr><tr>
+      <td>1313</td>
+      <td>2026-10-29T07:23:02.356Z</td>
+      <td>cancelled</td>
+      <td>@milor_ik</td>
+      <td>1643664033</td>
+      <td>@milor_ik</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[VAPORESSO] Картридж XROS 0.4 омм 3 мл (x1) — 13 BYN; [Рик и Морти на ЗАМЕРЗОНЕ] Ананас апельсин (x1) — 15 BYN</td>
+      <td class="num">28.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>28.00</b></td>
+      <td class="num profit">+16.00</td>
+      <td></td></tr><tr>
+      <td>1312</td>
+      <td>2026-10-27T20:15:01.025Z</td>
+      <td>cancelled</td>
+      <td>@Enot_0173</td>
+      <td>5096925478</td>
+      <td>@Enot_0173</td>
+      <td>Доставка курьером</td>
+      <td>Г. Могилев ул. Космонавтов д. 25</td>
+      <td>[УБИВАШКА] Виноградная фанта (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>23.00</b></td>
+      <td class="num profit">+9.00</td>
+      <td>После 18.00</td></tr><tr>
+      <td>1311</td>
+      <td>2026-10-27T13:45:34.246Z</td>
+      <td>cancelled</td>
+      <td>@TerrorRRv</td>
+      <td>1631796956</td>
+      <td>@TerrorRRv</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Арбат</td>
+      <td>[VAPORESSO] Картридж XROS 0.4 омм 3 мл (x1) — 13 BYN</td>
+      <td class="num">13.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>13.00</b></td>
+      <td class="num profit">+7.00</td>
+      <td>По времени будет удобно в 21:00</td></tr><tr>
+      <td>1310</td>
+      <td>2026-10-25T11:05:28.527Z</td>
+      <td>cancelled</td>
+      <td>@sweet_chokopay</td>
+      <td>8397690178</td>
+      <td>@sweet_chokopay</td>
+      <td>Доставка курьером</td>
+      <td>Могилев . улица берёзовская 20а </td>
+      <td>[DRYMOST STORM] Виноградная кола (x1) — 15 BYN</td>
+      <td class="num">15.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>20.00</b></td>
+      <td class="num profit">+6.75</td>
+      <td></td></tr><tr>
+      <td>1309</td>
+      <td>2026-10-24T13:43:47.745Z</td>
+      <td>cancelled</td>
+      <td>@Anyqqz17</td>
+      <td>1028737785</td>
+      <td>@Anyqqz17</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Обл. Больница</td>
+      <td>[BJORN ZLOY V1] Кислая малина (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+9.00</td>
+      <td></td></tr><tr>
+      <td>1308</td>
+      <td>2026-10-24T11:43:41.917Z</td>
+      <td>completed</td>
+      <td>@GeraMMA</td>
+      <td>674644771</td>
+      <td>@GeraMMA</td>
+      <td>Доставка курьером</td>
+      <td>Могилёв ул.Равчакова 10а -1</td>
+      <td>[Anima love 18+] Энергетик ягоды (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>23.00</b></td>
+      <td class="num profit">+9.05</td>
+      <td>Набрать за 10 минут +375333008298</td></tr><tr>
+      <td>1307</td>
+      <td>2026-10-24T11:16:06.827Z</td>
+      <td>cancelled</td>
+      <td>@alinkass_34</td>
+      <td>8584938023</td>
+      <td>@alinkass_34</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>БРУ </td>
+      <td>[Anima love 18+] Энергетик ягоды (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+9.05</td>
+      <td></td></tr><tr>
+      <td>1306</td>
+      <td>2026-10-24T10:23:36.351Z</td>
+      <td>completed</td>
+      <td>@urildo</td>
+      <td>476253403</td>
+      <td>@urildo</td>
+      <td>Доставка курьером</td>
+      <td>Г.Могилев, Пушкинский проспект, дом 39</td>
+      <td>[Rick and Morty Bad Trip] Гранат смородина (x1) — 17 BYN; [Rick and Morty Bad Trip] Черника малина (x1) — 17 BYN; [GLITCH POUCHES] Ментол (x1) — 15 BYN</td>
+      <td class="num">49.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>49.00</b></td>
+      <td class="num profit">+23.00</td>
+      <td></td></tr><tr>
+      <td>1305</td>
+      <td>2026-10-24T09:27:41.142Z</td>
+      <td>completed</td>
+      <td>@Martine_Roze</td>
+      <td>8256873738</td>
+      <td>@Martine_Roze</td>
+      <td>Доставка курьером</td>
+      <td>д.грибаны ул. Новая 3</td>
+      <td>[BJORN ZLOY V1] Кислая малина (x1) — 18 BYN; [Bjorn zloy v1] Клубника мороженое (x1) — 18 BYN</td>
+      <td class="num">36.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>41.00</b></td>
+      <td class="num profit">+18.50</td>
+      <td>желательно к 19;30 </td></tr><tr>
+      <td>1304</td>
+      <td>2026-10-24T09:24:19.512Z</td>
+      <td>cancelled</td>
+      <td>@Martine_Roze</td>
+      <td>8256873738</td>
+      <td>@Martine_Roze</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[BJORN ZLOY V1] Кислая малина (x1) — 18 BYN; [Bjorn zloy v1] Клубника мороженое (x1) — 18 BYN</td>
+      <td class="num">36.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>36.00</b></td>
+      <td class="num profit">+18.50</td>
+      <td></td></tr><tr>
+      <td>1303</td>
+      <td>2026-10-23T12:48:11.873Z</td>
+      <td>cancelled</td>
+      <td>@kerpih2</td>
+      <td>8868521706</td>
+      <td>@kerpih2</td>
+      <td>Доставка курьером</td>
+      <td>Проспект мира 9 </td>
+      <td>[Podonki podgon] Малина ежевика (x1) — 15 BYN; [VAPORESSO] Картридж XROS 0.6 ohm 2 мл (x1) — 13 BYN</td>
+      <td class="num">28.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>33.00</b></td>
+      <td class="num profit">+16.25</td>
+      <td>Жижи нет парить хочу </td></tr><tr>
+      <td>1302</td>
+      <td>2026-10-23T12:40:17.673Z</td>
+      <td>completed</td>
+      <td>@kerpih2</td>
+      <td>8868521706</td>
+      <td>@kerpih2</td>
+      <td>Доставка курьером</td>
+      <td>Проспект мира 9</td>
+      <td>[Rick and Morty Bad Trip] Ягодный энергетик (x1) — 17 BYN; [VAPORESSO] Картридж XROS 0.6 ohm 2 мл (x1) — 13 BYN</td>
+      <td class="num">30.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>35.00</b></td>
+      <td class="num profit">+15.00</td>
+      <td>Жижа закончилась парить нечего </td></tr><tr>
+      <td>1301</td>
+      <td>2026-10-22T13:43:46.458Z</td>
+      <td>cancelled</td>
+      <td>@Kartashova95</td>
+      <td>6267181637</td>
+      <td>@Kartashova95</td>
+      <td>Доставка курьером</td>
+      <td>г. Могилев  ул.Березовская д14, 2 подъезд </td>
+      <td>[Рик и Морти на ЗАМЕРЗОНЕ] Ананас апельсин (x1) — 15 BYN</td>
+      <td class="num">15.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>20.00</b></td>
+      <td class="num profit">+9.00</td>
+      <td>Желательно после 19.00</td></tr><tr>
+      <td>1300</td>
+      <td>2026-10-21T13:32:52.316Z</td>
+      <td>completed</td>
+      <td>@ostys04</td>
+      <td>1596438945</td>
+      <td>@ostys04</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Театр Кукол</td>
+      <td>[Anima love 18+] Энергетик малина (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+9.05</td>
+      <td></td></tr><tr>
+      <td>1299</td>
+      <td>2026-10-21T13:12:12.679Z</td>
+      <td>cancelled</td>
+      <td>@ostys04</td>
+      <td>1596438945</td>
+      <td>@ostys04</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Театр Кукол</td>
+      <td>[PODONKI LITE] Шоколад вишня (x1) — 15 BYN</td>
+      <td class="num">15.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>15.00</b></td>
+      <td class="num profit">+9.00</td>
+      <td></td></tr><tr>
+      <td>1298</td>
+      <td>2026-10-21T13:08:50.904Z</td>
+      <td>cancelled</td>
+      <td>@ostys04</td>
+      <td>1596438945</td>
+      <td>@ostys04</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Театр Кукол</td>
+      <td>[Рик и Морти на ЗАМЕРЗОНЕ] Ананас апельсин (x1) — 15 BYN</td>
+      <td class="num">15.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>15.00</b></td>
+      <td class="num profit">+9.00</td>
+      <td></td></tr><tr>
+      <td>1297</td>
+      <td>2026-10-20T16:48:26.306Z</td>
+      <td>cancelled</td>
+      <td>@Sweetcutieeeeee</td>
+      <td>1182377735</td>
+      <td>@Sweetcutieeeeee</td>
+      <td>Доставка курьером</td>
+      <td>Улица Карла Маркса 2А</td>
+      <td>[VAPORESSO] Картридж XROS 0.6 ohm 2 мл (x1) — 13 BYN; [УБИВАШКА] Арбузный адреналин (x1) — 18 BYN; [УБИВАШКА] Виноградная фанта (x1) — 18 BYN</td>
+      <td class="num">49.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>49.00</b></td>
+      <td class="num profit">+25.00</td>
+      <td>К 20:30</td></tr><tr>
+      <td>1296</td>
+      <td>2026-10-20T12:41:56.639Z</td>
+      <td>cancelled</td>
+      <td>@ttonts</td>
+      <td>757728566</td>
+      <td>@ttonts</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[VAPORESSO] Картридж XROS 0.6 ohm 2 мл (x1) — 13 BYN</td>
+      <td class="num">13.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>13.00</b></td>
+      <td class="num profit">+7.00</td>
+      <td></td></tr><tr>
+      <td>1295</td>
+      <td>2026-10-20T10:23:58.124Z</td>
+      <td>cancelled</td>
+      <td>@guwwap</td>
+      <td>563536163</td>
+      <td>@guwwap</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Арбат</td>
+      <td>[Podonki podgon] Малина ежевика (x1) — 15 BYN</td>
+      <td class="num">15.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>15.00</b></td>
+      <td class="num profit">+9.25</td>
+      <td>15:30</td></tr><tr>
+      <td>1294</td>
+      <td>2026-10-20T05:16:09.252Z</td>
+      <td>cancelled</td>
+      <td>@Cheesee_pizza25</td>
+      <td>8865412421</td>
+      <td>@Cheesee_pizza25</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[VAPORESSO] Картридж XROS 0.6 ohm 2 мл (x1) — 13 BYN; [Anima love 18+] Энергетик малина (x1) — 18 BYN</td>
+      <td class="num">31.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>31.00</b></td>
+      <td class="num profit">+16.05</td>
+      <td></td></tr><tr>
+      <td>1293</td>
+      <td>2026-10-18T22:27:49.076Z</td>
+      <td>cancelled</td>
+      <td>@Werewolf_f</td>
+      <td>8489704854</td>
+      <td>@Werewolf_f</td>
+      <td>Доставка курьером</td>
+      <td>Плеханова 27</td>
+      <td>[VAPORESSO] Картридж XROS 0.6 ohm 2 мл (x1) — 13 BYN</td>
+      <td class="num">13.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+7.00</td>
+      <td>Колледж машинка 33 выйдут 2иселовека близко не паркуйтесь ближе к 6 вечера</td></tr><tr>
+      <td>1292</td>
+      <td>2026-10-18T14:28:25.470Z</td>
+      <td>cancelled</td>
+      <td>@Martini142</td>
+      <td>6367824481</td>
+      <td>@Martini142</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[DRYMOST ARMAGEDDON] Мята с эвкалиптом (x1) — 15 BYN</td>
+      <td class="num">15.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>15.00</b></td>
+      <td class="num profit">+6.75</td>
+      <td></td></tr><tr>
+      <td>1291</td>
+      <td>2026-10-18T12:16:54.552Z</td>
+      <td>cancelled</td>
+      <td>@sadmadonna</td>
+      <td>5740471619</td>
+      <td>@sadmadonna</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Театр Кукол</td>
+      <td>[УБИВАШКА] Виноградная фанта (x1) — 18 BYN; [VAPORESSO] Картридж XROS 0.6 ohm 2 мл (x1) — 13 BYN</td>
+      <td class="num">31.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>31.00</b></td>
+      <td class="num profit">+16.00</td>
+      <td></td></tr><tr>
+      <td>1290</td>
+      <td>2026-10-17T07:58:12.501Z</td>
+      <td>completed</td>
+      <td>@Yonni</td>
+      <td>64227682</td>
+      <td>@Yonni</td>
+      <td>Доставка курьером</td>
+      <td>Могилёв , ул. Островского 64/1 </td>
+      <td>[Rick and Morty Bad Trip] Грейпфрутовый Швепс (x1) — 17 BYN; [VAPORESSO] Картридж XROS 0.6 ohm 2 мл (x1) — 13 BYN</td>
+      <td class="num">30.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>35.00</b></td>
+      <td class="num profit">+15.00</td>
+      <td>11:30-16:30</td></tr><tr>
+      <td>1289</td>
+      <td>2026-10-16T13:56:39.868Z</td>
+      <td>cancelled</td>
+      <td>@user</td>
+      <td>788432473</td>
+      <td>Не указан</td>
+      <td>Доставка курьером</td>
+      <td>Могилев, ул.Мовчанского 55, 1 подъезд</td>
+      <td>[GLITCH POUCHES] Полярная мята (x1) — 15 BYN</td>
+      <td class="num">15.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>20.00</b></td>
+      <td class="num profit">+7.00</td>
+      <td></td></tr><tr>
+      <td>1288</td>
+      <td>2026-10-16T11:31:21.189Z</td>
+      <td>cancelled</td>
+      <td>@gufik12222</td>
+      <td>731610152</td>
+      <td>@gufik12222</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[PODONKI LITE] Кола вишня 50 (x1) — 15 BYN; [VOOPOO] Картридж VМATE 0.7 ohm (x1) — 13 BYN</td>
+      <td class="num">28.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>28.00</b></td>
+      <td class="num profit">+16.00</td>
+      <td></td></tr><tr>
+      <td>1287</td>
+      <td>2026-10-15T16:40:08.219Z</td>
+      <td>cancelled</td>
+      <td>@jeweiaaa</td>
+      <td>6117139609</td>
+      <td>@jeweiaaa</td>
+      <td>Доставка курьером</td>
+      <td>Ул. Рогачевская д.2А подъезд 3, квартира 98</td>
+      <td>[VAPORESSO] Картридж XROS 0.6 ohm 2 мл (x2) — 13 BYN; [Rick and Morty Bad Trip] Гранат смородина (x1) — 17 BYN; [Anima love 18+] Энергетик малина (x1) — 18 BYN</td>
+      <td class="num">61.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>61.00</b></td>
+      <td class="num profit">+31.05</td>
+      <td></td></tr><tr>
+      <td>1286</td>
+      <td>2026-10-09T17:20:53.193Z</td>
+      <td>cancelled</td>
+      <td>@aleshakard</td>
+      <td>7731084639</td>
+      <td>@aleshakard</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[УБИВАШКА] Ежевика клубника (x1) — 18 BYN; [VAPORESSO] Картридж XROS 0.6 ohm 2 мл (x1) — 13 BYN</td>
+      <td class="num">31.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>31.00</b></td>
+      <td class="num profit">+16.00</td>
+      <td>атриум </td></tr><tr>
+      <td>1285</td>
+      <td>2026-10-09T14:43:58.702Z</td>
+      <td>completed</td>
+      <td>@You_have_my_heart_forever</td>
+      <td>682011516</td>
+      <td>@You_have_my_heart_forever</td>
+      <td>Доставка курьером</td>
+      <td>Г.Могилев, ул.Кутепова 8, 1 подъезд</td>
+      <td>[УБИВАШКА] Ежевика клубника (x1) — 18 BYN; [Anima love 18+] Энергетик малина (x1) — 18 BYN; [GeekVape] Испаритель GeekVape Hero/Boost  0.2 омм (x2) — 12 BYN</td>
+      <td class="num">60.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>60.00</b></td>
+      <td class="num profit">+30.05</td>
+      <td></td></tr><tr>
+      <td>1284</td>
+      <td>2026-10-09T14:19:32.809Z</td>
+      <td>completed</td>
+      <td>@user</td>
+      <td>1836888846</td>
+      <td>Не указан</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Арбат</td>
+      <td>[УБИВАШКА] Клубничные червячки (x1) — 18 BYN; [УБИВАШКА] Малина черника земляника (x1) — 18 BYN</td>
+      <td class="num">36.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>36.00</b></td>
+      <td class="num profit">+17.50</td>
+      <td>18:10</td></tr><tr>
+      <td>1283</td>
+      <td>2026-10-09T09:29:34.505Z</td>
+      <td>cancelled</td>
+      <td>@You_have_my_heart_forever</td>
+      <td>682011516</td>
+      <td>@You_have_my_heart_forever</td>
+      <td>Доставка курьером</td>
+      <td>г. Могилёв, ул.Алтайская 2Д</td>
+      <td>[Anima love 18+] Энергетик малина (x1) — 18 BYN; [GeekVape] Испаритель GeekVape Hero/Boost  0.2 омм (x2) — 12 BYN; [УБИВАШКА] Ежевика клубника (x1) — 18 BYN</td>
+      <td class="num">60.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>60.00</b></td>
+      <td class="num profit">+30.05</td>
+      <td>Желательно доставить до 15:00. Остановиться можно у ворот </td></tr><tr>
+      <td>1282</td>
+      <td>2026-10-09T07:10:59.381Z</td>
+      <td>cancelled</td>
+      <td>@user</td>
+      <td>8681678590</td>
+      <td>Не указан</td>
+      <td>Доставка курьером</td>
+      <td>Г.могилев,крупской 214</td>
+      <td>[XROS 6 MINI] Vaporesso Xros 6 Mini - Jelly Orange (Ярко-оранжевый) (x1) — 75 BYN; [УБИВАШКА] Малина черника земляника (x1) — 18 BYN</td>
+      <td class="num">93.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>98.00</b></td>
+      <td class="num profit">+44.75</td>
+      <td></td></tr><tr>
+      <td>1281</td>
+      <td>2026-10-09T06:01:50.312Z</td>
+      <td>cancelled</td>
+      <td>@ududsw</td>
+      <td>8795181442</td>
+      <td>@ududsw</td>
+      <td>Доставка курьером</td>
+      <td>Г.могилев, улица:Крупской ,214</td>
+      <td>[УБИВАШКА] Малина смородина (x1) — 18 BYN; [XROS 6 MINI] Vaporesso Xros 6 Mini - Jelly Orange (Ярко-оранжевый) (x1) — 75 BYN</td>
+      <td class="num">93.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>98.00</b></td>
+      <td class="num profit">+44.75</td>
+      <td></td></tr><tr>
+      <td>1280</td>
+      <td>2026-10-08T19:22:40.425Z</td>
+      <td>completed</td>
+      <td>@Anyqqz17</td>
+      <td>1028737785</td>
+      <td>@Anyqqz17</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Арбат</td>
+      <td>[Podonki podgon] Малина ежевика (x1) — 15 BYN</td>
+      <td class="num">15.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>15.00</b></td>
+      <td class="num profit">+9.25</td>
+      <td></td></tr><tr>
+      <td>1279</td>
+      <td>2026-10-08T12:49:40.039Z</td>
+      <td>cancelled</td>
+      <td>@BURMALDASHKA666</td>
+      <td>8456546338</td>
+      <td>@BURMALDASHKA666</td>
+      <td>Доставка курьером</td>
+      <td>Г Могилёв улица вавилова 25а</td>
+      <td>[Rick and Morty Bad Trip] Гранат смородина (x1) — 17 BYN; [УБИВАШКА] Арбузный адреналин (x1) — 18 BYN; [УБИВАШКА] Виноградная фанта (x1) — 18 BYN; [Podonki podgon] Малина ежевика (x1) — 15 BYN; [УБИВАШКА] Виноградный лимонад (x1) — 18 BYN; [УБИВАШКА] Ежевика клубника (x1) — 18 BYN; [PASITO 3] Pasito 3 - Classic red (Красный) (x1) — 125 BYN; [PODONKI PODGON] Кокос малина (x1) — 15 BYN; [PODONKI PODGON] Малиновая конфета (x1) — 15 BYN; [Rick and Morty Bad Trip] Грейпфрутовый Швепс (x1) — 17 BYN; [УБИВАШКА] Клубничные червячки (x1) — 18 BYN</td>
+      <td class="num">294.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>294.00</b></td>
+      <td class="num profit">+128.50</td>
+      <td>18:00</td></tr><tr>
+      <td>1278</td>
+      <td>2026-10-08T12:05:52.753Z</td>
+      <td>cancelled</td>
+      <td>@olidvema</td>
+      <td>5260963874</td>
+      <td>@olidvema</td>
+      <td>Доставка курьером</td>
+      <td>г. Могилев улица Ленинская 33</td>
+      <td>[Podonki podgon] Смородина черника (x1) — 15 BYN</td>
+      <td class="num">15.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>20.00</b></td>
+      <td class="num profit">+9.25</td>
+      <td></td></tr><tr>
+      <td>1277</td>
+      <td>2026-10-08T05:45:27.148Z</td>
+      <td>completed</td>
+      <td>@Martine_Roze</td>
+      <td>8256873738</td>
+      <td>@Martine_Roze</td>
+      <td>Доставка курьером</td>
+      <td>д.грибаны ул. Новая 3</td>
+      <td>[УБИВАШКА] Виноградный лимонад (x1) — 18 BYN; [PODONKI PODGON] Кокос малина (x1) — 15 BYN; [Podonki podgon] Смородина черника (x1) — 15 BYN; [VAPORESSO] Картридж XROS 0.6 ohm 2 мл (x1) — 13 BYN; Никобустер +20mg (x1) — 3 BYN</td>
+      <td class="num">64.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>64.00</b></td>
+      <td class="num profit">+36.50</td>
+      <td>пожалуйста без опазданий  в 16;00</td></tr><tr>
+      <td>1276</td>
+      <td>2026-10-07T20:58:13.541Z</td>
+      <td>cancelled</td>
+      <td>@itsvshkvch</td>
+      <td>1115768647</td>
+      <td>@itsvshkvch</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[AEGIS HERO 5] AEGIS HERO 5 - Морозно-мятный (Frost mint) (x1) — 105 BYN; [ANIMA LOVE 18+] Смородина вишня черника (x1) — 18 BYN; [VOOPOO] Картридж VМATE 0.7 ohm (x3) — 13 BYN</td>
+      <td class="num">162.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>162.00</b></td>
+      <td class="num profit">+67.50</td>
+      <td></td></tr><tr>
+      <td>1275</td>
+      <td>2026-10-07T13:58:50.479Z</td>
+      <td>cancelled</td>
+      <td>@user</td>
+      <td>7401248253</td>
+      <td>Не указан</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[Рик и Морти на ЗАМЕРЗОНЕ] Ананас апельсин (x1) — 15 BYN; [УБИВАШКА] Малина черника земляника (x1) — 18 BYN; [VAPORESSO] Картридж XROS 0.6 ohm 2 мл (x1) — 13 BYN</td>
+      <td class="num">46.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>46.00</b></td>
+      <td class="num profit">+24.75</td>
+      <td></td></tr><tr>
+      <td>1274</td>
+      <td>2026-10-07T13:24:13.594Z</td>
+      <td>cancelled</td>
+      <td>@user</td>
+      <td>7401248253</td>
+      <td>Не указан</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[Рик и Морти на ЗАМЕРЗОНЕ] Ананас апельсин (x1) — 15 BYN; [УБИВАШКА] Малина черника земляника (x1) — 18 BYN; [VAPORESSO] Картридж XROS 0.6 ohm 2 мл (x1) — 13 BYN</td>
+      <td class="num">46.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>46.00</b></td>
+      <td class="num profit">+24.75</td>
+      <td></td></tr><tr>
+      <td>1273</td>
+      <td>2026-10-07T11:05:51.599Z</td>
+      <td>completed</td>
+      <td>@ouseen</td>
+      <td>2058633082</td>
+      <td>@ouseen</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Юбилейный</td>
+      <td>[ANIMA LOVE 18+] Смородина вишня черника (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+8.50</td>
+      <td>2:50 удобно?</td></tr><tr>
+      <td>1272</td>
+      <td>2026-10-06T12:16:38.268Z</td>
+      <td>cancelled</td>
+      <td>@eretic856</td>
+      <td>5858846035</td>
+      <td>@eretic856</td>
+      <td>Доставка курьером</td>
+      <td>Днепровский бульвар 12 </td>
+      <td>[VAPORESSO] Картридж XROS 0.6 ohm 2 мл (x1) — 13 BYN; [PODONKI PODGON] Кокос малина (x1) — 15 BYN</td>
+      <td class="num">28.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>33.00</b></td>
+      <td class="num profit">+16.25</td>
+      <td></td></tr><tr>
+      <td>1271</td>
+      <td>2026-10-06T10:58:56.677Z</td>
+      <td>cancelled</td>
+      <td>@Juliya_hk</td>
+      <td>754796123</td>
+      <td>@Juliya_hk</td>
+      <td>Доставка курьером</td>
+      <td>Могилев, непокоренных 65 </td>
+      <td>[PODONKI LITE] Кола вишня 50 (x1) — 15 BYN; [VAPORESSO] Картридж XROS 0.6 ohm 2 мл (x1) — 13 BYN</td>
+      <td class="num">28.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>33.00</b></td>
+      <td class="num profit">+16.00</td>
+      <td>16: 30 </td></tr><tr>
+      <td>1270</td>
+      <td>2026-10-05T11:30:00.988Z</td>
+      <td>cancelled</td>
+      <td>@Lil_one_live</td>
+      <td>702060967</td>
+      <td>@Lil_one_live</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Юбилейный</td>
+      <td>[Bjorn zloy v1] Клубника мороженое (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+9.50</td>
+      <td>В 14:50 ± могу подъехать </td></tr><tr>
+      <td>1269</td>
+      <td>2026-10-05T11:17:25.127Z</td>
+      <td>completed</td>
+      <td>@BURMALDASHKA666</td>
+      <td>8456546338</td>
+      <td>@BURMALDASHKA666</td>
+      <td>Доставка курьером</td>
+      <td>Г. Могилёв. Пр мира 23д. 2 подъезд</td>
+      <td>[Mckeese 7000] McKeese 7000 - Strawberry ice cream (x1) — 25 BYN</td>
+      <td class="num">25.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>30.00</b></td>
+      <td class="num profit">+16.00</td>
+      <td>16:00</td></tr><tr>
+      <td>1268</td>
+      <td>2026-10-04T13:52:50.568Z</td>
+      <td>cancelled</td>
+      <td>@user</td>
+      <td>6592600842</td>
+      <td>Не указан</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Юбилейный</td>
+      <td>[УБИВАШКА] Арбузный адреналин (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+9.00</td>
+      <td>К магазину семь пятниц на улице Королева  14</td></tr><tr>
+      <td>1267</td>
+      <td>2026-10-04T11:27:48.901Z</td>
+      <td>cancelled</td>
+      <td>@v0toshi11</td>
+      <td>8945190925</td>
+      <td>@v0toshi11</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Театр Кукол</td>
+      <td>[PODONKI PODGON] Кокос малина (x1) — 15 BYN</td>
+      <td class="num">15.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>15.00</b></td>
+      <td class="num profit">+9.25</td>
+      <td></td></tr><tr>
+      <td>1266</td>
+      <td>2026-10-03T09:29:38.739Z</td>
+      <td>cancelled</td>
+      <td>@user</td>
+      <td>1395268494</td>
+      <td>Не указан</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[УБИВАШКА] Виноградный лимонад (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+9.00</td>
+      <td></td></tr><tr>
+      <td>1265</td>
+      <td>2026-10-03T08:50:41.982Z</td>
+      <td>cancelled</td>
+      <td>@akronimiv</td>
+      <td>6653123820</td>
+      <td>@akronimiv</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[VAPORESSO] Картридж XROS 0.6 ohm 2 мл (x1) — 13 BYN</td>
+      <td class="num">13.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>13.00</b></td>
+      <td class="num profit">+7.00</td>
+      <td></td></tr><tr>
+      <td>1264</td>
+      <td>2026-10-03T16:14:56.513Z</td>
+      <td>cancelled</td>
+      <td>@docktor_friman</td>
+      <td>8781781903</td>
+      <td>@docktor_friman</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[GeekVape] Испаритель GeekVape Hero/Boost  0.2 омм (x1) — 12 BYN</td>
+      <td class="num">12.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>12.00</b></td>
+      <td class="num profit">+6.00</td>
+      <td></td></tr><tr>
+      <td>1263</td>
+      <td>2026-10-02T18:21:15.281Z</td>
+      <td>cancelled</td>
+      <td>@Arsenijhajimen</td>
+      <td>6337616867</td>
+      <td>@Arsenijhajimen</td>
+      <td>Доставка курьером</td>
+      <td>Средняя школа номер 37 </td>
+      <td>[Bjorn zloy v1] Клубника мороженое (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>23.00</b></td>
+      <td class="num profit">+9.50</td>
+      <td>21:30 железка </td></tr><tr>
+      <td>1262</td>
+      <td>2026-10-02T17:59:03.246Z</td>
+      <td>cancelled</td>
+      <td>@docktor_friman</td>
+      <td>8781781903</td>
+      <td>@docktor_friman</td>
+      <td>Доставка курьером</td>
+      <td>г.Могилев космонавтов 10 в 6:00</td>
+      <td>[PASITO 3] Pasito 3 - Matte Black (Матовый черный) (x1) — 125 BYN; [XROS 6 MINI] Vaporesso Xros 6 Mini - Jelly Orange (Ярко-оранжевый) (x1) — 75 BYN; [УБИВАШКА] Арбузный адреналин (x1) — 18 BYN</td>
+      <td class="num">218.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>218.00</b></td>
+      <td class="num profit">+85.00</td>
+      <td>курить пизда хочу</td></tr><tr>
+      <td>1261</td>
+      <td>2026-10-02T16:36:49.982Z</td>
+      <td>cancelled</td>
+      <td>@docktor_friman</td>
+      <td>8781781903</td>
+      <td>@docktor_friman</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[Rick and Morty Bad Trip] Гранат смородина (x1) — 17 BYN</td>
+      <td class="num">17.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>17.00</b></td>
+      <td class="num profit">+8.00</td>
+      <td></td></tr><tr>
+      <td>1260</td>
+      <td>2026-10-02T09:21:59.010Z</td>
+      <td>cancelled</td>
+      <td>@nastsia_kr</td>
+      <td>1158039607</td>
+      <td>@nastsia_kr</td>
+      <td>Доставка курьером</td>
+      <td>Шмидта 5</td>
+      <td>[Anima love 18+] Энергетик малина (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>23.00</b></td>
+      <td class="num profit">+9.05</td>
+      <td></td></tr><tr>
+      <td>1259</td>
+      <td>2026-10-01T21:01:03.802Z</td>
+      <td>cancelled</td>
+      <td>@docktor_friman</td>
+      <td>8781781903</td>
+      <td>@docktor_friman</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[Rick and Morty Bad Trip] Гранат смородина (x1) — 17 BYN; [УБИВАШКА] Виноградная фанта (x1) — 18 BYN; [УБИВАШКА] Арбузный адреналин (x1) — 18 BYN; [УБИВАШКА] Виноградный лимонад (x1) — 18 BYN; [Podonki podgon] Малина ежевика (x1) — 15 BYN; [УБИВАШКА] Ежевика клубника (x1) — 18 BYN; [PASITO 3] Pasito 3 - Classic red (Красный) (x1) — 125 BYN; [PASITO 3] Pasito 3 - Matte Black (Матовый черный) (x1) — 125 BYN; [XROS 6 MINI] Vaporesso Xros 6 Mini - Jelly Orange (Ярко-оранжевый) (x1) — 75 BYN; [GeekVape] Испаритель GeekVape Hero/Boost  0.2 омм (x3) — 12 BYN; [PODONKI PODGON] Кокос малина (x1) — 15 BYN; [PODONKI PODGON] Малиновая конфета (x1) — 15 BYN; [Rick and Morty Bad Trip] Грейпфрутовый Швепс (x1) — 17 BYN; [УБИВАШКА] Клубничные червячки (x1) — 18 BYN; [УБИВАШКА] Малина смородина (x1) — 18 BYN; [УБИВАШКА] Малина черника земляника (x1) — 18 BYN; [SMOANT] Испаритель Pasito2/Knight K5 - 0.15ом (x1) — 13 BYN; [Podonki podgon] Смородина черника (x1) — 15 BYN; [GLITCH POUCHES] Ментол (x1) — 15 BYN; [GLITCH POUCHES] Полярная мята (x1) — 15 BYN; [AEGIS HERO 5] AEGIS HERO 5 - Морозно-мятный (Frost mint) (x1) — 105 BYN; [ANIMA LOVE 18+] Смородина вишня черника (x1) — 18 BYN; [VOOPOO] Картридж VМATE 0.7 ohm (x3) — 13 BYN; [VAPORESSO] Картридж XROS 0.6 ohm 2 мл (x2) — 13 BYN; [Mckeese 7000] McKeese 7000 - Grape (x1) — 25 BYN; [Anima love 18+] Энергетик малина (x1) — 18 BYN; [Mckeese 7000] McKeese 7000 - Strawberry ice cream (x1) — 25 BYN; [SMOANT] Испаритель SMOANT 0.4 омм (x1) — 13 BYN; [SMOANT] Испаритель SMOANT 0.3 омм (x3) — 13 BYN; [GeekVape] Испаритель Hero/Boost  0.15 омм (x2) — 12 BYN; Никобустер +20mg (x1) — 3 BYN; [Bjorn zloy v1] Клубника мороженое (x1) — 18 BYN; [VAPORESSO] Картридж XROS 0.6 ohm 3мл (x1) — 13 BYN; [McKeese 7000] McKeese 7000 - Watermelon ice (x1) — 25 BYN; [DRYMOST ARMAGEDDON] Мята с эвкалиптом (x1) — 15 BYN; [DRYMOST ARMAGEDDON] Яблоко смородина (x1) — 15 BYN; [SMOANT] SNOANT PASITO 3 (x4) — 125 BYN; [Рик и Морти на ЗАМЕРЗОНЕ] Ананас апельсин (x1) — 15 BYN; [ANGRY VAPE & PODONKI] Яблочная жвачка (x1) — 15 BYN; [PODONKI LITE] Кола вишня 50 (x1) — 15 BYN; [PODONKI LITE] Шоколад вишня (x1) — 15 BYN; [BJORN ZLOY V1] Арбузная жвачка (x1) — 18 BYN</td>
+      <td class="num">1623.00</td>
+      <td class="num">15.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>1608.00</b></td>
+      <td class="num profit">+826.30</td>
+      <td>[Акция: Акция "PODONKI PODGON В подарок к POD-Системе!" (x1): -15 BYN]</td></tr><tr>
+      <td>1258</td>
+      <td>2026-10-01T20:55:03.810Z</td>
+      <td>cancelled</td>
+      <td>@Nekit22876</td>
+      <td>7990298470</td>
+      <td>@Nekit22876</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[Rick and Morty Bad Trip] Гранат смородина (x1) — 17 BYN; [УБИВАШКА] Арбузный адреналин (x1) — 18 BYN; [УБИВАШКА] Виноградная фанта (x1) — 18 BYN; [УБИВАШКА] Виноградный лимонад (x1) — 18 BYN; [Podonki podgon] Малина ежевика (x1) — 15 BYN; [УБИВАШКА] Ежевика клубника (x1) — 18 BYN; [PODONKI PODGON] Малиновая конфета (x1) — 15 BYN; [Rick and Morty Bad Trip] Грейпфрутовый Швепс (x1) — 17 BYN; [УБИВАШКА] Малина смородина (x1) — 18 BYN; [УБИВАШКА] Малина черника земляника (x1) — 18 BYN; [ANIMA LOVE 18+] Смородина вишня черника (x1) — 18 BYN; [Bjorn zloy v1] Клубника мороженое (x1) — 18 BYN; [ANGRY VAPE & PODONKI] Яблочная жвачка (x1) — 15 BYN; [PODONKI LITE] Шоколад вишня (x1) — 15 BYN; [Рик и Морти на ЗАМЕРЗОНЕ] Ананас апельсин (x1) — 15 BYN; [PODONKI LITE] Кола вишня 50 (x1) — 15 BYN; [Podonki podgon] Смородина черника (x1) — 15 BYN; [Anima love 18+] Энергетик малина (x1) — 18 BYN; [УБИВАШКА] Клубничные червячки (x1) — 18 BYN; [BJORN ZLOY V1] Арбузная жвачка (x1) — 18 BYN; [PODONKI PODGON] Кокос малина (x1) — 15 BYN; [PASITO 3] Pasito 3 - Classic red (Красный) (x1) — 125 BYN; [XROS 6 MINI] Vaporesso Xros 6 Mini - Jelly Orange (Ярко-оранжевый) (x1) — 75 BYN; [PASITO 3] Pasito 3 - Matte Black (Матовый черный) (x1) — 125 BYN; [GeekVape] Испаритель GeekVape Hero/Boost  0.2 омм (x2) — 12 BYN; [SMOANT] Испаритель Pasito2/Knight K5 - 0.15ом (x1) — 13 BYN; [GLITCH POUCHES] Ментол (x1) — 15 BYN; [GLITCH POUCHES] Полярная мята (x1) — 15 BYN; [AEGIS HERO 5] AEGIS HERO 5 - Морозно-мятный (Frost mint) (x1) — 105 BYN; [VOOPOO] Картридж VМATE 0.7 ohm (x3) — 13 BYN; [VAPORESSO] Картридж XROS 0.6 ohm 2 мл (x2) — 13 BYN; [Mckeese 7000] McKeese 7000 - Grape (x1) — 25 BYN; [Mckeese 7000] McKeese 7000 - Strawberry ice cream (x1) — 25 BYN; [SMOANT] Испаритель SMOANT 0.4 омм (x1) — 13 BYN; [SMOANT] Испаритель SMOANT 0.3 омм (x2) — 13 BYN; [GeekVape] Испаритель Hero/Boost  0.15 омм (x2) — 12 BYN; Никобустер +20mg (x1) — 3 BYN; [McKeese 7000] McKeese 7000 - Watermelon ice (x1) — 25 BYN; [VAPORESSO] Картридж XROS 0.6 ohm 3мл (x1) — 13 BYN; [DRYMOST ARMAGEDDON] Мята с эвкалиптом (x1) — 15 BYN; [DRYMOST ARMAGEDDON] Яблоко смородина (x1) — 15 BYN; [SMOANT] SNOANT PASITO 3 (x1) — 125 BYN</td>
+      <td class="num">1223.00</td>
+      <td class="num">15.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>1208.00</b></td>
+      <td class="num profit">+588.30</td>
+      <td>[Акция: Акция "PODONKI PODGON В подарок к POD-Системе!" (x1): -15 BYN]</td></tr><tr>
+      <td>1257</td>
+      <td>2026-10-01T20:48:32.916Z</td>
+      <td>cancelled</td>
+      <td>@docktor_friman</td>
+      <td>8781781903</td>
+      <td>@docktor_friman</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[Rick and Morty Bad Trip] Гранат смородина (x1) — 17 BYN; [УБИВАШКА] Виноградная фанта (x1) — 18 BYN; [УБИВАШКА] Арбузный адреналин (x1) — 18 BYN; [УБИВАШКА] Виноградный лимонад (x1) — 18 BYN; [Podonki podgon] Малина ежевика (x1) — 15 BYN; [УБИВАШКА] Ежевика клубника (x1) — 18 BYN; [PASITO 3] Pasito 3 - Classic red (Красный) (x1) — 125 BYN; [PASITO 3] Pasito 3 - Matte Black (Матовый черный) (x1) — 125 BYN; [XROS 6 MINI] Vaporesso Xros 6 Mini - Jelly Orange (Ярко-оранжевый) (x1) — 75 BYN; [GeekVape] Испаритель GeekVape Hero/Boost  0.2 омм (x3) — 12 BYN; [PODONKI PODGON] Кокос малина (x1) — 15 BYN; [PODONKI PODGON] Малиновая конфета (x1) — 15 BYN; [SMOANT] Испаритель Pasito2/Knight K5 - 0.15ом (x1) — 13 BYN; [Podonki podgon] Смородина черника (x1) — 15 BYN; [GLITCH POUCHES] Ментол (x1) — 15 BYN; [GLITCH POUCHES] Полярная мята (x1) — 15 BYN; [AEGIS HERO 5] AEGIS HERO 5 - Морозно-мятный (Frost mint) (x1) — 105 BYN; [ANIMA LOVE 18+] Смородина вишня черника (x1) — 18 BYN; [VOOPOO] Картридж VМATE 0.7 ohm (x1) — 13 BYN; [VAPORESSO] Картридж XROS 0.6 ohm 2 мл (x1) — 13 BYN; [Mckeese 7000] McKeese 7000 - Grape (x1) — 25 BYN; [Anima love 18+] Энергетик малина (x1) — 18 BYN; [Mckeese 7000] McKeese 7000 - Strawberry ice cream (x1) — 25 BYN; [SMOANT] Испаритель SMOANT 0.4 омм (x1) — 13 BYN</td>
+      <td class="num">783.00</td>
+      <td class="num">15.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>768.00</b></td>
+      <td class="num profit">+345.05</td>
+      <td>[Акция: Акция "PODONKI PODGON В подарок к POD-Системе!" (x1): -15 BYN]</td></tr><tr>
+      <td>1256</td>
+      <td>2026-10-01T19:23:03.693Z</td>
+      <td>confirmed</td>
+      <td>@Martine_Roze</td>
+      <td>8256873738</td>
+      <td>@Martine_Roze</td>
+      <td>Доставка курьером</td>
+      <td>д.грибаны ул. новая 3 </td>
+      <td>[Podonki podgon] Смородина черника (x1) — 15 BYN; [VAPORESSO] Картридж XROS 0.6 ohm 3мл (x1) — 13 BYN</td>
+      <td class="num">28.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>33.00</b></td>
+      <td class="num profit">+16.25</td>
+      <td>можно к 16:30 без опозданий пожалуйста надо очень срочно </td></tr><tr>
+      <td>1255</td>
+      <td>2026-10-01T18:02:28.901Z</td>
+      <td>completed</td>
+      <td>@ssshhrimp</td>
+      <td>1033167900</td>
+      <td>@ssshhrimp</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[XROS 6 MINI] Vaporesso Xros 6 Mini - Brown (Коричневый) (x1) — 75 BYN</td>
+      <td class="num">75.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>75.00</b></td>
+      <td class="num profit">+36.00</td>
+      <td></td></tr><tr>
+      <td>1254</td>
+      <td>2026-10-01T17:50:40.118Z</td>
+      <td>cancelled</td>
+      <td>@ssshhrimp</td>
+      <td>1033167900</td>
+      <td>@ssshhrimp</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[XROS 6 MINI] Vaporesso Xros 6 Mini - Jelly Orange (Ярко-оранжевый) (x1) — 75 BYN</td>
+      <td class="num">75.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>75.00</b></td>
+      <td class="num profit">+36.00</td>
+      <td></td></tr><tr>
+      <td>1253</td>
+      <td>2026-10-01T16:08:42.256Z</td>
+      <td>cancelled</td>
+      <td>@user</td>
+      <td>8236362572</td>
+      <td>Не указан</td>
+      <td>Доставка курьером</td>
+      <td>1-й Весенний пер. 151</td>
+      <td>[VOOPOO] Картридж VМATE 0.7 ohm (x1) — 13 BYN</td>
+      <td class="num">13.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+7.00</td>
+      <td></td></tr><tr>
+      <td>1252</td>
+      <td>2026-10-01T13:24:03.474Z</td>
+      <td>cancelled</td>
+      <td>@QFMkill</td>
+      <td>6819389596</td>
+      <td>@QFMkill</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[УБИВАШКА] Клубничные червячки (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+8.75</td>
+      <td></td></tr><tr>
+      <td>1251</td>
+      <td>2026-10-01T10:51:17.009Z</td>
+      <td>cancelled</td>
+      <td>@notyeban</td>
+      <td>7947120633</td>
+      <td>@notyeban</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[VAPORESSO] Картридж XROS 0.6 ohm 3мл (x1) — 13 BYN</td>
+      <td class="num">13.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>13.00</b></td>
+      <td class="num profit">+7.00</td>
+      <td></td></tr><tr>
+      <td>1250</td>
+      <td>2026-10-01T10:26:02.766Z</td>
+      <td>cancelled</td>
+      <td>@QFMkill</td>
+      <td>6819389596</td>
+      <td>@QFMkill</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[УБИВАШКА] Клубничные червячки (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+8.75</td>
+      <td>17.00</td></tr><tr>
+      <td>1249</td>
+      <td>2026-10-01T07:21:38.475Z</td>
+      <td>cancelled</td>
+      <td>@gufik12222</td>
+      <td>731610152</td>
+      <td>@gufik12222</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[PODONKI LITE] Кола вишня 50 (x1) — 15 BYN; [VOOPOO] Картридж VМATE 0.7 ohm (x1) — 13 BYN</td>
+      <td class="num">28.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>28.00</b></td>
+      <td class="num profit">+16.00</td>
+      <td>Хочу забрать с 11-12</td></tr><tr>
+      <td>1248</td>
+      <td>2026-09-30T18:27:27.763Z</td>
+      <td>cancelled</td>
+      <td>@Martine_Roze</td>
+      <td>8256873738</td>
+      <td>@Martine_Roze</td>
+      <td>Доставка курьером</td>
+      <td>д.грибаны ул. садовая 2</td>
+      <td>[VAPORESSO] Картридж XROS 0.6 ohm 3мл (x1) — 13 BYN</td>
+      <td class="num">13.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+7.00</td>
+      <td>к 16:30</td></tr><tr>
+      <td>1247</td>
+      <td>2026-09-30T16:15:32.660Z</td>
+      <td>cancelled</td>
+      <td>@Martine_Roze</td>
+      <td>8256873738</td>
+      <td>@Martine_Roze</td>
+      <td>Доставка курьером</td>
+      <td>д.грибаны ул. Новая 3</td>
+      <td>[VAPORESSO] Картридж XROS 0.6 ohm 3мл (x1) — 13 BYN</td>
+      <td class="num">13.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+7.00</td>
+      <td>21:30</td></tr><tr>
+      <td>1246</td>
+      <td>2026-09-30T13:11:29.078Z</td>
+      <td>cancelled</td>
+      <td>@rip_stick</td>
+      <td>1430384951</td>
+      <td>@rip_stick</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[DRYMOST ARMAGEDDON] Мята с эвкалиптом (x1) — 15 BYN</td>
+      <td class="num">15.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>15.00</b></td>
+      <td class="num profit">+6.75</td>
+      <td></td></tr><tr>
+      <td>1245</td>
+      <td>2026-09-30T11:11:05.695Z</td>
+      <td>cancelled</td>
+      <td>@Martine_Roze</td>
+      <td>8256873738</td>
+      <td>@Martine_Roze</td>
+      <td>Доставка курьером</td>
+      <td>д.грибаны ул.садовая 2</td>
+      <td>[VAPORESSO] Картридж XROS 0.6 ohm 3мл (x1) — 13 BYN</td>
+      <td class="num">13.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+7.00</td>
+      <td>16:30   пожалуйста </td></tr><tr>
+      <td>1244</td>
+      <td>2026-09-29T16:58:05.232Z</td>
+      <td>cancelled</td>
+      <td>@docktor_friman</td>
+      <td>8781781903</td>
+      <td>@docktor_friman</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[GeekVape] Испаритель Hero/Boost  0.15 омм (x1) — 12 BYN</td>
+      <td class="num">12.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>12.00</b></td>
+      <td class="num profit">+6.00</td>
+      <td></td></tr><tr>
+      <td>1243</td>
+      <td>2026-09-29T16:09:48.395Z</td>
+      <td>cancelled</td>
+      <td>@nesquikfamily</td>
+      <td>1714531843</td>
+      <td>@nesquikfamily</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[GeekVape] Испаритель GeekVape Hero/Boost  0.2 омм (x1) — 12 BYN</td>
+      <td class="num">12.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>12.00</b></td>
+      <td class="num profit">+6.00</td>
+      <td>побыстрее</td></tr><tr>
+      <td>1242</td>
+      <td>2026-09-29T15:25:14.832Z</td>
+      <td>cancelled</td>
+      <td>@deat_cmertit</td>
+      <td>6746969386</td>
+      <td>@deat_cmertit</td>
+      <td>Доставка курьером</td>
+      <td>Тішкі гартного  10 подезд трі </td>
+      <td>[VAPORESSO] Картридж XROS 0.6 ohm 3мл (x1) — 13 BYN</td>
+      <td class="num">13.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+7.00</td>
+      <td>18.38</td></tr><tr>
+      <td>1241</td>
+      <td>2026-09-29T15:02:05.064Z</td>
+      <td>cancelled</td>
+      <td>@guwwap</td>
+      <td>563536163</td>
+      <td>@guwwap</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Арбат</td>
+      <td>[Podonki podgon] Смородина черника (x1) — 15 BYN</td>
+      <td class="num">15.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>15.00</b></td>
+      <td class="num profit">+9.25</td>
+      <td>18:30</td></tr><tr>
+      <td>1240</td>
+      <td>2026-09-29T14:47:57.089Z</td>
+      <td>cancelled</td>
+      <td>@guwwap</td>
+      <td>563536163</td>
+      <td>@guwwap</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Арбат</td>
+      <td>[Podonki podgon] Смородина черника (x1) — 15 BYN</td>
+      <td class="num">15.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>15.00</b></td>
+      <td class="num profit">+9.25</td>
+      <td></td></tr><tr>
+      <td>1239</td>
+      <td>2026-09-29T12:03:55.800Z</td>
+      <td>completed</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>БРУ </td>
+      <td>[УБИВАШКА] Виноградная фанта (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+9.00</td>
+      <td></td></tr><tr>
+      <td>1238</td>
+      <td>2026-09-28T16:59:31.038Z</td>
+      <td>completed</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Доставка курьером</td>
+      <td>Твлв</td>
+      <td>[VAPORESSO] Картридж XROS 0.4 омм 3 мл (x1) — 13 BYN</td>
+      <td class="num">13.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+7.00</td>
+      <td></td></tr><tr>
+      <td>1237</td>
+      <td>2026-09-28T16:23:06.775Z</td>
+      <td>completed</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[VAPORESSO] Картридж XROS 0.4 омм 3 мл (x1) — 13 BYN; [PODONKI PODGON] Малиновая конфета (x1) — 15 BYN</td>
+      <td class="num">28.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>28.00</b></td>
+      <td class="num profit">+16.25</td>
+      <td></td></tr><tr>
+      <td>1236</td>
+      <td>2026-09-28T16:22:23.093Z</td>
+      <td>completed</td>
+      <td>@ostys04</td>
+      <td>1596438945</td>
+      <td>@ostys04</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Арбат</td>
+      <td>[Rick and Morty Bad Trip] Гранат смородина (x1) — 17 BYN</td>
+      <td class="num">17.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>17.00</b></td>
+      <td class="num profit">+8.00</td>
+      <td>Если можно хотел бы оплатить по карте</td></tr><tr>
+      <td>1235</td>
+      <td>2026-09-28T16:16:36.618Z</td>
+      <td>completed</td>
+      <td>@dubatovk</td>
+      <td>934562587</td>
+      <td>@dubatovk</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>БРУ </td>
+      <td>[VOOPOO] Картридж VМATE 0.7 ohm (x1) — 13 BYN; [Bjorn zloy v1] Грейпфрут с черешней (x1) — 18 BYN; [УБИВАШКА] Виноградный лимонад (x1) — 18 BYN</td>
+      <td class="num">49.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>49.00</b></td>
+      <td class="num profit">+25.50</td>
+      <td></td></tr><tr>
+      <td>1234</td>
+      <td>2026-09-28T16:10:31.779Z</td>
+      <td>cancelled</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[VAPORESSO] Картридж XROS 0.4 омм 3 мл (x1) — 13 BYN; [PODONKI PODGON] Кокос малина (x1) — 15 BYN</td>
+      <td class="num">28.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>28.00</b></td>
+      <td class="num profit">+16.25</td>
+      <td></td></tr><tr>
+      <td>1233</td>
+      <td>2026-09-28T16:08:41.996Z</td>
+      <td>completed</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[ANIMA LOVE 18+] Кислые ягодные червячки (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+9.00</td>
+      <td></td></tr><tr>
+      <td>1232</td>
+      <td>2026-09-28T16:07:47.140Z</td>
+      <td>completed</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[DRYMOST ARMAGEDDON] Мята с эвкалиптом (x1) — 15 BYN</td>
+      <td class="num">15.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>15.00</b></td>
+      <td class="num profit">+6.75</td>
+      <td></td></tr><tr>
+      <td>1231</td>
+      <td>2026-09-28T15:33:00.936Z</td>
+      <td>completed</td>
+      <td>@kweeso</td>
+      <td>1647501267</td>
+      <td>@kweeso</td>
+      <td>Доставка курьером</td>
+      <td>могилев, пр. димитрова, 58</td>
+      <td>[BJORN ZLOY V1] Виноград вишня (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>23.00</b></td>
+      <td class="num profit">+9.00</td>
+      <td>20:00</td></tr><tr>
+      <td>1230</td>
+      <td>2026-09-28T15:30:34.809Z</td>
+      <td>completed</td>
+      <td>@kweeso</td>
+      <td>1647501267</td>
+      <td>@kweeso</td>
+      <td>Доставка курьером</td>
+      <td>могилев, пр. димитрова, 58</td>
+      <td>[GeekVape] Испаритель Hero/Boost  0.3 (x1) — 12 BYN</td>
+      <td class="num">12.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>17.00</b></td>
+      <td class="num profit">+6.00</td>
+      <td>20:00</td></tr><tr>
+      <td>1229</td>
+      <td>2026-09-28T11:47:17.336Z</td>
+      <td>cancelled</td>
+      <td>@deat_cmertit</td>
+      <td>6746969386</td>
+      <td>@deat_cmertit</td>
+      <td>Доставка курьером</td>
+      <td>Тишки Гартного 10 подъезд 3</td>
+      <td>[УБИВАШКА] Виноградный лимонад (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>23.00</b></td>
+      <td class="num profit">+9.00</td>
+      <td>15.10 </td></tr><tr>
+      <td>1228</td>
+      <td>2026-09-28T11:10:58.801Z</td>
+      <td>cancelled</td>
+      <td>@xusesu</td>
+      <td>1407562052</td>
+      <td>@xusesu</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Арбат</td>
+      <td>[XROS 6 MINI] Vaporesso Xros 6 Mini - Brown (Коричневый) (x1) — 75 BYN</td>
+      <td class="num">75.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>75.00</b></td>
+      <td class="num profit">+36.00</td>
+      <td>14:30-14:30 сегодня</td></tr><tr>
+      <td>1227</td>
+      <td>2026-09-28T08:22:28.096Z</td>
+      <td>cancelled</td>
+      <td>@deat_cmertit</td>
+      <td>6746969386</td>
+      <td>@deat_cmertit</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[УБИВАШКА] Виноградный лимонад (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+9.00</td>
+      <td></td></tr><tr>
+      <td>1226</td>
+      <td>2026-09-27T12:41:55.308Z</td>
+      <td>cancelled</td>
+      <td>@darstrey</td>
+      <td>7982841324</td>
+      <td>@darstrey</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[VAPORESSO] Картридж XROS 0.6 ohm 3мл (x1) — 13 BYN</td>
+      <td class="num">13.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>13.00</b></td>
+      <td class="num profit">+7.00</td>
+      <td></td></tr><tr>
+      <td>1225</td>
+      <td>2026-09-27T11:13:21.463Z</td>
+      <td>completed</td>
+      <td>@Martine_Roze</td>
+      <td>8256873738</td>
+      <td>@Martine_Roze</td>
+      <td>Доставка курьером</td>
+      <td>могилёвский район  д.грибаны ул. Новая 3</td>
+      <td>[Podonki podgon] Малина ежевика (x1) — 15 BYN</td>
+      <td class="num">15.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>20.00</b></td>
+      <td class="num profit">+9.25</td>
+      <td>16:00</td></tr><tr>
+      <td>1224</td>
+      <td>2026-09-26T15:17:52.413Z</td>
+      <td>completed</td>
+      <td>@dashawlin</td>
+      <td>1371250032</td>
+      <td>@dashawlin</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[Mckeese 7000] McKeese 7000 - Blueberry (x1) — 25 BYN</td>
+      <td class="num">25.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>25.00</b></td>
+      <td class="num profit">+16.00</td>
+      <td></td></tr><tr>
+      <td>1223</td>
+      <td>2026-09-26T12:07:00.317Z</td>
+      <td>completed</td>
+      <td>@dastubic</td>
+      <td>1050840740</td>
+      <td>@dastubic</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Юбилейный</td>
+      <td>[Anima love 18+] Энергетик малина (x1) — 18 BYN; [VAPORESSO] Картридж XROS 0.6 ohm 3мл (x1) — 13 BYN</td>
+      <td class="num">31.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>31.00</b></td>
+      <td class="num profit">+16.05</td>
+      <td></td></tr><tr>
+      <td>1222</td>
+      <td>2026-09-25T19:58:16.115Z</td>
+      <td>completed</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[BJORN ZLOY V1] Виноград вишня (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+9.00</td>
+      <td></td></tr><tr>
+      <td>1221</td>
+      <td>2026-09-25T05:19:44.614Z</td>
+      <td>completed</td>
+      <td>@Arinakoshkaaa</td>
+      <td>8504587211</td>
+      <td>@Arinakoshkaaa</td>
+      <td>Доставка курьером</td>
+      <td>Г, Могилев, проспект Пушкинский, дом 20, кВ 12</td>
+      <td>[ANIMA LOVE 18+] Кислые ягодные червячки (x1) — 18 BYN; [VAPORESSO] Картридж XROS 0.6 ohm 2 мл (x1) — 13 BYN</td>
+      <td class="num">31.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>36.00</b></td>
+      <td class="num profit">+16.00</td>
+      <td></td></tr><tr>
+      <td>1220</td>
+      <td>2026-09-24T17:42:33.964Z</td>
+      <td>completed</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[VAPORESSO] Картридж XROS 0.6 ohm 3мл (x1) — 13 BYN; [УБИВАШКА] Малина черника земляника (x1) — 18 BYN</td>
+      <td class="num">31.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>35.00</b></td>
+      <td class="num profit">+19.75</td>
+      <td></td></tr><tr>
+      <td>1219</td>
+      <td>2026-09-24T07:09:25.092Z</td>
+      <td>completed</td>
+      <td>@bolautt</td>
+      <td>1499804712</td>
+      <td>@bolautt</td>
+      <td>Доставка курьером</td>
+      <td>гагарина 34а</td>
+      <td>[XROS 6 MINI] Vaporesso Xros 6 Mini - Jelly Green (Ярко-зеленый) (x1) — 75 BYN</td>
+      <td class="num">75.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>80.00</b></td>
+      <td class="num profit">+36.00</td>
+      <td></td></tr><tr>
+      <td>1218</td>
+      <td>2026-09-23T18:21:47.017Z</td>
+      <td>cancelled</td>
+      <td>@HomChuh</td>
+      <td>803352966</td>
+      <td>@HomChuh</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Арбат</td>
+      <td>[Podonki podgon] Смородина черника (x1) — 15 BYN</td>
+      <td class="num">15.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>15.00</b></td>
+      <td class="num profit">+9.25</td>
+      <td></td></tr><tr>
+      <td>1217</td>
+      <td>2026-09-23T10:49:53.597Z</td>
+      <td>completed</td>
+      <td>@Enot_0173</td>
+      <td>5096925478</td>
+      <td>@Enot_0173</td>
+      <td>Доставка курьером</td>
+      <td>Г. Могилев ул. Космонавтов д. 25</td>
+      <td>[УБИВАШКА] Кислая вишня ред булл смородина (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>23.00</b></td>
+      <td class="num profit">+9.00</td>
+      <td>После 19.00</td></tr><tr>
+      <td>1216</td>
+      <td>2026-09-23T10:48:10.079Z</td>
+      <td>completed</td>
+      <td>@DEMO_FACE</td>
+      <td>781546175</td>
+      <td>@DEMO_FACE</td>
+      <td>Доставка курьером</td>
+      <td>Г.Могилев, б-р Непокоренных д.62, кв. 48</td>
+      <td>[XROS 6 MINI] Vaporesso Xros 6 Mini - Jelly Blue (x1) — 75 BYN; [PODONKI PODGON] Кокос малина (x1) — 15 BYN</td>
+      <td class="num">90.00</td>
+      <td class="num">15.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>80.00</b></td>
+      <td class="num profit">+45.25</td>
+      <td>15.30 | [Акция: Акция "PODONKI PODGON В подарок к POD-Системе!" (x1): -15 BYN]</td></tr><tr>
+      <td>1215</td>
+      <td>2026-09-23T10:28:55.788Z</td>
+      <td>completed</td>
+      <td>@rip_stick</td>
+      <td>1430384951</td>
+      <td>@rip_stick</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[DRYMOST ARMAGEDDON] Малина лимон (x1) — 15 BYN</td>
+      <td class="num">15.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>15.00</b></td>
+      <td class="num profit">+6.75</td>
+      <td></td></tr><tr>
+      <td>1214</td>
+      <td>2026-09-22T11:09:00.467Z</td>
+      <td>completed</td>
+      <td>@MoonlightExposure</td>
+      <td>1631796956</td>
+      <td>@MoonlightExposure</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Арбат</td>
+      <td>[VAPORESSO] Картридж XROS 0.6 ohm 3мл (x1) — 13 BYN</td>
+      <td class="num">13.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>13.00</b></td>
+      <td class="num profit">+7.00</td>
+      <td></td></tr><tr>
+      <td>1213</td>
+      <td>2026-09-21T17:13:10.568Z</td>
+      <td>completed</td>
+      <td>@alxndrrvva</td>
+      <td>821658992</td>
+      <td>@alxndrrvva</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[Anima love 18+] Энергетик ягоды (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+9.05</td>
+      <td></td></tr><tr>
+      <td>1212</td>
+      <td>2026-09-20T18:15:23.309Z</td>
+      <td>completed</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Доставка курьером</td>
+      <td>Bjb</td>
+      <td>[PODONKI PODGON] Кокос малина (x1) — 15 BYN</td>
+      <td class="num">15.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>20.00</b></td>
+      <td class="num profit">+9.25</td>
+      <td></td></tr><tr>
+      <td>1211</td>
+      <td>2026-09-20T15:13:10.503Z</td>
+      <td>completed</td>
+      <td>@Dima_Tever</td>
+      <td>1701117194</td>
+      <td>@Dima_Tever</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Арбат</td>
+      <td>[Anima love 18+] Энергетик ягоды (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+9.05</td>
+      <td></td></tr><tr>
+      <td>1210</td>
+      <td>2026-09-20T12:45:42.842Z</td>
+      <td>cancelled</td>
+      <td>@polinawx</td>
+      <td>835656450</td>
+      <td>@polinawx</td>
+      <td>Доставка курьером</td>
+      <td>Могилёв, Комсомольская улица, 5</td>
+      <td>[Anima love 18+] Энергетик ягоды (x1) — 18 BYN; [ANIMA LOVE 18+] Кислые ягодные червячки (x1) — 18 BYN</td>
+      <td class="num">36.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>41.00</b></td>
+      <td class="num profit">+18.05</td>
+      <td></td></tr><tr>
+      <td>1209</td>
+      <td>2026-09-20T11:46:28.352Z</td>
+      <td>cancelled</td>
+      <td>@dzmitrynero</td>
+      <td>5659638424</td>
+      <td>@dzmitrynero</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[Mckeese 7000] McKeese 7000 - Blueberry (x1) — 25 BYN</td>
+      <td class="num">25.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>25.00</b></td>
+      <td class="num profit">+16.00</td>
+      <td></td></tr><tr>
+      <td>1208</td>
+      <td>2026-09-19T07:42:59.403Z</td>
+      <td>cancelled</td>
+      <td>@p01ina_01</td>
+      <td>5167310892</td>
+      <td>@p01ina_01</td>
+      <td>Доставка курьером</td>
+      <td>златоустовского 24 </td>
+      <td>[УБИВАШКА] Малина смородина (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>23.00</b></td>
+      <td class="num profit">+8.75</td>
+      <td></td></tr><tr>
+      <td>1207</td>
+      <td>2026-09-19T06:12:57.961Z</td>
+      <td>cancelled</td>
+      <td>@Lil_one_live</td>
+      <td>702060967</td>
+      <td>@Lil_one_live</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Арбат</td>
+      <td>[Rick and Morty Bad Trip] Грейпфрутовый Швепс (x1) — 17 BYN</td>
+      <td class="num">17.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>17.00</b></td>
+      <td class="num profit">+8.00</td>
+      <td>К 10:30 подойду </td></tr><tr>
+      <td>1206</td>
+      <td>2026-09-18T20:54:21.125Z</td>
+      <td>cancelled</td>
+      <td>@p01ina_01</td>
+      <td>5167310892</td>
+      <td>@p01ina_01</td>
+      <td>Доставка курьером</td>
+      <td>ул златоустовского 24 </td>
+      <td>[УБИВАШКА] Кислая вишня ред булл смородина (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>23.00</b></td>
+      <td class="num profit">+9.00</td>
+      <td>к 12</td></tr><tr>
+      <td>1205</td>
+      <td>2026-09-18T15:15:02.047Z</td>
+      <td>completed</td>
+      <td>@mosterix812</td>
+      <td>622305240</td>
+      <td>@mosterix812</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[GeekVape] Испаритель GeekVape Hero/Boost  0.2 омм (x1) — 12 BYN; [SMOANT] Испаритель Pasito2/Knight K5 - 0.15ом (x1) — 13 BYN; [Rick and Morty Bad Trip] Арбуз Малина (x1) — 17 BYN</td>
+      <td class="num">42.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>42.00</b></td>
+      <td class="num profit">+21.50</td>
+      <td>кл мне  едь к дому </td></tr><tr>
+      <td>1204</td>
+      <td>2026-09-18T12:49:33.433Z</td>
+      <td>cancelled</td>
+      <td>@user</td>
+      <td>8832918741</td>
+      <td>Не указан</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[Podonki podgon] Малина ежевика (x1) — 15 BYN</td>
+      <td class="num">15.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>15.00</b></td>
+      <td class="num profit">+9.25</td>
+      <td></td></tr><tr>
+      <td>1203</td>
+      <td>2026-09-18T11:10:48.403Z</td>
+      <td>completed</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[BJORN ZLOY V1] Арбузная жвачка (x1) — 18 BYN; [BJORN ZLOY V1] Манго личи персик (x1) — 18 BYN; [VAPORESSO] Картридж XROS 0.6 ohm 2 мл (x2) — 13 BYN</td>
+      <td class="num">62.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>62.00</b></td>
+      <td class="num profit">+32.00</td>
+      <td></td></tr><tr>
+      <td>1202</td>
+      <td>2026-09-18T09:52:26.313Z</td>
+      <td>completed</td>
+      <td>@urildo</td>
+      <td>476253403</td>
+      <td>@urildo</td>
+      <td>Доставка курьером</td>
+      <td>Г. Могилев, пешскинский проспект, 39 </td>
+      <td>[Podonki podgon] Смородина черника (x1) — 15 BYN; [Rick and Morty Bad Trip] Кола лайм (x1) — 17 BYN; [GLITCH POUCHES] Двойная мята (x1) — 15 BYN</td>
+      <td class="num">47.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>47.00</b></td>
+      <td class="num profit">+24.25</td>
+      <td></td></tr><tr>
+      <td>1201</td>
+      <td>2026-09-17T19:19:51.213Z</td>
+      <td>cancelled</td>
+      <td>@fsm4life</td>
+      <td>6081345388</td>
+      <td>@fsm4life</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Театр Кукол</td>
+      <td>[УБИВАШКА] Виноградная фанта (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+9.00</td>
+      <td></td></tr><tr>
+      <td>1200</td>
+      <td>2026-09-17T15:45:57.714Z</td>
+      <td>completed</td>
+      <td>@Rastyapa_123</td>
+      <td>8410786350</td>
+      <td>@Rastyapa_123</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Юбилейный</td>
+      <td>[Rick and Morty Bad Trip] Кола лайм (x1) — 17 BYN</td>
+      <td class="num">17.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>17.00</b></td>
+      <td class="num profit">+8.00</td>
+      <td></td></tr><tr>
+      <td>1199</td>
+      <td>2026-09-17T15:30:10.475Z</td>
+      <td>cancelled</td>
+      <td>@tom_sis1</td>
+      <td>7994943563</td>
+      <td>@tom_sis1</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Арбат</td>
+      <td>[PASITO 3] Pasito 3 - Classic red (Красный) (x1) — 125 BYN; [Rick and Morty Bad Trip] Кола лайм (x1) — 17 BYN; [УБИВАШКА] Кислая вишня ред булл смородина (x1) — 18 BYN</td>
+      <td class="num">160.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>160.00</b></td>
+      <td class="num profit">+57.00</td>
+      <td></td></tr><tr>
+      <td>1198</td>
+      <td>2026-09-17T15:10:26.128Z</td>
+      <td>completed</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[УБИВАШКА] Кислая вишня ред булл смородина (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+9.00</td>
+      <td></td></tr><tr>
+      <td>1197</td>
+      <td>2026-09-17T15:06:17.419Z</td>
+      <td>cancelled</td>
+      <td>@Rastyapa_123</td>
+      <td>8410786350</td>
+      <td>@Rastyapa_123</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Юбилейный</td>
+      <td>[PODONKI LITE] Кола вишня 50 (x1) — 15 BYN</td>
+      <td class="num">15.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>15.00</b></td>
+      <td class="num profit">+9.00</td>
+      <td>На конечке 29/11 автобуса,в 18:45</td></tr><tr>
+      <td>1196</td>
+      <td>2026-09-17T14:42:54.985Z</td>
+      <td>confirmed</td>
+      <td>@asdasdasd7y</td>
+      <td>8232356736</td>
+      <td>@asdasdasd7y</td>
+      <td>Доставка курьером</td>
+      <td>г.Могилев гришино 4</td>
+      <td>[PASITO 3] Pasito 3 - Rococo Purple (Фиолетовый) (x1) — 125 BYN; [УБИВАШКА] Ежевика клубника (x1) — 18 BYN; [Bjorn zloy v1] Клубника мороженое (x1) — 18 BYN</td>
+      <td class="num">161.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>161.00</b></td>
+      <td class="num profit">+58.50</td>
+      <td></td></tr><tr>
+      <td>1195</td>
+      <td>2026-09-17T13:19:20.876Z</td>
+      <td>completed</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[SMOANT] Испаритель Pasito2/Knight K5 - 0.15ом (x1) — 13 BYN</td>
+      <td class="num">13.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>13.00</b></td>
+      <td class="num profit">+7.50</td>
+      <td></td></tr><tr>
+      <td>1194</td>
+      <td>2026-09-17T12:49:41.359Z</td>
+      <td>completed</td>
+      <td>@user</td>
+      <td>2036275758</td>
+      <td>Не указан</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Обл. Больница</td>
+      <td>[DRYMOST ARMAGEDDON] Маракуйя клубника (x1) — 15 BYN</td>
+      <td class="num">15.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>15.00</b></td>
+      <td class="num profit">+6.75</td>
+      <td>16.30</td></tr><tr>
+      <td>1193</td>
+      <td>2026-09-17T10:45:41.027Z</td>
+      <td>completed</td>
+      <td>@Yonni</td>
+      <td>64227682</td>
+      <td>@Yonni</td>
+      <td>Доставка курьером</td>
+      <td>Островского 64/1 ТЦ лофт</td>
+      <td>[ANIMA LOVE 18+] Смородина вишня черника (x1) — 18 BYN; [VAPORESSO] Картридж XROS 0.4 омм 3 мл (x1) — 13 BYN</td>
+      <td class="num">31.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>36.00</b></td>
+      <td class="num profit">+15.50</td>
+      <td>14-19</td></tr><tr>
+      <td>1192</td>
+      <td>2026-09-17T10:15:58.706Z</td>
+      <td>completed</td>
+      <td>@Martine_Roze</td>
+      <td>8256873738</td>
+      <td>@Martine_Roze</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Театр Кукол</td>
+      <td>[УБИВАШКА] Виноградный лимонад (x1) — 18 BYN; Никобустер +20mg (x1) — 3 BYN</td>
+      <td class="num">21.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>21.00</b></td>
+      <td class="num profit">+11.00</td>
+      <td>13:45</td></tr><tr>
+      <td>1191</td>
+      <td>2026-09-17T09:34:12.636Z</td>
+      <td>cancelled</td>
+      <td>@Rastyapa_123</td>
+      <td>8410786350</td>
+      <td>@Rastyapa_123</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Юбилейный</td>
+      <td>[PODONKI LITE] Кола вишня 50 (x1) — 15 BYN</td>
+      <td class="num">15.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>15.00</b></td>
+      <td class="num profit">+9.00</td>
+      <td></td></tr><tr>
+      <td>1190</td>
+      <td>2026-09-17T05:24:46.305Z</td>
+      <td>completed</td>
+      <td>@petushok342</td>
+      <td>5152695045</td>
+      <td>@petushok342</td>
+      <td>Доставка курьером</td>
+      <td>г могилёв ул. якубовского 57</td>
+      <td>[УБИВАШКА] Вишня яблоко (x1) — 18 BYN; [УБИВАШКА] Арбузный адреналин (x1) — 18 BYN</td>
+      <td class="num">36.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>41.00</b></td>
+      <td class="num profit">+18.41</td>
+      <td>после 13:00</td></tr><tr>
+      <td>1189</td>
+      <td>2026-09-16T20:48:26.958Z</td>
+      <td>completed</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[Rick and Morty Bad Trip] Грейпфрутовый Швепс (x1) — 17 BYN; [УБИВАШКА] Клубничные червячки (x1) — 18 BYN; [VAPORESSO] Картридж XROS 0.6 ohm 3мл (x1) — 13 BYN</td>
+      <td class="num">48.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>48.00</b></td>
+      <td class="num profit">+23.75</td>
+      <td></td></tr><tr>
+      <td>1188</td>
+      <td>2026-09-16T15:42:16.056Z</td>
+      <td>cancelled</td>
+      <td>@Twix_Solo</td>
+      <td>7713476022</td>
+      <td>@Twix_Solo</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[УБИВАШКА] Арбузный адреналин (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+9.00</td>
+      <td>18:50</td></tr><tr>
+      <td>1187</td>
+      <td>2026-09-16T12:34:19.900Z</td>
+      <td>cancelled</td>
+      <td>@user</td>
+      <td>2036275758</td>
+      <td>Не указан</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Обл. Больница</td>
+      <td>[DRYMOST ARMAGEDDON] Яблоко смородина (x1) — 15 BYN</td>
+      <td class="num">15.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>15.00</b></td>
+      <td class="num profit">+6.75</td>
+      <td>Как можно раньше </td></tr><tr>
+      <td>1186</td>
+      <td>2026-09-16T11:59:17.616Z</td>
+      <td>completed</td>
+      <td>@gemoroy1924</td>
+      <td>6675372448</td>
+      <td>@gemoroy1924</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Театр Кукол</td>
+      <td>[Rick and Morty Bad Trip] Смородина виноград (x1) — 17 BYN</td>
+      <td class="num">17.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>17.00</b></td>
+      <td class="num profit">+8.00</td>
+      <td>Удобное время встречи в 15:25, сдача 5 бун</td></tr><tr>
+      <td>1185</td>
+      <td>2026-09-16T10:46:39.737Z</td>
+      <td>cancelled</td>
+      <td>@rip_stick</td>
+      <td>1430384951</td>
+      <td>@rip_stick</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[DRYMOST ARMAGEDDON] Малина лимон (x1) — 15 BYN</td>
+      <td class="num">15.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>15.00</b></td>
+      <td class="num profit">+6.75</td>
+      <td></td></tr><tr>
+      <td>1184</td>
+      <td>2026-09-16T10:35:57.378Z</td>
+      <td>completed</td>
+      <td>@rip_stick</td>
+      <td>1430384951</td>
+      <td>@rip_stick</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[DRYMOST ARMAGEDDON] Малина лимон (x1) — 15 BYN</td>
+      <td class="num">15.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>15.00</b></td>
+      <td class="num profit">+6.75</td>
+      <td></td></tr><tr>
+      <td>1183</td>
+      <td>2026-09-16T10:18:49.715Z</td>
+      <td>completed</td>
+      <td>@nastsia_kr</td>
+      <td>1158039607</td>
+      <td>@nastsia_kr</td>
+      <td>Доставка курьером</td>
+      <td>Шмидта 5</td>
+      <td>[Rick and Morty Bad Trip] Садовые ягоды (x1) — 17 BYN; [Rick and Morty Bad Trip] Черника Ежевика (x1) — 17 BYN; [Rick and Morty Bad Trip] Арбуз Малина (x1) — 17 BYN; [VAPORESSO] Картридж XROS 0.4 омм 3 мл (x1) — 13 BYN; [VAPORESSO] Картридж XROS 0.6 ohm 3мл (x1) — 13 BYN</td>
+      <td class="num">77.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>77.00</b></td>
+      <td class="num profit">+37.50</td>
+      <td></td></tr><tr>
+      <td>1182</td>
+      <td>2026-09-16T09:38:51.866Z</td>
+      <td>cancelled</td>
+      <td>@nastsia_kr</td>
+      <td>1158039607</td>
+      <td>@nastsia_kr</td>
+      <td>Доставка курьером</td>
+      <td>Шмидта 5</td>
+      <td>[Rick and Morty Bad Trip] Черника Ежевика (x1) — 17 BYN; [Rick and Morty Bad Trip] Арбуз Малина (x1) — 17 BYN; [Rick and Morty Bad Trip] Садовые ягоды (x1) — 17 BYN; [VAPORESSO] Картридж XROS 0.4 омм 3 мл (x1) — 13 BYN; [VAPORESSO] Картридж XROS 0.6 ohm 3мл (x1) — 13 BYN</td>
+      <td class="num">77.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>77.00</b></td>
+      <td class="num profit">+37.50</td>
+      <td></td></tr><tr>
+      <td>1181</td>
+      <td>2026-09-16T09:27:48.089Z</td>
+      <td>completed</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[VAPORESSO] Картридж XROS 0.6 ohm 3мл (x1) — 13 BYN; [Rick and Morty Bad Trip] Клубника Земляника (x1) — 17 BYN</td>
+      <td class="num">30.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>30.00</b></td>
+      <td class="num profit">+15.00</td>
+      <td></td></tr><tr>
+      <td>1180</td>
+      <td>2026-09-16T05:28:15.209Z</td>
+      <td>completed</td>
+      <td>@gufik12222</td>
+      <td>731610152</td>
+      <td>@gufik12222</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Юбилейный</td>
+      <td>[Рик и Морти на ЗАМЕРЗОНЕ] Лимонад клубника (x1) — 15 BYN</td>
+      <td class="num">15.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>15.00</b></td>
+      <td class="num profit">+7.00</td>
+      <td>14:00-15:00</td></tr><tr>
+      <td>1179</td>
+      <td>2026-09-15T19:19:13.780Z</td>
+      <td>completed</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[Rick and Morty Bad Trip] Ягодный энергетик (x1) — 17 BYN</td>
+      <td class="num">17.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>17.00</b></td>
+      <td class="num profit">+8.00</td>
+      <td></td></tr><tr>
+      <td>1178</td>
+      <td>2026-09-15T19:18:35.827Z</td>
+      <td>completed</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[AEGIS HERO 5] AEGIS HERO 5 - Бело-красный (x1) — 105 BYN</td>
+      <td class="num">105.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>105.00</b></td>
+      <td class="num profit">+40.00</td>
+      <td></td></tr><tr>
+      <td>1177</td>
+      <td>2026-09-15T17:44:45.285Z</td>
+      <td>completed</td>
+      <td>@myloveanness</td>
+      <td>6895533898</td>
+      <td>@myloveanness</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[Rick and Morty Bad Trip] Клубника вишня (x1) — 17 BYN</td>
+      <td class="num">17.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>17.00</b></td>
+      <td class="num profit">+8.00</td>
+      <td></td></tr><tr>
+      <td>1176</td>
+      <td>2026-09-15T16:27:17.562Z</td>
+      <td>completed</td>
+      <td>@kweeso</td>
+      <td>1647501267</td>
+      <td>@kweeso</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Арбат</td>
+      <td>[BJORN ZLOY V1] Энергетик виноград (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+9.00</td>
+      <td></td></tr><tr>
+      <td>1175</td>
+      <td>2026-09-15T16:04:43.480Z</td>
+      <td>completed</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[BJORN ZLOY V1] Арбузная жвачка (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+9.00</td>
+      <td></td></tr><tr>
+      <td>1174</td>
+      <td>2026-09-15T15:43:16.094Z</td>
+      <td>completed</td>
+      <td>@vvvik17</td>
+      <td>7944196146</td>
+      <td>@vvvik17</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[VAPORESSO] Картридж XROS 0.6 ohm 2 мл (x1) — 13 BYN</td>
+      <td class="num">13.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>13.00</b></td>
+      <td class="num profit">+7.00</td>
+      <td></td></tr><tr>
+      <td>1173</td>
+      <td>2026-09-15T15:38:20.098Z</td>
+      <td>completed</td>
+      <td>@ouseen</td>
+      <td>2058633082</td>
+      <td>@ouseen</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[VAPORESSO] Картридж XROS 0.4 омм 3 мл (x1) — 13 BYN</td>
+      <td class="num">13.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>13.00</b></td>
+      <td class="num profit">+7.00</td>
+      <td>19:30 </td></tr><tr>
+      <td>1172</td>
+      <td>2026-09-15T15:35:13.670Z</td>
+      <td>completed</td>
+      <td>@usershunya</td>
+      <td>1764147969</td>
+      <td>@usershunya</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Обл. Больница</td>
+      <td>[VAPORESSO] Картридж XROS 0.6 ohm 2 мл (x1) — 13 BYN; [Rick and Morty Bad Trip] Гранат смородина (x1) — 17 BYN</td>
+      <td class="num">30.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>30.00</b></td>
+      <td class="num profit">+15.00</td>
+      <td>Если успеете,то до 21:00 пожалуйста,возле остановки дом ветеранов</td></tr><tr>
+      <td>1171</td>
+      <td>2026-09-15T15:09:55.581Z</td>
+      <td>completed</td>
+      <td>@Tero26</td>
+      <td>7931564536</td>
+      <td>@Tero26</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[УБИВАШКА] Виноградный лимонад (x1) — 18 BYN; [VAPORESSO] Картридж XROS 0.4 омм 3 мл (x1) — 13 BYN</td>
+      <td class="num">31.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>31.00</b></td>
+      <td class="num profit">+16.00</td>
+      <td></td></tr><tr>
+      <td>1170</td>
+      <td>2026-09-15T14:52:07.080Z</td>
+      <td>cancelled</td>
+      <td>@kweeso</td>
+      <td>1647501267</td>
+      <td>@kweeso</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[Rick and Morty Bad Trip] Арбуз Малина (x1) — 17 BYN</td>
+      <td class="num">17.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>17.00</b></td>
+      <td class="num profit">+8.00</td>
+      <td></td></tr><tr>
+      <td>1169</td>
+      <td>2026-09-15T14:31:44.485Z</td>
+      <td>completed</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[VAPORESSO] Картридж XROS 0.4 омм 3 мл (x1) — 13 BYN</td>
+      <td class="num">13.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>13.00</b></td>
+      <td class="num profit">+7.00</td>
+      <td></td></tr><tr>
+      <td>1168</td>
+      <td>2026-09-15T13:46:03.357Z</td>
+      <td>completed</td>
+      <td>@reddrugO_o</td>
+      <td>1637698754</td>
+      <td>@reddrugO_o</td>
+      <td>Доставка курьером</td>
+      <td>г. Могилев, ул. Народного Ополчения 4 , 6 подъезд</td>
+      <td>[ANIMA LOVE 18+] Смородина вишня черника (x1) — 18 BYN; [Anima love 18+] Энергетик малина (x1) — 18 BYN; [ANGRY VAPE & PODONKI] Яблочная жвачка (x1) — 15 BYN</td>
+      <td class="num">51.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>51.00</b></td>
+      <td class="num profit">+26.55</td>
+      <td>получиться забрать 16 сентября с 10:00 до 13:30</td></tr><tr>
+      <td>1167</td>
+      <td>2026-09-15T07:41:57.456Z</td>
+      <td>completed</td>
+      <td>@cannabinoidsssssss</td>
+      <td>1267641235</td>
+      <td>@cannabinoidsssssss</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[BJORN ZLOY V1] Энергетик виноград (x1) — 18 BYN; [GeekVape] Испаритель GeekVape Hero/Boost  0.2 омм (x1) — 12 BYN; [VAPORESSO] Картридж XROS 0.6 ohm 2 мл (x1) — 13 BYN</td>
+      <td class="num">43.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>43.00</b></td>
+      <td class="num profit">+22.00</td>
+      <td>17.00-18.00</td></tr><tr>
+      <td>1166</td>
+      <td>2026-09-15T07:35:00.600Z</td>
+      <td>completed</td>
+      <td>@baldivann</td>
+      <td>8688221445</td>
+      <td>@baldivann</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[XROS 6 MINI] Vaporesso Xros 6 Mini - Jelly Orange (Ярко-оранжевый) (x1) — 75 BYN</td>
+      <td class="num">75.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>75.00</b></td>
+      <td class="num profit">+36.00</td>
+      <td></td></tr><tr>
+      <td>1165</td>
+      <td>2026-09-15T07:24:18.460Z</td>
+      <td>completed</td>
+      <td>@baldivann</td>
+      <td>8688221445</td>
+      <td>@baldivann</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[VAPORESSO] Картридж XROS 0.4 омм 3 мл (x1) — 13 BYN</td>
+      <td class="num">13.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>13.00</b></td>
+      <td class="num profit">+7.00</td>
+      <td>18:00</td></tr><tr>
+      <td>1164</td>
+      <td>2026-09-15T04:14:05.648Z</td>
+      <td>completed</td>
+      <td>@www1nst0nn</td>
+      <td>5723971708</td>
+      <td>@www1nst0nn</td>
+      <td>Доставка курьером</td>
+      <td>Г.Могилев пр.шмидта д.20а 1 подъезд </td>
+      <td>[УБИВАШКА] Вишня лайм (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>23.00</b></td>
+      <td class="num profit">+9.00</td>
+      <td>Проспект шмидта 20а</td></tr><tr>
+      <td>1163</td>
+      <td>2026-09-14T16:54:30.579Z</td>
+      <td>completed</td>
+      <td>@dinoria</td>
+      <td>1476848366</td>
+      <td>@dinoria</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[BJORN ZLOY V1] Кислая малина (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+9.00</td>
+      <td></td></tr><tr>
+      <td>1162</td>
+      <td>2026-09-14T16:47:17.903Z</td>
+      <td>completed</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Доставка курьером</td>
+      <td>В</td>
+      <td>[BJORN ZLOY V1] Скитлс (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>23.00</b></td>
+      <td class="num profit">+9.00</td>
+      <td></td></tr><tr>
+      <td>1161</td>
+      <td>2026-09-14T16:47:01.367Z</td>
+      <td>cancelled</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[BJORN ZLOY V1] Скитлс (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+9.00</td>
+      <td></td></tr><tr>
+      <td>1160</td>
+      <td>2026-09-14T15:29:46.027Z</td>
+      <td>completed</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[VAPORESSO] Картридж XROS 0.6 ohm 3мл (x1) — 13 BYN; [BJORN ZLOY V1] Смородина черника лимон (x1) — 18 BYN</td>
+      <td class="num">31.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>31.00</b></td>
+      <td class="num profit">+16.00</td>
+      <td></td></tr><tr>
+      <td>1159</td>
+      <td>2026-09-14T14:33:34.211Z</td>
+      <td>completed</td>
+      <td>@ol3zha07</td>
+      <td>1054134783</td>
+      <td>@ol3zha07</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Обл. Больница</td>
+      <td>[УБИВАШКА] Виноградная фанта (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+9.00</td>
+      <td>19:00</td></tr><tr>
+      <td>1158</td>
+      <td>2026-09-14T13:20:50.152Z</td>
+      <td>completed</td>
+      <td>@Naklz_rty</td>
+      <td>8489704854</td>
+      <td>@Naklz_rty</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Театр Кукол</td>
+      <td>[УБИВАШКА] Виноградная фанта (x1) — 18 BYN; [УБИВАШКА] Вишня лайм (x1) — 18 BYN</td>
+      <td class="num">36.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>36.00</b></td>
+      <td class="num profit">+18.00</td>
+      <td>Подъехать к остановке что бы можно было сесть в машину</td></tr><tr>
+      <td>1157</td>
+      <td>2026-09-14T11:45:22.009Z</td>
+      <td>cancelled</td>
+      <td>@danikatex</td>
+      <td>7766269301</td>
+      <td>@danikatex</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[УБИВАШКА] Виноградный лимонад (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+9.00</td>
+      <td>атриум в 5</td></tr><tr>
+      <td>1156</td>
+      <td>2026-09-13T19:24:02.918Z</td>
+      <td>completed</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[XROS 6 MINI] Vaporesso Xros 6 Mini - Jelly Orange (Ярко-оранжевый) (x1) — 75 BYN</td>
+      <td class="num">75.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>75.00</b></td>
+      <td class="num profit">+36.00</td>
+      <td></td></tr><tr>
+      <td>1155</td>
+      <td>2026-09-13T16:13:15.214Z</td>
+      <td>completed</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[Rick and Morty Bad Trip] Клубника Земляника (x1) — 17 BYN; [VAPORESSO] Картридж XROS 0.4 омм 3 мл (x1) — 13 BYN</td>
+      <td class="num">30.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>30.00</b></td>
+      <td class="num profit">+15.00</td>
+      <td></td></tr><tr>
+      <td>1154</td>
+      <td>2026-09-13T15:35:42.032Z</td>
+      <td>completed</td>
+      <td>@user</td>
+      <td>7788112787</td>
+      <td>Не указан</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[Xros 6 mini] Vaporesso Xros 6 Mini - Titanium Silver (x1) — 75 BYN; [BJORN ZLOY V1] Энергетик виноград (x1) — 18 BYN</td>
+      <td class="num">93.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>75.00</b></td>
+      <td class="num profit">+36.00</td>
+      <td></td></tr><tr>
+      <td>1153</td>
+      <td>2026-09-13T14:26:42.459Z</td>
+      <td>completed</td>
+      <td>@vvvik17</td>
+      <td>7944196146</td>
+      <td>@vvvik17</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[BJORN ZLOY V1] Клубника банан (x1) — 18 BYN; [BJORN ZLOY V1] Лесные ягоды (x1) — 18 BYN; [УБИВАШКА] Арбузный адреналин (x1) — 18 BYN; [Рик и морти на замерзоне] Кола вишня (x1) — 15 BYN; [HOTSPOT] Йогурт вишня (x1) — 16 BYN</td>
+      <td class="num">85.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>85.00</b></td>
+      <td class="num profit">+44.00</td>
+      <td></td></tr><tr>
+      <td>1152</td>
+      <td>2026-09-13T13:50:21.048Z</td>
+      <td>completed</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[HOTSPOT] Нектарин вишня (x1) — 16 BYN</td>
+      <td class="num">16.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>16.00</b></td>
+      <td class="num profit">+10.00</td>
+      <td></td></tr><tr>
+      <td>1151</td>
+      <td>2026-09-13T11:47:09.552Z</td>
+      <td>completed</td>
+      <td>@nesquikfamily</td>
+      <td>1714531843</td>
+      <td>@nesquikfamily</td>
+      <td>Доставка курьером</td>
+      <td>г.Могилев 4-й карабановский переулок дом 50б</td>
+      <td>[DRYMOST ARMAGEDDON] Лесные ягоды (x1) — 15 BYN</td>
+      <td class="num">15.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>20.00</b></td>
+      <td class="num profit">+6.50</td>
+      <td></td></tr><tr>
+      <td>1150</td>
+      <td>2026-09-13T11:16:20.359Z</td>
+      <td>completed</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[AEGIS HERO 5] AEGIS HERO 5 - Бело-синий (x1) — 105 BYN</td>
+      <td class="num">105.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>100.00</b></td>
+      <td class="num profit">+35.00</td>
+      <td></td></tr><tr>
+      <td>1149</td>
+      <td>2026-09-13T10:09:14.165Z</td>
+      <td>completed</td>
+      <td>@karmanass</td>
+      <td>6277802959</td>
+      <td>@karmanass</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[УБИВАШКА] Вишневый лимонад (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+9.00</td>
+      <td>Мясокомбинат, 13:30-13:50</td></tr><tr>
+      <td>1148</td>
+      <td>2026-09-13T09:53:54.168Z</td>
+      <td>cancelled</td>
+      <td>@topparen</td>
+      <td>5166027155</td>
+      <td>@topparen</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[Rick and Morty Bad Trip] Садовые ягоды (x1) — 17 BYN; [VAPORESSO] Картридж XROS 0.4 омм 3 мл (x1) — 13 BYN</td>
+      <td class="num">30.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>30.00</b></td>
+      <td class="num profit">+14.50</td>
+      <td></td></tr><tr>
+      <td>1147</td>
+      <td>2026-09-12T15:30:23.719Z</td>
+      <td>completed</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Доставка курьером</td>
+      <td>.</td>
+      <td>[GLITCH POUCHES] Ледяной лимон (x1) — 15 BYN; [GLITCH POUCHES] Мята (x1) — 15 BYN</td>
+      <td class="num">30.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>35.00</b></td>
+      <td class="num profit">+14.00</td>
+      <td></td></tr><tr>
+      <td>1146</td>
+      <td>2026-09-12T13:43:52.530Z</td>
+      <td>completed</td>
+      <td>@adm11</td>
+      <td>801643708</td>
+      <td>@adm11</td>
+      <td>Доставка курьером</td>
+      <td>Ленинская 81</td>
+      <td>[BJORN ZLOY V1] Кислая малина (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>23.00</b></td>
+      <td class="num profit">+9.00</td>
+      <td></td></tr><tr>
+      <td>1145</td>
+      <td>2026-09-12T12:44:24.352Z</td>
+      <td>cancelled</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[BJORN ZLOY V1] Кислая малина (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+9.00</td>
+      <td></td></tr><tr>
+      <td>1144</td>
+      <td>2026-09-12T12:20:17.397Z</td>
+      <td>completed</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[Xros 6 mini] Vaporesso Xros 6 Mini - Titanium Silver (x1) — 75 BYN; [САМОУБИЙЦА & ГРЕХ] Клубника + голубика лёд (x1) — 19 BYN; [BJORN ZLOY V1] Клубника банан (x1) — 18 BYN</td>
+      <td class="num">112.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>112.00</b></td>
+      <td class="num profit">+54.50</td>
+      <td></td></tr><tr>
+      <td>1143</td>
+      <td>2026-09-12T11:52:37.147Z</td>
+      <td>cancelled</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[Anima love 18+] Энергетик малина (x1) — 18 BYN; [BJORN ZLOY V1] Манго личи персик (x1) — 18 BYN; [BJORN ZLOY V1] Клубника банан (x1) — 18 BYN; [BJORN ZLOY V1] Лесные ягоды (x1) — 18 BYN; [BJORN ZLOY V1] Арбузная жвачка (x1) — 18 BYN; [Rick and Morty Bad Trip] Смородина виноград (x1) — 17 BYN; [PASITO 3] Pasito 3 - Rococo Purple (Фиолетовый) (x1) — 125 BYN; [Rick and Morty Bad Trip] Клубника Земляника (x1) — 17 BYN; [SMOANT] Испаритель SMOANT 0.3 омм (x2) — 13 BYN</td>
+      <td class="num">275.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>275.00</b></td>
+      <td class="num profit">+115.05</td>
+      <td></td></tr><tr>
+      <td>1142</td>
+      <td>2026-09-12T11:37:47.678Z</td>
+      <td>completed</td>
+      <td>@MoonlightExposure</td>
+      <td>1631796956</td>
+      <td>@MoonlightExposure</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Арбат</td>
+      <td>[Rick and Morty Bad Trip] Черника малина (x1) — 17 BYN</td>
+      <td class="num">17.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>17.00</b></td>
+      <td class="num profit">+8.00</td>
+      <td></td></tr><tr>
+      <td>1141</td>
+      <td>2026-09-12T10:12:45.080Z</td>
+      <td>completed</td>
+      <td>@kittyGUCCI</td>
+      <td>8465629980</td>
+      <td>@kittyGUCCI</td>
+      <td>Доставка курьером</td>
+      <td>Могилёв, 1-й Июньский переулок, 28</td>
+      <td>[САМОУБИЙЦА & ГРЕХ] Зелёный виноград + клюква (x1) — 19 BYN</td>
+      <td class="num">19.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>24.00</b></td>
+      <td class="num profit">+10.00</td>
+      <td>желательно что бы привезли к 3</td></tr><tr>
+      <td>1140</td>
+      <td>2026-09-12T09:47:16.003Z</td>
+      <td>completed</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[XROS 6 MINI] Vaporesso Xros 6 Mini - Jelly Green (Ярко-зеленый) (x1) — 75 BYN; [VAPORESSO] Картридж XROS 0.4 омм 3 мл (x1) — 13 BYN; [УБИВАШКА] Арбузный адреналин (x1) — 18 BYN</td>
+      <td class="num">106.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>106.00</b></td>
+      <td class="num profit">+52.00</td>
+      <td></td></tr><tr>
+      <td>1139</td>
+      <td>2026-09-12T09:12:24.678Z</td>
+      <td>completed</td>
+      <td>@user</td>
+      <td>1836888846</td>
+      <td>Не указан</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[УБИВАШКА] Кислая вишня ред булл смородина (x1) — 18 BYN; [УБИВАШКА] Ежевика клубника (x1) — 18 BYN</td>
+      <td class="num">36.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>36.00</b></td>
+      <td class="num profit">+18.00</td>
+      <td></td></tr><tr>
+      <td>1138</td>
+      <td>2026-09-12T08:52:09.976Z</td>
+      <td>completed</td>
+      <td>@nastsia_kr</td>
+      <td>1158039607</td>
+      <td>@nastsia_kr</td>
+      <td>Доставка курьером</td>
+      <td>Шмидта 5</td>
+      <td>[САМОУБИЙЦА & ГРЕХ] Малина + клюква + зелёный  виноград (x1) — 19 BYN</td>
+      <td class="num">19.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>24.00</b></td>
+      <td class="num profit">+9.50</td>
+      <td></td></tr><tr>
+      <td>1137</td>
+      <td>2026-09-12T07:12:00.169Z</td>
+      <td>cancelled</td>
+      <td>@user</td>
+      <td>1836888846</td>
+      <td>Не указан</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[УБИВАШКА] Кислая вишня ред булл смородина (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+9.00</td>
+      <td></td></tr><tr>
+      <td>1136</td>
+      <td>2026-09-12T05:53:24.687Z</td>
+      <td>cancelled</td>
+      <td>@Terroristatt</td>
+      <td>5265426942</td>
+      <td>@Terroristatt</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Театр Кукол</td>
+      <td>[УБИВАШКА] Кислая вишня ред булл смородина (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+9.00</td>
+      <td></td></tr><tr>
+      <td>1135</td>
+      <td>2026-09-11T18:46:12.657Z</td>
+      <td>completed</td>
+      <td>@guwwap</td>
+      <td>563536163</td>
+      <td>@guwwap</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Арбат</td>
+      <td>[Рик и Морти на ЗАМЕРЗОНЕ] Лимонад клубника (x1) — 15 BYN</td>
+      <td class="num">15.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>15.00</b></td>
+      <td class="num profit">+7.00</td>
+      <td></td></tr><tr>
+      <td>1134</td>
+      <td>2026-09-11T15:04:14.988Z</td>
+      <td>completed</td>
+      <td>@eeuuuuuss</td>
+      <td>1394192102</td>
+      <td>@eeuuuuuss</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Юбилейный</td>
+      <td>[VAPORESSO] Картридж XROS 0.6 ohm 3мл (x1) — 13 BYN; [ANIMA LOVE 18+] Кислые ягодные червячки (x1) — 18 BYN</td>
+      <td class="num">31.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>31.00</b></td>
+      <td class="num profit">+15.50</td>
+      <td></td></tr><tr>
+      <td>1133</td>
+      <td>2026-09-11T12:22:44.918Z</td>
+      <td>completed</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Доставка курьером</td>
+      <td>Златоуствого 24</td>
+      <td>[VAPORESSO] Картридж XROS 0.4 омм 3 мл (x1) — 13 BYN</td>
+      <td class="num">13.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+7.00</td>
+      <td></td></tr><tr>
+      <td>1132</td>
+      <td>2026-09-11T12:18:15.199Z</td>
+      <td>completed</td>
+      <td>@aktiuqe</td>
+      <td>1396361039</td>
+      <td>@aktiuqe</td>
+      <td>Доставка курьером</td>
+      <td>ул Дачная 20 </td>
+      <td>[GLITCH POUCHES] Эвкалипт мята (x1) — 15 BYN</td>
+      <td class="num">15.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>20.00</b></td>
+      <td class="num profit">+7.00</td>
+      <td></td></tr><tr>
+      <td>1131</td>
+      <td>2026-09-11T12:09:11.709Z</td>
+      <td>completed</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>БРУ </td>
+      <td>[BJORN ZLOY V1] Виноград вишня (x1) — 18 BYN; [VAPORESSO] Картридж XROS 0.6 ohm 2 мл (x1) — 13 BYN</td>
+      <td class="num">31.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>31.00</b></td>
+      <td class="num profit">+16.00</td>
+      <td></td></tr><tr>
+      <td>1130</td>
+      <td>2026-09-11T11:43:33.396Z</td>
+      <td>completed</td>
+      <td>@zhiv_xeon_zhizn</td>
+      <td>1694784343</td>
+      <td>@zhiv_xeon_zhizn</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Арбат</td>
+      <td>[УБИВАШКА] Вишневый лимонад (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+9.00</td>
+      <td></td></tr><tr>
+      <td>1129</td>
+      <td>2026-09-11T11:41:21.250Z</td>
+      <td>cancelled</td>
+      <td>@zhiv_xeon_zhizn</td>
+      <td>1694784343</td>
+      <td>@zhiv_xeon_zhizn</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Арбат</td>
+      <td>[УБИВАШКА] Вишневый лимонад (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+9.00</td>
+      <td></td></tr><tr>
+      <td>1128</td>
+      <td>2026-09-11T11:23:59.100Z</td>
+      <td>completed</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>БРУ </td>
+      <td>[Rick and Morty Bad Trip] Садовые ягоды (x1) — 17 BYN; [VAPORESSO] Картридж XROS 0.4 омм 3 мл (x1) — 13 BYN</td>
+      <td class="num">30.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>30.00</b></td>
+      <td class="num profit">+14.50</td>
+      <td></td></tr><tr>
+      <td>1127</td>
+      <td>2026-09-11T09:07:47.714Z</td>
+      <td>completed</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Доставка курьером</td>
+      <td>Автовокзал</td>
+      <td>[УБИВАШКА] Малиново арбузное варенье (x2) — 18 BYN; [VAPORESSO] Картридж XROS 0.4 омм 3 мл (x1) — 13 BYN</td>
+      <td class="num">49.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>49.00</b></td>
+      <td class="num profit">+24.50</td>
+      <td></td></tr><tr>
+      <td>1126</td>
+      <td>2026-09-10T21:44:53.370Z</td>
+      <td>completed</td>
+      <td>@kav0b</td>
+      <td>1451338782</td>
+      <td>@kav0b</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[Rick and Morty Bad Trip] Клубника вишня (x1) — 17 BYN; [VAPORESSO] Картридж XROS 0.6 ohm 3мл (x1) — 13 BYN</td>
+      <td class="num">30.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>30.00</b></td>
+      <td class="num profit">+15.00</td>
+      <td>БРУ спишемся( от паши)</td></tr><tr>
+      <td>1125</td>
+      <td>2026-09-10T18:41:09.168Z</td>
+      <td>completed</td>
+      <td>@mysik217T</td>
+      <td>8701475736</td>
+      <td>@mysik217T</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[AEGIS HERO 5] AEGIS HERO 5 - Бело-синий (x1) — 105 BYN</td>
+      <td class="num">105.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>110.00</b></td>
+      <td class="num profit">+45.00</td>
+      <td></td></tr><tr>
+      <td>1124</td>
+      <td>2026-09-10T15:52:55.915Z</td>
+      <td>completed</td>
+      <td>@Juliya_hk</td>
+      <td>754796123</td>
+      <td>@Juliya_hk</td>
+      <td>Доставка курьером</td>
+      <td>Могилев пионерская 24</td>
+      <td>[Xros 6 mini] Vaporesso Xros 6 Mini - Plume Pink (x1) — 75 BYN</td>
+      <td class="num">75.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>80.00</b></td>
+      <td class="num profit">+36.00</td>
+      <td>На парковку, где поляна фуд корт </td></tr><tr>
+      <td>1123</td>
+      <td>2026-09-10T15:17:56.309Z</td>
+      <td>completed</td>
+      <td>@user</td>
+      <td>7905839374</td>
+      <td>Не указан</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[САМОУБИЙЦА & ГРЕХ] Сок земляники и смородины лёд (x1) — 19 BYN</td>
+      <td class="num">19.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>19.00</b></td>
+      <td class="num profit">+9.50</td>
+      <td></td></tr><tr>
+      <td>1122</td>
+      <td>2026-09-10T14:13:06.342Z</td>
+      <td>completed</td>
+      <td>@mi1ans22</td>
+      <td>1484774666</td>
+      <td>@mi1ans22</td>
+      <td>Доставка курьером</td>
+      <td>г Могилев, ул. Турова 18, подъезд 1</td>
+      <td>[BJORN ZLOY V1] Лесные ягоды (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>23.00</b></td>
+      <td class="num profit">+9.00</td>
+      <td></td></tr><tr>
+      <td>1121</td>
+      <td>2026-09-10T12:59:13.056Z</td>
+      <td>completed</td>
+      <td>@lips6kiss9</td>
+      <td>1957016670</td>
+      <td>@lips6kiss9</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[HOTSPOT] Лимон лесные ягоды (x1) — 16 BYN; [VAPORESSO] Картридж XROS 0.4 омм 3 мл (x1) — 13 BYN</td>
+      <td class="num">29.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>29.00</b></td>
+      <td class="num profit">+17.00</td>
+      <td></td></tr><tr>
+      <td>1120</td>
+      <td>2026-09-10T10:50:03.233Z</td>
+      <td>cancelled</td>
+      <td>@p01ina_01</td>
+      <td>5167310892</td>
+      <td>@p01ina_01</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[VAPORESSO] Картридж XROS 0.4 омм 3 мл (x1) — 13 BYN</td>
+      <td class="num">13.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>13.00</b></td>
+      <td class="num profit">+7.00</td>
+      <td></td></tr><tr>
+      <td>1119</td>
+      <td>2026-09-10T10:12:21.838Z</td>
+      <td>completed</td>
+      <td>@Enot_0173</td>
+      <td>5096925478</td>
+      <td>@Enot_0173</td>
+      <td>Доставка курьером</td>
+      <td>Г. Могилев ул. Космонавтов д. 25</td>
+      <td>[Rick and Morty Bad Trip] Смородина виноград (x1) — 17 BYN; [GeekVape] Испаритель Hero/Boost  0.3 (x1) — 12 BYN; [BJORN ZLOY V1] Скитлс (x1) — 18 BYN</td>
+      <td class="num">47.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>47.00</b></td>
+      <td class="num profit">+23.00</td>
+      <td>18.00-19.00</td></tr><tr>
+      <td>1118</td>
+      <td>2026-09-09T19:12:11.740Z</td>
+      <td>completed</td>
+      <td>@Kartashova95</td>
+      <td>6267181637</td>
+      <td>@Kartashova95</td>
+      <td>Доставка курьером</td>
+      <td>ул. Березовская, д.14, 2 подъезд </td>
+      <td>[Рик и Морти на ЗАМЕРЗОНЕ] Спрайт 50мг (x1) — 15 BYN; [VAPORESSO] Картридж XROS 0.6 ohm 3мл (x2) — 13 BYN; [Рик и Морти на ЗАМЕРЗОНЕ] Лимонад клубника (x1) — 15 BYN</td>
+      <td class="num">56.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>56.00</b></td>
+      <td class="num profit">+30.00</td>
+      <td>После 17.30 и желательно не позднее 18.30</td></tr><tr>
+      <td>1117</td>
+      <td>2026-09-09T17:36:31.220Z</td>
+      <td>completed</td>
+      <td>@hmhas_billi09</td>
+      <td>5526452714</td>
+      <td>@hmhas_billi09</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Обл. Больница</td>
+      <td>[BJORN ZLOY V1] Скитлс (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+9.00</td>
+      <td>19:00</td></tr><tr>
+      <td>1116</td>
+      <td>2026-09-09T17:31:03.278Z</td>
+      <td>completed</td>
+      <td>@pill6666</td>
+      <td>5095234118</td>
+      <td>@pill6666</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[УБИВАШКА] Ежевика клубника (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+9.00</td>
+      <td></td></tr><tr>
+      <td>1115</td>
+      <td>2026-09-09T17:13:39.330Z</td>
+      <td>cancelled</td>
+      <td>@dzmitrynero</td>
+      <td>5659638424</td>
+      <td>@dzmitrynero</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[УБИВАШКА] Вишня яблоко (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+9.41</td>
+      <td></td></tr><tr>
+      <td>1114</td>
+      <td>2026-09-09T17:09:04.926Z</td>
+      <td>completed</td>
+      <td>@user</td>
+      <td>5241959162</td>
+      <td>Не указан</td>
+      <td>Доставка курьером</td>
+      <td>фатина 1д </td>
+      <td>[BJORN ZLOY V1] Лесные ягоды (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>23.00</b></td>
+      <td class="num profit">+9.00</td>
+      <td></td></tr><tr>
+      <td>1113</td>
+      <td>2026-09-09T14:02:01.748Z</td>
+      <td>completed</td>
+      <td>@Slavyantiy</td>
+      <td>1541382250</td>
+      <td>@Slavyantiy</td>
+      <td>Доставка курьером</td>
+      <td>Могилёвский район, Могилёвская область, деревня Большие Белевичи, улица Южная, дом 21.  213154, +375298414573</td>
+      <td>[Xros 6 mini] Vaporesso Xros 6 Mini - Titanium Silver (x1) — 75 BYN</td>
+      <td class="num">75.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>80.00</b></td>
+      <td class="num profit">+36.00</td>
+      <td></td></tr><tr>
+      <td>1112</td>
+      <td>2026-09-09T10:42:20.562Z</td>
+      <td>completed</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Доставка курьером</td>
+      <td>Первомайская 152А</td>
+      <td>[DRYMOST ARMAGEDDON] Бабл гам (x1) — 15 BYN; [УБИВАШКА] Кислая вишня ред булл смородина (x1) — 18 BYN</td>
+      <td class="num">33.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>38.00</b></td>
+      <td class="num profit">+15.50</td>
+      <td>(морозный) </td></tr><tr>
+      <td>1111</td>
+      <td>2026-09-09T10:11:39.146Z</td>
+      <td>completed</td>
+      <td>@floverryyy</td>
+      <td>5414611584</td>
+      <td>@floverryyy</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Театр Кукол</td>
+      <td>[VAPORESSO] Картридж XROS 0.4 омм 3 мл (x1) — 13 BYN</td>
+      <td class="num">13.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>13.00</b></td>
+      <td class="num profit">+7.00</td>
+      <td>13.40</td></tr><tr>
+      <td>1110</td>
+      <td>2026-09-09T09:28:06.714Z</td>
+      <td>completed</td>
+      <td>@milor_ik</td>
+      <td>1643664033</td>
+      <td>@milor_ik</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[HOTSPOT] Ананас ежевика (x1) — 16 BYN; [VAPORESSO] Картридж XROS 0.4 омм 3 мл (x1) — 13 BYN</td>
+      <td class="num">29.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>29.00</b></td>
+      <td class="num profit">+17.00</td>
+      <td></td></tr><tr>
+      <td>1109</td>
+      <td>2026-09-09T06:55:00.326Z</td>
+      <td>completed</td>
+      <td>@user</td>
+      <td>7166784439</td>
+      <td>Не указан</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[VAPORESSO] Картридж XROS 0.6 ohm 3мл (x1) — 13 BYN; [Rick and Morty Bad Trip] Ягодный энергетик (x1) — 17 BYN</td>
+      <td class="num">30.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>30.00</b></td>
+      <td class="num profit">+15.00</td>
+      <td></td></tr><tr>
+      <td>1108</td>
+      <td>2026-09-09T06:17:59.501Z</td>
+      <td>completed</td>
+      <td>@Cacigopy</td>
+      <td>1018182515</td>
+      <td>@Cacigopy</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[САМОУБИЙЦА & ГРЕХ] Черника + малина + красная  смородина лёд (x1) — 19 BYN</td>
+      <td class="num">19.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+8.50</td>
+      <td></td></tr><tr>
+      <td>1107</td>
+      <td>2026-09-08T16:47:16.976Z</td>
+      <td>completed</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[GeekVape] Испаритель Hero/Boost  0.15 омм (x1) — 12 BYN</td>
+      <td class="num">12.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>12.00</b></td>
+      <td class="num profit">+6.00</td>
+      <td></td></tr><tr>
+      <td>1106</td>
+      <td>2026-09-08T16:38:52.556Z</td>
+      <td>completed</td>
+      <td>@nervixxks1</td>
+      <td>1684920066</td>
+      <td>@nervixxks1</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[ANIMA LOVE 18+] Кислые ягодные червячки (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+8.50</td>
+      <td></td></tr><tr>
+      <td>1105</td>
+      <td>2026-09-08T16:36:58.875Z</td>
+      <td>cancelled</td>
+      <td>@amanfobia</td>
+      <td>8995514196</td>
+      <td>@amanfobia</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[УБИВАШКА] Кислая вишня ред булл смородина (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+9.00</td>
+      <td></td></tr><tr>
+      <td>1104</td>
+      <td>2026-09-08T16:00:41.687Z</td>
+      <td>completed</td>
+      <td>@ssshhrimp</td>
+      <td>1033167900</td>
+      <td>@ssshhrimp</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[Rick and Morty Bad Trip] Черника малина (x1) — 17 BYN</td>
+      <td class="num">17.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>17.00</b></td>
+      <td class="num profit">+8.00</td>
+      <td></td></tr><tr>
+      <td>1103</td>
+      <td>2026-09-08T15:20:44.158Z</td>
+      <td>completed</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[УБИВАШКА] Вишня яблоко (x1) — 18 BYN; [Xros 6 mini] Vaporesso Xros 6 Mini - Plume Blue (x1) — 75 BYN; [VAPORESSO] Картридж XROS 0.4 омм 3 мл (x2) — 13 BYN; [HOTSPOT] Зефир кокос черная смородина (x1) — 16 BYN</td>
+      <td class="num">135.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>135.00</b></td>
+      <td class="num profit">+69.41</td>
+      <td></td></tr><tr>
+      <td>1102</td>
+      <td>2026-09-08T11:06:33.468Z</td>
+      <td>completed</td>
+      <td>@uollium</td>
+      <td>7416651779</td>
+      <td>@uollium</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Обл. Больница</td>
+      <td>[McKeese 7000] McKeese 7000 Apple peach&pear (x1) — 25 BYN</td>
+      <td class="num">25.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>25.00</b></td>
+      <td class="num profit">+16.00</td>
+      <td>в 17.00-17.15 буду на указанной остановке </td></tr><tr>
+      <td>1101</td>
+      <td>2026-09-07T17:18:40.943Z</td>
+      <td>completed</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[HOTSPOT] Нектарин вишня (x1) — 16 BYN; [XROS 6 MINI] Vaporesso Xros 6 Mini - Plume White (x1) — 75 BYN</td>
+      <td class="num">91.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>75.00</b></td>
+      <td class="num profit">+36.00</td>
+      <td></td></tr><tr>
+      <td>1100</td>
+      <td>2026-09-07T16:39:40.301Z</td>
+      <td>completed</td>
+      <td>@Lil_one_live</td>
+      <td>702060967</td>
+      <td>@Lil_one_live</td>
+      <td>Доставка курьером</td>
+      <td>Г.Могилев ул.Криулина 37а 1 подьезд</td>
+      <td>[САМОУБИЙЦА & ГРЕХ] Чёрная смородина + вишня +  лайм  SOUR Тёмный (x1) — 19 BYN</td>
+      <td class="num">19.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>24.00</b></td>
+      <td class="num profit">+9.50</td>
+      <td>На ближайшее время</td></tr><tr>
+      <td>1099</td>
+      <td>2026-09-07T13:50:39.044Z</td>
+      <td>completed</td>
+      <td>@user</td>
+      <td>7905839374</td>
+      <td>Не указан</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[САМОУБИЙЦА & ГРЕХ] Чёрная смородина + вишня +  лайм  SOUR Тёмный (x1) — 19 BYN; [AEGIS HERO 5] AEGIS HERO 5 - Бело-красный (x1) — 105 BYN</td>
+      <td class="num">124.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>124.00</b></td>
+      <td class="num profit">+49.50</td>
+      <td></td></tr><tr>
+      <td>1098</td>
+      <td>2026-09-07T13:49:29.709Z</td>
+      <td>cancelled</td>
+      <td>@qsxhi</td>
+      <td>7086607293</td>
+      <td>@qsxhi</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[GeekVape] Испаритель Hero/Boost  0.3 (x1) — 12 BYN</td>
+      <td class="num">12.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>12.00</b></td>
+      <td class="num profit">+6.00</td>
+      <td></td></tr><tr>
+      <td>1097</td>
+      <td>2026-09-07T13:39:48.184Z</td>
+      <td>cancelled</td>
+      <td>@AAAB4444</td>
+      <td>7567870762</td>
+      <td>@AAAB4444</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>БРУ </td>
+      <td>[DRYMOST ARMAGEDDON] Малина лимон (x1) — 15 BYN</td>
+      <td class="num">15.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>15.00</b></td>
+      <td class="num profit">+6.75</td>
+      <td>Часов в 4-5</td></tr><tr>
+      <td>1096</td>
+      <td>2026-09-07T12:57:41.644Z</td>
+      <td>completed</td>
+      <td>@Wertys825</td>
+      <td>6915582014</td>
+      <td>@Wertys825</td>
+      <td>Доставка курьером</td>
+      <td>Димитрова 54 8 подъезд </td>
+      <td>[УБИВАШКА] Вишня яблоко (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>20.00</b></td>
+      <td class="num profit">+9.41</td>
+      <td>16.20</td></tr><tr>
+      <td>1095</td>
+      <td>2026-09-07T10:37:52.231Z</td>
+      <td>completed</td>
+      <td>@redbarrel1</td>
+      <td>1212195876</td>
+      <td>@redbarrel1</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>БРУ </td>
+      <td>[Bjorn zloy v1] Скитлс (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+9.50</td>
+      <td>прямо сейчас бру 1</td></tr><tr>
+      <td>1094</td>
+      <td>2026-09-07T10:29:02.829Z</td>
+      <td>cancelled</td>
+      <td>@redbarrel1</td>
+      <td>1212195876</td>
+      <td>@redbarrel1</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[Bjorn zloy v1] Скитлс (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+9.50</td>
+      <td></td></tr><tr>
+      <td>1093</td>
+      <td>2026-09-07T08:02:09.727Z</td>
+      <td>completed</td>
+      <td>@Ndkkedj</td>
+      <td>6698681697</td>
+      <td>@Ndkkedj</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Театр Кукол</td>
+      <td>[САМОУБИЙЦА & ГРЕХ] Ежевика + кислая вишня (x1) — 19 BYN</td>
+      <td class="num">19.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>19.00</b></td>
+      <td class="num profit">+9.50</td>
+      <td></td></tr><tr>
+      <td>1092</td>
+      <td>2026-09-07T05:58:30.728Z</td>
+      <td>completed</td>
+      <td>@Martine_Roze</td>
+      <td>8256873738</td>
+      <td>@Martine_Roze</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[HOTSPOT] Йогурт вишня (x1) — 16 BYN</td>
+      <td class="num">16.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>16.00</b></td>
+      <td class="num profit">+10.00</td>
+      <td>10:30 на мясорубке </td></tr><tr>
+      <td>1091</td>
+      <td>2026-09-06T21:09:08.854Z</td>
+      <td>completed</td>
+      <td>@endlessssliar</td>
+      <td>6154257184</td>
+      <td>@endlessssliar</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[BJORN ZLOY V1] Клубника банан (x1) — 18 BYN; [VAPORESSO] Картридж XROS 0.4 омм 3 мл (x1) — 13 BYN</td>
+      <td class="num">31.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>31.00</b></td>
+      <td class="num profit">+15.50</td>
+      <td>14:00</td></tr><tr>
+      <td>1090</td>
+      <td>2026-09-06T18:18:22.389Z</td>
+      <td>completed</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[УБИВАШКА] Вишня яблоко (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+9.41</td>
+      <td></td></tr><tr>
+      <td>1089</td>
+      <td>2026-09-06T18:05:37.926Z</td>
+      <td>completed</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Доставка курьером</td>
+      <td>Челюскинцев </td>
+      <td>[УБИВАШКА] Вишня яблоко (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>25.00</b></td>
+      <td class="num profit">+9.41</td>
+      <td></td></tr><tr>
+      <td>1088</td>
+      <td>2026-09-06T17:20:19.840Z</td>
+      <td>completed</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Доставка курьером</td>
+      <td>Первомайская 152А</td>
+      <td>[САМОУБИЙЦА & ГРЕХ] Кислая вишня + редбул +  белая смородина (x1) — 19 BYN; [VAPORESSO] Картридж XROS 0.6 ohm 2 мл (x1) — 13 BYN</td>
+      <td class="num">32.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>37.00</b></td>
+      <td class="num profit">+16.00</td>
+      <td></td></tr><tr>
+      <td>1087</td>
+      <td>2026-09-06T15:46:31.478Z</td>
+      <td>completed</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Доставка курьером</td>
+      <td>Буйничи</td>
+      <td>[SMOANT] Испаритель SMOANT 0.3 омм (x1) — 13 BYN</td>
+      <td class="num">13.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+7.00</td>
+      <td></td></tr><tr>
+      <td>1086</td>
+      <td>2026-09-06T15:17:01.273Z</td>
+      <td>cancelled</td>
+      <td>@qsxhi</td>
+      <td>7086607293</td>
+      <td>@qsxhi</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Арбат</td>
+      <td>[УБИВАШКА] Вишня яблоко (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+9.41</td>
+      <td></td></tr><tr>
+      <td>1085</td>
+      <td>2026-09-06T14:58:31.443Z</td>
+      <td>completed</td>
+      <td>@Yaska_0089</td>
+      <td>7350052379</td>
+      <td>@Yaska_0089</td>
+      <td>Доставка курьером</td>
+      <td>Г. Могилёв, ул. Первомайская 152А, общага</td>
+      <td>[BJORN ZLOY V1] Смородина черника лимон (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>23.00</b></td>
+      <td class="num profit">+9.00</td>
+      <td>До 21:00</td></tr><tr>
+      <td>1084</td>
+      <td>2026-09-06T13:52:49.203Z</td>
+      <td>completed</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Арбат</td>
+      <td>[Рик и морти на замерзоне] Кола вишня (x1) — 15 BYN; [Рик и Морти на ЗАМЕРЗОНЕ] Энергетик апельсин (x1) — 15 BYN</td>
+      <td class="num">30.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>30.00</b></td>
+      <td class="num profit">+14.00</td>
+      <td></td></tr><tr>
+      <td>1083</td>
+      <td>2026-09-06T12:55:12.421Z</td>
+      <td>completed</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[Rick and Morty Bad Trip] Черника Ежевика (x1) — 17 BYN; [GeekVape] Испаритель Hero/Boost  0.3 (x1) — 12 BYN</td>
+      <td class="num">29.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>29.00</b></td>
+      <td class="num profit">+14.00</td>
+      <td></td></tr><tr>
+      <td>1082</td>
+      <td>2026-09-06T12:11:32.649Z</td>
+      <td>completed</td>
+      <td>@Zagorey_Aleksey</td>
+      <td>521882325</td>
+      <td>@Zagorey_Aleksey</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[Рик и Морти на ЗАМЕРЗОНЕ] Спрайт 50мг (x1) — 15 BYN; [ANIMA LOVE 18+] Смородина вишня черника (x1) — 18 BYN</td>
+      <td class="num">33.00</td>
+      <td class="num">3.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>30.00</b></td>
+      <td class="num profit">+17.50</td>
+      <td></td></tr><tr>
+      <td>1081</td>
+      <td>2026-09-06T08:26:04.430Z</td>
+      <td>completed</td>
+      <td>@mavioznik_zahar_Vpn</td>
+      <td>6746969386</td>
+      <td>@mavioznik_zahar_Vpn</td>
+      <td>Доставка курьером</td>
+      <td>Тишки Гартного 10 кв85 подъезд 3</td>
+      <td>[Rick and Morty Bad Trip] Клубника Земляника (x1) — 17 BYN; [УБИВАШКА] Вишня яблоко (x1) — 18 BYN</td>
+      <td class="num">35.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>40.00</b></td>
+      <td class="num profit">+16.91</td>
+      <td>  Если можно то к 12.30</td></tr><tr>
+      <td>1080</td>
+      <td>2026-09-06T07:14:06.863Z</td>
+      <td>completed</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[VAPORESSO] Картридж XROS 0.4 омм 3 мл (x2) — 13 BYN</td>
+      <td class="num">26.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>26.00</b></td>
+      <td class="num profit">+13.00</td>
+      <td></td></tr><tr>
+      <td>1079</td>
+      <td>2026-09-05T14:42:03.202Z</td>
+      <td>completed</td>
+      <td>@likserli</td>
+      <td>826443313</td>
+      <td>@likserli</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[Rick and Morty Bad Trip] Арбуз Малина (x1) — 17 BYN; [Рик и Морти на ЗАМЕРЗОНЕ] Энергетик апельсин (x1) — 15 BYN</td>
+      <td class="num">32.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>30.00</b></td>
+      <td class="num profit">+15.00</td>
+      <td></td></tr><tr>
+      <td>1078</td>
+      <td>2026-09-04T23:09:22.771Z</td>
+      <td>cancelled</td>
+      <td>@dzmitrynero</td>
+      <td>5659638424</td>
+      <td>@dzmitrynero</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[ANIMA LOVE 18+] Кислые ягодные червячки (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+8.50</td>
+      <td>Тест, я отклоню</td></tr><tr>
+      <td>1077</td>
+      <td>2026-09-04T17:56:13.004Z</td>
+      <td>completed</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[Anima love 18+] Энергетик ягоды (x1) — 18 BYN; [Xros 6 mini] Vaporesso Xros 6 Mini - Black (x1) — 75 BYN; [VAPORESSO] Картридж XROS 0.4 омм 3 мл (x1) — 13 BYN</td>
+      <td class="num">106.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>106.00</b></td>
+      <td class="num profit">+51.55</td>
+      <td></td></tr><tr>
+      <td>1076</td>
+      <td>2026-09-04T17:44:14.175Z</td>
+      <td>completed</td>
+      <td>@user</td>
+      <td>8675015344</td>
+      <td>Не указан</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[Rick and Morty Bad Trip] Виноградный энергетик (x1) — 17 BYN; [Rick and Morty Bad Trip] Садовые ягоды (x1) — 17 BYN; [Rick and Morty Bad Trip] Клубника Земляника (x1) — 17 BYN</td>
+      <td class="num">51.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>51.00</b></td>
+      <td class="num profit">+22.50</td>
+      <td></td></tr><tr>
+      <td>1075</td>
+      <td>2026-09-04T14:47:44.780Z</td>
+      <td>completed</td>
+      <td>@balasse</td>
+      <td>1341510849</td>
+      <td>@balasse</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Арбат</td>
+      <td>[Xros 6 mini] Vaporesso Xros 6 Mini - Jelly Pink (x1) — 75 BYN</td>
+      <td class="num">75.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>75.00</b></td>
+      <td class="num profit">+36.00</td>
+      <td></td></tr><tr>
+      <td>1074</td>
+      <td>2026-09-04T13:46:19.930Z</td>
+      <td>completed</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[Rick and Morty Bad Trip] Арбуз Малина (x1) — 17 BYN</td>
+      <td class="num">17.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>17.00</b></td>
+      <td class="num profit">+8.00</td>
+      <td></td></tr><tr>
+      <td>1073</td>
+      <td>2026-09-04T11:03:04.739Z</td>
+      <td>cancelled</td>
+      <td>@Mishak750</td>
+      <td>1594202276</td>
+      <td>@Mishak750</td>
+      <td>Доставка курьером</td>
+      <td>Атриум</td>
+      <td>[Anima love 18+] Энергетик ягоды (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>23.00</b></td>
+      <td class="num profit">+9.05</td>
+      <td></td></tr><tr>
+      <td>1072</td>
+      <td>2026-09-04T10:20:10.952Z</td>
+      <td>cancelled</td>
+      <td>@MMOOWW67</td>
+      <td>7958676840</td>
+      <td>@MMOOWW67</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[Xros 6 mini] Vaporesso Xros 6 Mini - Jelly Pink (x1) — 75 BYN</td>
+      <td class="num">75.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>75.00</b></td>
+      <td class="num profit">+36.00</td>
+      <td></td></tr><tr>
+      <td>1071</td>
+      <td>2026-09-04T08:54:50.012Z</td>
+      <td>completed</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Доставка курьером</td>
+      <td>Пот</td>
+      <td>[САМОУБИЙЦА & ГРЕХ] Скитлс виноградно-малиновый (x1) — 19 BYN</td>
+      <td class="num">19.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>24.00</b></td>
+      <td class="num profit">+9.50</td>
+      <td></td></tr><tr>
+      <td>1070</td>
+      <td>2026-09-04T08:25:42.114Z</td>
+      <td>completed</td>
+      <td>@IJstWannD1e</td>
+      <td>593553908</td>
+      <td>@IJstWannD1e</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>БРУ </td>
+      <td>[Catswill classic] Морозный чёрный виноград (x1) — 17 BYN</td>
+      <td class="num">17.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>17.00</b></td>
+      <td class="num profit">+8.41</td>
+      <td></td></tr><tr>
+      <td>1069</td>
+      <td>2026-09-04T08:23:52.160Z</td>
+      <td>completed</td>
+      <td>@Slavyantiy</td>
+      <td>1541382250</td>
+      <td>@Slavyantiy</td>
+      <td>Доставка курьером</td>
+      <td>Могилёвский район, Могилёвская область, деревня Большие Белевичи, улица Южная, дом 21. Трепашкин Вячеслав Юрьевич. +375298414573</td>
+      <td>[Xros 6 mini] Vaporesso Xros 6 Mini - Titanium Silver (x1) — 75 BYN</td>
+      <td class="num">75.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>80.00</b></td>
+      <td class="num profit">+36.00</td>
+      <td></td></tr><tr>
+      <td>1068</td>
+      <td>2026-09-04T08:18:16.486Z</td>
+      <td>completed</td>
+      <td>@Slavyantiy</td>
+      <td>1541382250</td>
+      <td>@Slavyantiy</td>
+      <td>Доставка курьером</td>
+      <td>Могилёвский район, Могилёвская область, деревня Большие Белевичи, улица Южная, дом 21. Трепашкин Вячеслав Юрьевич. +375298414573</td>
+      <td>[Rick and Morty Bad Trip] Черника Ежевика (x1) — 17 BYN; [Rick and Morty Bad Trip] Черника малина (x1) — 17 BYN; [Rick and Morty Bad Trip] Клубника вишня (x1) — 17 BYN</td>
+      <td class="num">51.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>70.00</b></td>
+      <td class="num profit">+23.50</td>
+      <td></td></tr><tr>
+      <td>1067</td>
+      <td>2026-09-04T05:47:18.579Z</td>
+      <td>completed</td>
+      <td>@Martine_Roze</td>
+      <td>8256873738</td>
+      <td>@Martine_Roze</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Театр Кукол</td>
+      <td>[Рик и морти на замерзоне] Кола вишня (x1) — 15 BYN</td>
+      <td class="num">15.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>15.00</b></td>
+      <td class="num profit">+7.00</td>
+      <td>на мясорубки в 11:30</td></tr><tr>
+      <td>1066</td>
+      <td>2026-09-03T13:53:00.301Z</td>
+      <td>completed</td>
+      <td>@Bogdan_gadem</td>
+      <td>5516824279</td>
+      <td>@Bogdan_gadem</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[УБИВАШКА] Смородиновая конфета (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+8.75</td>
+      <td></td></tr><tr>
+      <td>1065</td>
+      <td>2026-09-03T12:06:30.148Z</td>
+      <td>completed</td>
+      <td>@liziikkkkkkkk</td>
+      <td>816055822</td>
+      <td>@liziikkkkkkkk</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[Rick and Morty Bad Trip] Садовые ягоды (x1) — 17 BYN; [Catswill classic] Морозный чёрный виноград (x1) — 17 BYN; [VAPORESSO] Картридж XROS 0.6 ohm 2 мл (x1) — 13 BYN</td>
+      <td class="num">47.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>47.00</b></td>
+      <td class="num profit">+22.41</td>
+      <td></td></tr><tr>
+      <td>1064</td>
+      <td>2026-09-03T11:07:36.781Z</td>
+      <td>completed</td>
+      <td>@your_name_off</td>
+      <td>2112168586</td>
+      <td>@your_name_off</td>
+      <td>Доставка курьером</td>
+      <td>Могилёв, Гаражный переулок, 2/7</td>
+      <td>[Rick and Morty Bad Trip] Арбуз Малина (x1) — 17 BYN</td>
+      <td class="num">17.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>22.00</b></td>
+      <td class="num profit">+7.50</td>
+      <td></td></tr><tr>
+      <td>1063</td>
+      <td>2026-09-03T08:05:56.442Z</td>
+      <td>completed</td>
+      <td>@ssshhheeeesh</td>
+      <td>767714778</td>
+      <td>@ssshhheeeesh</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>БРУ </td>
+      <td>[УБИВАШКА] Смородиновая конфета (x1) — 18 BYN; [VAPORESSO] Картридж XROS 0.4 омм 3 мл (x1) — 13 BYN</td>
+      <td class="num">31.00</td>
+      <td class="num">3.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>28.00</b></td>
+      <td class="num profit">+15.25</td>
+      <td>12</td></tr><tr>
+      <td>1062</td>
+      <td>2026-09-02T20:16:29.871Z</td>
+      <td>cancelled</td>
+      <td>@user</td>
+      <td>1650493038</td>
+      <td>Не указан</td>
+      <td>Доставка курьером</td>
+      <td>Деревня , Руда Яворская улица Новая дом 1 Индекс 231477</td>
+      <td>[Рик и морти на замерзоне] Скитлс лимон лайм (x1) — 15 BYN</td>
+      <td class="num">15.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>20.00</b></td>
+      <td class="num profit">+7.00</td>
+      <td>КАПСОМ. Белпочта, Базылевич Роман Джимианович +375295972353</td></tr><tr>
+      <td>1061</td>
+      <td>2026-09-02T19:24:30.587Z</td>
+      <td>completed</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Юбилейный</td>
+      <td>[Rick and Morty Bad Trip] Арбуз Малина (x1) — 17 BYN; [VAPORESSO] Картридж XROS 0.6 ohm 2 мл (x1) — 13 BYN</td>
+      <td class="num">30.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>27.00</b></td>
+      <td class="num profit">+14.00</td>
+      <td></td></tr><tr>
+      <td>1060</td>
+      <td>2026-09-02T16:50:15.317Z</td>
+      <td>completed</td>
+      <td>@aleksandr_5237</td>
+      <td>5780055029</td>
+      <td>@aleksandr_5237</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[SMOANT] SMOANT PASITO 3  (Space Grey) (x1) — 125 BYN; [УБИВАШКА] Черешня малина (x1) — 18 BYN</td>
+      <td class="num">143.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>143.00</b></td>
+      <td class="num profit">+54.41</td>
+      <td></td></tr><tr>
+      <td>1059</td>
+      <td>2026-09-02T13:37:16.157Z</td>
+      <td>completed</td>
+      <td>@Korcas77</td>
+      <td>6152311114</td>
+      <td>@Korcas77</td>
+      <td>Доставка курьером</td>
+      <td>Г. Могилёв, Буйничи, К.П. Орловского </td>
+      <td>[УБИВАШКА] Черешня малина (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>23.00</b></td>
+      <td class="num profit">+9.41</td>
+      <td>К 19:00</td></tr><tr>
+      <td>1058</td>
+      <td>2026-09-02T12:46:19.743Z</td>
+      <td>completed</td>
+      <td>@aleksandr_5237</td>
+      <td>5780055029</td>
+      <td>@aleksandr_5237</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[Rick and Morty Bad Trip] Клубника вишня (x1) — 17 BYN</td>
+      <td class="num">17.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>17.00</b></td>
+      <td class="num profit">+7.50</td>
+      <td></td></tr><tr>
+      <td>1057</td>
+      <td>2026-09-02T12:32:53.640Z</td>
+      <td>completed</td>
+      <td>@aleksandr_5237</td>
+      <td>5780055029</td>
+      <td>@aleksandr_5237</td>
+      <td>Доставка курьером</td>
+      <td>Симонова 15</td>
+      <td>[Xros 6 mini] Vaporesso Xros 6 Mini - Titanium Silver (x1) — 75 BYN; [Catswill classic] Морозный чёрный виноград (x1) — 17 BYN</td>
+      <td class="num">92.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>97.00</b></td>
+      <td class="num profit">+44.41</td>
+      <td></td></tr><tr>
+      <td>1056</td>
+      <td>2026-09-02T12:01:59.650Z</td>
+      <td>completed</td>
+      <td>@Juliya_hk</td>
+      <td>754796123</td>
+      <td>@Juliya_hk</td>
+      <td>Доставка курьером</td>
+      <td>Г. Могилев, Днепровский бульвар, д.12, 5 подъезд </td>
+      <td>[Xros 6 mini] Vaporesso Xros 6 Mini - Plume Blue (x1) — 75 BYN</td>
+      <td class="num">75.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>75.00</b></td>
+      <td class="num profit">+36.00</td>
+      <td></td></tr><tr>
+      <td>1055</td>
+      <td>2026-09-02T11:12:19.423Z</td>
+      <td>completed</td>
+      <td>@dzmitrynero</td>
+      <td>5659638424</td>
+      <td>@dzmitrynero</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[УБИВАШКА] Тропический смузи (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+9.41</td>
+      <td></td></tr><tr>
+      <td>1054</td>
+      <td>2026-09-02T11:09:26.726Z</td>
+      <td>completed</td>
+      <td>@dzmitrynero</td>
+      <td>5659638424</td>
+      <td>@dzmitrynero</td>
+      <td>Доставка курьером</td>
+      <td>Непокоренных 68</td>
+      <td>[Рик и морти на замерзоне] Лимонад клубника (x1) — 15 BYN</td>
+      <td class="num">15.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>20.00</b></td>
+      <td class="num profit">+7.00</td>
+      <td>Там где и дудки были</td></tr><tr>
+      <td>1053</td>
+      <td>2026-09-02T08:35:30.731Z</td>
+      <td>cancelled</td>
+      <td>@dzmitrynero</td>
+      <td>5659638424</td>
+      <td>@dzmitrynero</td>
+      <td>Доставка курьером</td>
+      <td>Сюда</td>
+      <td>[Рик и морти на замерзоне] Кола вишня (x1) — 15 BYN</td>
+      <td class="num">15.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>20.00</b></td>
+      <td class="num profit">+7.00</td>
+      <td></td></tr><tr>
+      <td>1052</td>
+      <td>2026-09-02T08:21:29.778Z</td>
+      <td>completed</td>
+      <td>@lordgoddeas</td>
+      <td>1632945173</td>
+      <td>@lordgoddeas</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[Рик и морти на замерзоне] Скитлс лимон лайм (x1) — 15 BYN; [VAPORESSO] Картридж XROS 0.6 ohm 2 мл (x1) — 13 BYN; [VAPORESSO] Картридж XROS 0.4 омм 3 мл (x1) — 13 BYN</td>
+      <td class="num">41.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>41.00</b></td>
+      <td class="num profit">+20.00</td>
+      <td>Адрес 9 лицей </td></tr><tr>
+      <td>1051</td>
+      <td>2026-09-01T22:02:49.072Z</td>
+      <td>completed</td>
+      <td>@qirtyx</td>
+      <td>5220188905</td>
+      <td>@qirtyx</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[VAPORESSO] Картридж XROS 0.4 омм 3 мл (x1) — 13 BYN</td>
+      <td class="num">13.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>13.00</b></td>
+      <td class="num profit">+6.50</td>
+      <td></td></tr><tr>
+      <td>1050</td>
+      <td>2026-09-01T17:22:28.522Z</td>
+      <td>completed</td>
+      <td>@user</td>
+      <td>1009991124</td>
+      <td>Не указан</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[Bjorn zloy v1] Клубника мороженое (x1) — 18 BYN; [Самоубийца V2 ACID] Кислые мармеладные червячки (x1) — 19 BYN</td>
+      <td class="num">37.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>37.00</b></td>
+      <td class="num profit">+19.00</td>
+      <td></td></tr><tr>
+      <td>1049</td>
+      <td>2026-09-01T16:16:05.878Z</td>
+      <td>completed</td>
+      <td>@Zaybli</td>
+      <td>2135994283</td>
+      <td>@Zaybli</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[McKeese 7000] McKeese 7000 -  Energy drink (x1) — 25 BYN</td>
+      <td class="num">25.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>25.00</b></td>
+      <td class="num profit">+16.00</td>
+      <td></td></tr><tr>
+      <td>1048</td>
+      <td>2026-09-01T16:11:53.406Z</td>
+      <td>completed</td>
+      <td>@chupep666</td>
+      <td>1193667690</td>
+      <td>@chupep666</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>БРУ </td>
+      <td>[McKeese 7000] McKeese 7000 -  Lime mojito (x1) — 25 BYN</td>
+      <td class="num">25.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>25.00</b></td>
+      <td class="num profit">+16.00</td>
+      <td></td></tr><tr>
+      <td>1047</td>
+      <td>2026-09-01T15:49:03.045Z</td>
+      <td>completed</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[VAPORESSO] Картридж XROS 0.6 ohm 3мл (x1) — 13 BYN</td>
+      <td class="num">13.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>13.00</b></td>
+      <td class="num profit">+7.00</td>
+      <td></td></tr><tr>
+      <td>1046</td>
+      <td>2026-09-01T14:38:58.420Z</td>
+      <td>cancelled</td>
+      <td>@dzmitrynero</td>
+      <td>5659638424</td>
+      <td>@dzmitrynero</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[Рик и морти на замерзоне] Кола вишня (x1) — 15 BYN; [Рик и морти на замерзоне] Лимонад клубника (x1) — 15 BYN</td>
+      <td class="num">30.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>30.00</b></td>
+      <td class="num profit">+14.00</td>
+      <td></td></tr><tr>
+      <td>1045</td>
+      <td>2026-09-01T14:24:59.638Z</td>
+      <td>cancelled</td>
+      <td>@dzmitrynero</td>
+      <td>5659638424</td>
+      <td>@dzmitrynero</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[Anima love 18+] Энергетик ягоды (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+9.05</td>
+      <td></td></tr><tr>
+      <td>1044</td>
+      <td>2026-09-01T14:22:43.028Z</td>
+      <td>cancelled</td>
+      <td>@dzmitrynero</td>
+      <td>5659638424</td>
+      <td>@dzmitrynero</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[Рик и морти на замерзоне] Кола вишня (x1) — 15 BYN; [Рик и Морти на ЗАМЕРЗОНЕ] Лимонад клубника (x1) — 15 BYN</td>
+      <td class="num">30.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>30.00</b></td>
+      <td class="num profit">+14.00</td>
+      <td></td></tr><tr>
+      <td>1043</td>
+      <td>2026-09-01T13:45:12.113Z</td>
+      <td>completed</td>
+      <td>@Naklz_zxc</td>
+      <td>8489704854</td>
+      <td>@Naklz_zxc</td>
+      <td>Доставка курьером</td>
+      <td>Плеханова 6 </td>
+      <td>[BJORN ZLOY V1] Клубника банан (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>23.00</b></td>
+      <td class="num profit">+9.00</td>
+      <td>Позвоните по номеру +375257280047 и скажите что подъехали я выйду </td></tr><tr>
+      <td>1042</td>
+      <td>2026-09-01T13:17:12.395Z</td>
+      <td>completed</td>
+      <td>@barbos1ch</td>
+      <td>8869318404</td>
+      <td>@barbos1ch</td>
+      <td>Доставка курьером</td>
+      <td>ул.Якубовского, дом 16</td>
+      <td>[XROS 6 MINI] Vaporesso Xros 6 Mini - Plume White (x1) — 75 BYN</td>
+      <td class="num">75.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>80.00</b></td>
+      <td class="num profit">+36.00</td>
+      <td>Общежитие, доставку как можно быстрее</td></tr><tr>
+      <td>1041</td>
+      <td>2026-09-01T12:40:48.008Z</td>
+      <td>completed</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[Xros 6 mini] Vaporesso Xros 6 Mini - Jelly Pink (x1) — 75 BYN; [Рик и морти на замерзоне] Кола вишня (x1) — 15 BYN</td>
+      <td class="num">90.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>90.00</b></td>
+      <td class="num profit">+43.00</td>
+      <td></td></tr><tr>
+      <td>1040</td>
+      <td>2026-09-01T12:21:04.770Z</td>
+      <td>completed</td>
+      <td>@sweet_chokopay</td>
+      <td>8397690178</td>
+      <td>@sweet_chokopay</td>
+      <td>Доставка курьером</td>
+      <td>Ул. Берёзовская 20а, третий подъезд </td>
+      <td>[АНАРХИЯ V2] Яблочный виноградный холлс (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>23.00</b></td>
+      <td class="num profit">+10.10</td>
+      <td></td></tr><tr>
+      <td>1039</td>
+      <td>2026-09-01T11:37:19.690Z</td>
+      <td>cancelled</td>
+      <td>@dzmitrynero</td>
+      <td>5659638424</td>
+      <td>@dzmitrynero</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[Рик и морти на замерзоне] Кола вишня (x1) — 15 BYN</td>
+      <td class="num">15.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>15.00</b></td>
+      <td class="num profit">+7.00</td>
+      <td></td></tr><tr>
+      <td>1038</td>
+      <td>2026-09-01T11:31:02.360Z</td>
+      <td>cancelled</td>
+      <td>@dzmitrynero</td>
+      <td>5659638424</td>
+      <td>@dzmitrynero</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[УБИВАШКА] Черешня малина (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>20.00</b></td>
+      <td class="num profit">+9.41</td>
+      <td></td></tr><tr>
+      <td>1037</td>
+      <td>2026-09-01T11:25:03.353Z</td>
+      <td>cancelled</td>
+      <td>@dzmitrynero</td>
+      <td>5659638424</td>
+      <td>@dzmitrynero</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[УБИВАШКА] Вишня яблоко (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+9.41</td>
+      <td></td></tr><tr>
+      <td>1036</td>
+      <td>2026-09-01T11:11:08.523Z</td>
+      <td>cancelled</td>
+      <td>@dzmitrynero</td>
+      <td>5659638424</td>
+      <td>@dzmitrynero</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[Mckeese 7000] McKeese 7000 - Blueberry (x1) — 25 BYN</td>
+      <td class="num">25.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>25.00</b></td>
+      <td class="num profit">+16.00</td>
+      <td></td></tr><tr>
+      <td>1035</td>
+      <td>2026-08-31T22:46:27.807Z</td>
+      <td>cancelled</td>
+      <td>@Grelkinchert</td>
+      <td>8872177586</td>
+      <td>@Grelkinchert</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Театр Кукол</td>
+      <td>[Mckeese 7000] McKeese 7000 - Grape (x1) — 25 BYN</td>
+      <td class="num">25.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>25.00</b></td>
+      <td class="num profit">+16.00</td>
+      <td>18:30</td></tr><tr>
+      <td>1034</td>
+      <td>2026-08-31T22:27:18.150Z</td>
+      <td>completed</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[VAPORESSO] Картридж XROS 0.6 ohm 3мл (x1) — 13 BYN; [Rick and Morty Bad Trip] Виноградный энергетик (x1) — 15 BYN</td>
+      <td class="num">28.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>30.00</b></td>
+      <td class="num profit">+12.50</td>
+      <td></td></tr><tr>
+      <td>1033</td>
+      <td>2026-08-31T22:26:18.494Z</td>
+      <td>completed</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Театр Кукол</td>
+      <td>[Xros 6 mini] Vaporesso Xros 6 Mini - Plume Pink (x1) — 75 BYN; [Podonki podgon] Ежевика черника (x1) — 15 BYN</td>
+      <td class="num">90.00</td>
+      <td class="num">15.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>75.00</b></td>
+      <td class="num profit">+45.25</td>
+      <td>[Акция: Акция "PODONKI PODGON В подарок к POD-Системе!" (x1): -15 BYN]</td></tr><tr>
+      <td>1032</td>
+      <td>2026-08-31T20:32:22.254Z</td>
+      <td>cancelled</td>
+      <td>@dzmitrynero</td>
+      <td>5659638424</td>
+      <td>@dzmitrynero</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[Podonki podgon] Ежевика черника (x1) — 15 BYN</td>
+      <td class="num">15.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>15.00</b></td>
+      <td class="num profit">+9.25</td>
+      <td></td></tr><tr>
+      <td>1031</td>
+      <td>2026-08-31T18:58:37.798Z</td>
+      <td>completed</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[BJORN ZLOY V1] Скитлс (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+9.50</td>
+      <td></td></tr><tr>
+      <td>1030</td>
+      <td>2026-08-31T17:56:34.440Z</td>
+      <td>completed</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[ANIMA LOVE 18+] Кислые ягодные червячки (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+9.05</td>
+      <td></td></tr><tr>
+      <td>1029</td>
+      <td>2026-08-31T13:59:40.252Z</td>
+      <td>completed</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Доставка курьером</td>
+      <td>.</td>
+      <td>[УБИВАШКА] Фанта голубая малина (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>23.00</b></td>
+      <td class="num profit">+9.41</td>
+      <td></td></tr><tr>
+      <td>1028</td>
+      <td>2026-08-31T10:35:49.694Z</td>
+      <td>completed</td>
+      <td>@qswwsw</td>
+      <td>8867041036</td>
+      <td>@qswwsw</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Обл. Больница</td>
+      <td>[ANIMA LOVE 18+] Смородина вишня черника (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+9.05</td>
+      <td></td></tr><tr>
+      <td>1027</td>
+      <td>2026-08-31T10:19:58.748Z</td>
+      <td>completed</td>
+      <td>@berlinkkaaa</td>
+      <td>6341059983</td>
+      <td>@berlinkkaaa</td>
+      <td>Доставка курьером</td>
+      <td>Гринвич , Белинского 28</td>
+      <td>[Podonki podgon] Смородина черника (x1) — 15 BYN</td>
+      <td class="num">15.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>20.00</b></td>
+      <td class="num profit">+9.25</td>
+      <td>до 15:00</td></tr><tr>
+      <td>1026</td>
+      <td>2026-08-31T10:19:09.462Z</td>
+      <td>completed</td>
+      <td>@qswwsw</td>
+      <td>8867041036</td>
+      <td>@qswwsw</td>
+      <td>Доставка курьером</td>
+      <td>Алексея Пысина 6А, подъезд 2</td>
+      <td>[Mckeese 7000] McKeese 7000 - Blackcurant mango (x1) — 25 BYN</td>
+      <td class="num">25.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>30.00</b></td>
+      <td class="num profit">+16.00</td>
+      <td>Оплата картой </td></tr><tr>
+      <td>1025</td>
+      <td>2026-08-31T10:15:12.002Z</td>
+      <td>cancelled</td>
+      <td>@qswwsw</td>
+      <td>8867041036</td>
+      <td>@qswwsw</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[ANIMA LOVE 18+] Кислые ягодные червячки (x1) — 18 BYN; [Mckeese 7000] McKeese 7000 - Blackcurant mango (x1) — 25 BYN</td>
+      <td class="num">43.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>43.00</b></td>
+      <td class="num profit">+25.05</td>
+      <td></td></tr><tr>
+      <td>1024</td>
+      <td>2026-08-31T08:00:43.904Z</td>
+      <td>completed</td>
+      <td>@Zagorey_Aleksey</td>
+      <td>521882325</td>
+      <td>@Zagorey_Aleksey</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[SMOANT] Испаритель SMOANT 0.3 омм (x2) — 13 BYN</td>
+      <td class="num">26.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>26.00</b></td>
+      <td class="num profit">+14.00</td>
+      <td></td></tr><tr>
+      <td>1023</td>
+      <td>2026-08-30T18:53:45.724Z</td>
+      <td>completed</td>
+      <td>@nervixxks1</td>
+      <td>1684920066</td>
+      <td>@nervixxks1</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>БРУ </td>
+      <td>[VAPORESSO] Картридж XROS 0.6 ohm 2 мл (x1) — 13 BYN; [Anima love 18+] Энергетик ягоды (x1) — 18 BYN</td>
+      <td class="num">31.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>31.00</b></td>
+      <td class="num profit">+15.55</td>
+      <td></td></tr><tr>
+      <td>1022</td>
+      <td>2026-08-30T18:23:22.286Z</td>
+      <td>completed</td>
+      <td>@svv2332</td>
+      <td>1673171676</td>
+      <td>@svv2332</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Арбат</td>
+      <td>[Catswill classic] Морозный чёрный виноград (x1) — 17 BYN; [VAPORESSO] Картридж XROS 0.6 ohm 2 мл (x1) — 13 BYN</td>
+      <td class="num">30.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>30.00</b></td>
+      <td class="num profit">+14.91</td>
+      <td></td></tr><tr>
+      <td>1021</td>
+      <td>2026-08-30T18:18:33.047Z</td>
+      <td>cancelled</td>
+      <td>@svv2332</td>
+      <td>1673171676</td>
+      <td>@svv2332</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Арбат</td>
+      <td>[VAPORESSO] Картридж XROS 0.6 ohm 2 мл (x1) — 13 BYN</td>
+      <td class="num">13.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>13.00</b></td>
+      <td class="num profit">+6.50</td>
+      <td></td></tr><tr>
+      <td>1020</td>
+      <td>2026-08-30T17:18:00.690Z</td>
+      <td>cancelled</td>
+      <td>@myloveanness</td>
+      <td>6895533898</td>
+      <td>@myloveanness</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[Catswill classic] Морозный чёрный виноград (x1) — 17 BYN</td>
+      <td class="num">17.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>17.00</b></td>
+      <td class="num profit">+8.41</td>
+      <td>20.50</td></tr><tr>
+      <td>1019</td>
+      <td>2026-08-30T13:05:32.838Z</td>
+      <td>cancelled</td>
+      <td>@svv2332</td>
+      <td>1673171676</td>
+      <td>@svv2332</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Арбат</td>
+      <td>[Catswill classic] Морозный чёрный виноград (x1) — 17 BYN</td>
+      <td class="num">17.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>17.00</b></td>
+      <td class="num profit">+8.41</td>
+      <td></td></tr><tr>
+      <td>1018</td>
+      <td>2026-08-29T20:22:51.600Z</td>
+      <td>completed</td>
+      <td>@puff_mngr</td>
+      <td>8161417737</td>
+      <td>@puff_mngr</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[УБИВАШКА] Ягодный морс (x1) — 18 BYN; [VAPORESSO] Картридж XROS 0.4 омм 3 мл (x1) — 13 BYN</td>
+      <td class="num">31.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>31.00</b></td>
+      <td class="num profit">+15.91</td>
+      <td></td></tr><tr>
+      <td>1017</td>
+      <td>2026-08-29T18:20:39.813Z</td>
+      <td>completed</td>
+      <td>@dastubic</td>
+      <td>1050840740</td>
+      <td>@dastubic</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Юбилейный</td>
+      <td>[CATSWILL CLASSIC] Клубника арбуз жвачка (x1) — 17 BYN</td>
+      <td class="num">17.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>17.00</b></td>
+      <td class="num profit">+8.41</td>
+      <td></td></tr><tr>
+      <td>1016</td>
+      <td>2026-08-29T15:59:54.464Z</td>
+      <td>completed</td>
+      <td>@m5faw</td>
+      <td>1135906354</td>
+      <td>@m5faw</td>
+      <td>Доставка курьером</td>
+      <td>ул. пионерская 54</td>
+      <td>[Mckeese 7000] McKeese 7000 - Blueberry (x1) — 25 BYN</td>
+      <td class="num">25.00</td>
+      <td class="num">0.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>30.00</b></td>
+      <td class="num profit">+16.00</td>
+      <td></td></tr><tr>
+      <td>1015</td>
+      <td>2026-08-29T15:19:11.507Z</td>
+      <td>completed</td>
+      <td>@ziankou</td>
+      <td>2131869101</td>
+      <td>@ziankou</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Юбилейный</td>
+      <td>[Bjorn zloy v1] Грейпфрут с черешней (x1) — 18 BYN; [GeekVape] Испаритель Hero/Boost  0.3 (x1) — 12 BYN</td>
+      <td class="num">30.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>30.00</b></td>
+      <td class="num profit">+15.50</td>
+      <td></td></tr><tr>
+      <td>1014</td>
+      <td>2026-08-29T14:26:05.092Z</td>
+      <td>completed</td>
+      <td>@darstrey</td>
+      <td>7982841324</td>
+      <td>@darstrey</td>
+      <td>Доставка курьером</td>
+      <td>крупской 214</td>
+      <td>[Mckeese 7000] McKeese 7000 - Grape (x1) — 25 BYN</td>
+      <td class="num">25.00</td>
+      <td class="num">5.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>25.00</b></td>
+      <td class="num profit">+16.00</td>
+      <td></td></tr><tr>
+      <td>1013</td>
+      <td>2026-08-29T14:18:33.230Z</td>
+      <td>cancelled</td>
+      <td>@scvizyyy</td>
+      <td>5037571602</td>
+      <td>@scvizyyy</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[УБИВАШКА] Черешня малина (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+9.41</td>
+      <td></td></tr><tr>
+      <td>1012</td>
+      <td>2026-08-29T12:31:02.339Z</td>
+      <td>completed</td>
+      <td>@NK_M5CS</td>
+      <td>1625765251</td>
+      <td>@NK_M5CS</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Юбилейный</td>
+      <td>[УБИВАШКА] Фанта голубая малина (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+9.41</td>
+      <td></td></tr><tr>
+      <td>1011</td>
+      <td>2026-08-29T11:28:58.986Z</td>
+      <td>cancelled</td>
+      <td>@user</td>
+      <td>1219958538</td>
+      <td>Не указан</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Театр Кукол</td>
+      <td>Никобустер +20mg (x1) — 3 BYN</td>
+      <td class="num">3.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>3.00</b></td>
+      <td class="num profit">+2.00</td>
+      <td>17:10-17:50</td></tr><tr>
+      <td>1010</td>
+      <td>2026-08-29T10:51:36.476Z</td>
+      <td>completed</td>
+      <td>@darknesswins</td>
+      <td>8567313835</td>
+      <td>@darknesswins</td>
+      <td>Доставка курьером</td>
+      <td>Могилев,улица Крупской 214</td>
+      <td>[Mckeese 7000] McKeese 7000 - Blue razz ice (x1) — 25 BYN</td>
+      <td class="num">25.00</td>
+      <td class="num">3.00</td>
+      <td class="num">5.00</td>
+      <td class="num"><b>27.00</b></td>
+      <td class="num profit">+16.00</td>
+      <td>20 р</td></tr><tr>
+      <td>1009</td>
+      <td>2026-08-29T10:19:40.518Z</td>
+      <td>completed</td>
+      <td>@Bogdan_gadem</td>
+      <td>5516824279</td>
+      <td>@Bogdan_gadem</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[Podonki podgon] Черничная конфета (x1) — 15 BYN</td>
+      <td class="num">15.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>15.00</b></td>
+      <td class="num profit">+9.25</td>
+      <td></td></tr><tr>
+      <td>1008</td>
+      <td>2026-08-29T10:15:09.160Z</td>
+      <td>completed</td>
+      <td>@shprehon</td>
+      <td>6828577420</td>
+      <td>@shprehon</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Центр</td>
+      <td>[Podonki podgon] Черничная конфета (x1) — 15 BYN; [Xros 6 mini] Vaporesso Xros 6 Mini - Black (x1) — 75 BYN</td>
+      <td class="num">90.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>90.00</b></td>
+      <td class="num profit">+45.25</td>
+      <td></td></tr><tr>
+      <td>1007</td>
+      <td>2026-08-28T19:41:37.487Z</td>
+      <td>completed</td>
+      <td>@dzmitrynero</td>
+      <td>5659638424</td>
+      <td>@dzmitrynero</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Слив остатков</td>
+      <td>[Podonki podgon] Ежевика черника (x1) — 15 BYN; [Podonki podgon] Малина ежевика (x2) — 15 BYN; [Podonki podgon] Малина земляника (x2) — 15 BYN; [Podonki podgon] Смородина черника (x1) — 15 BYN</td>
+      <td class="num">90.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>90.00</b></td>
+      <td class="num profit">+55.50</td>
+      <td></td></tr><tr>
+      <td>1006</td>
+      <td>2026-08-28T19:40:49.501Z</td>
+      <td>completed</td>
+      <td>@dzmitrynero</td>
+      <td>5659638424</td>
+      <td>@dzmitrynero</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Слив остатков</td>
+      <td>[Рик и Морти на ЗАМЕРЗОНЕ] Энергетик апельсин (x2) — 15 BYN; [Рик и Морти на ЗАМЕРЗОНЕ] Лимонад клубника (x1) — 15 BYN; [Рик и морти на замерзоне] Скитлс лимон лайм (x1) — 15 BYN</td>
+      <td class="num">60.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>60.00</b></td>
+      <td class="num profit">+28.00</td>
+      <td></td></tr><tr>
+      <td>1005</td>
+      <td>2026-08-28T19:35:49.457Z</td>
+      <td>completed</td>
+      <td>@dzmitrynero</td>
+      <td>5659638424</td>
+      <td>@dzmitrynero</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Слив остатков</td>
+      <td>[BJORN ZLOY V1] Энергетик виноград (x2) — 18 BYN</td>
+      <td class="num">36.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>36.00</b></td>
+      <td class="num profit">+19.00</td>
+      <td></td></tr><tr>
+      <td>1004</td>
+      <td>2026-08-28T19:34:52.962Z</td>
+      <td>completed</td>
+      <td>@dzmitrynero</td>
+      <td>5659638424</td>
+      <td>@dzmitrynero</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Слив остатков</td>
+      <td>[Bjorn zloy v1] Грейпфрут с черешней (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+9.50</td>
+      <td></td></tr><tr>
+      <td>1003</td>
+      <td>2026-08-28T19:32:38.217Z</td>
+      <td>completed</td>
+      <td>@dzmitrynero</td>
+      <td>5659638424</td>
+      <td>@dzmitrynero</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Слив остатков</td>
+      <td>[УБИВАШКА] Черешня малина (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+9.41</td>
+      <td></td></tr><tr>
+      <td>1002</td>
+      <td>2026-08-28T19:31:59.263Z</td>
+      <td>completed</td>
+      <td>@dzmitrynero</td>
+      <td>5659638424</td>
+      <td>@dzmitrynero</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Слив остатков</td>
+      <td>[УБИВАШКА] Тропический смузи (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+9.41</td>
+      <td></td></tr><tr>
+      <td>1001</td>
+      <td>2026-11-12T11:46:12.435Z</td>
+      <td>pending</td>
+      <td>@mishanya01bel</td>
+      <td>8818048322</td>
+      <td>@mishanya01bel</td>
+      <td>Самовывоз (Встреча)</td>
+      <td>Точка самовывоза</td>
+      <td>[Убивашка] Кислая вишня ред булл смородина (x1) — 18 BYN</td>
+      <td class="num">18.00</td>
+      <td class="num">0.00</td>
+      <td class="num">0.00</td>
+      <td class="num"><b>18.00</b></td>
+      <td class="num profit">+9.00</td>
+      <td>17:30</td></tr></tbody></table></body></html>

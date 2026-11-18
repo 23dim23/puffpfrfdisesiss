@@ -1,23 +1,48 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { useStore } from '../services/store';
 import { Home, ListOrdered, ShoppingBag, Gift, PackageCheck, Settings } from 'lucide-react';
-import { hapticSelection } from '../services/telegram';
+import { hapticSelection, hapticNotification } from '../services/telegram';
 
 export type TabType = 'home' | 'catalog' | 'cart' | 'prizes' | 'orders' | 'admin';
 
 interface BottomNavProps {
   activeTab: TabType;
   onTabChange: (tab: TabType) => void;
+  onOpenExperimentalMenu?: () => void;
 }
 
-export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) => {
-  const { cart, isAdmin, isModerator } = useStore();
+export const BottomNav: React.FC<BottomNavProps> = ({
+  activeTab,
+  onTabChange,
+  onOpenExperimentalMenu,
+}) => {
+  const { cart, isAdmin, isModerator, isAuthorizedAdmin } = useStore();
+  const adminTapTimestampsRef = useRef<number[]>([]);
 
   const totalCartItems = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   const handleSelect = (tab: TabType) => {
     hapticSelection();
     onTabChange(tab);
+  };
+
+  const handleAdminButtonClick = () => {
+    const now = Date.now();
+    // Keep taps within the last 1800ms
+    const recentTaps = adminTapTimestampsRef.current.filter((t) => now - t < 1800);
+    recentTaps.push(now);
+    adminTapTimestampsRef.current = recentTaps;
+
+    if (recentTaps.length >= 5) {
+      adminTapTimestampsRef.current = [];
+      hapticNotification('success');
+      if (onOpenExperimentalMenu) {
+        onOpenExperimentalMenu();
+        return;
+      }
+    }
+
+    handleSelect('admin');
   };
 
   return (
@@ -103,15 +128,16 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) 
           <span className="text-[10px] mt-0.5 tracking-tight">Заказы</span>
         </button>
 
-        {/* Админка (если админ/модератор) */}
-        {(isAdmin || isModerator) && (
+        {/* Админка (быстрое нажатие 5 раз открывает экспериментальное меню бонусов и колеса) */}
+        {(isAdmin || isModerator || isAuthorizedAdmin) && (
           <button
-            onClick={() => handleSelect('admin')}
+            onClick={handleAdminButtonClick}
             className={`flex flex-col items-center justify-center flex-1 py-1 px-1 rounded-xl transition-all tap-active-sm ${
               activeTab === 'admin'
                 ? 'text-orange-400 font-semibold'
                 : 'text-orange-400/70 hover:text-orange-300 font-medium'
             }`}
+            title="Быстрое нажатие 5 раз открывает экспериментальное меню лояльности"
           >
             <div className={`p-1 rounded-lg transition-transform ${activeTab === 'admin' ? 'scale-110 bg-orange-500/15' : ''}`}>
               <Settings className="w-5 h-5" />

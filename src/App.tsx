@@ -12,6 +12,7 @@ import { AdminPanel } from './components/AdminPanel';
 import { ProductDetailModal } from './components/ProductDetailModal';
 import { PromotionDetailModal } from './components/PromotionDetailModal';
 import { OrderSuccessModal } from './components/OrderSuccessModal';
+import { ExperimentalLoyaltyModal } from './components/ExperimentalLoyaltyModal';
 import { initTelegramApp, hapticImpact } from './services/telegram';
 
 const MainContent: React.FC = () => {
@@ -22,6 +23,8 @@ const MainContent: React.FC = () => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedPromotion, setSelectedPromotion] = useState<Promotion | null>(null);
   const [successOrderInfo, setSuccessOrderInfo] = useState<{ id: number; total: number } | null>(null);
+  const [isExperimentalLoyaltyOpen, setIsExperimentalLoyaltyOpen] = useState<boolean>(false);
+  const [experimentalInitialMode, setExperimentalInitialMode] = useState<'client' | 'admin'>('client');
 
   useEffect(() => {
     initTelegramApp();
@@ -50,6 +53,11 @@ const MainContent: React.FC = () => {
 
   const handleOrderCompleted = (orderId: number, total: number) => {
     setSuccessOrderInfo({ id: orderId, total });
+  };
+
+  const openLoyaltyMenu = (mode: 'client' | 'admin' = 'client') => {
+    setExperimentalInitialMode(mode);
+    setIsExperimentalLoyaltyOpen(true);
   };
 
   return (
@@ -103,11 +111,15 @@ const MainContent: React.FC = () => {
             <CartTab
               onGoToCatalog={() => handleNavigateToCatalog('all')}
               onOrderCompleted={handleOrderCompleted}
+              onOpenLoyaltyModal={() => openLoyaltyMenu('client')}
             />
           )}
 
           {activeTab === 'prizes' && (
-            <PrizesTab onSelectPromotion={(promo) => setSelectedPromotion(promo)} />
+            <PrizesTab
+              onSelectPromotion={(promo) => setSelectedPromotion(promo)}
+              onOpenLoyaltyModal={() => openLoyaltyMenu('client')}
+            />
           )}
 
           {activeTab === 'orders' && (
@@ -115,12 +127,19 @@ const MainContent: React.FC = () => {
           )}
 
           {activeTab === 'admin' && (
-            <AdminPanel onBackToHome={() => setActiveTab('home')} />
+            <AdminPanel
+              onBackToHome={() => setActiveTab('home')}
+              onOpenExperimentalLoyalty={() => openLoyaltyMenu('admin')}
+            />
           )}
         </main>
 
-        {/* Bottom Floating Navigation (hide on admin panel if desired, or keep accessible) */}
-        <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
+        {/* Bottom Floating Navigation */}
+        <BottomNav
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+          onOpenExperimentalMenu={() => openLoyaltyMenu('client')}
+        />
 
         {/* Modals */}
         <ProductDetailModal
@@ -145,6 +164,12 @@ const MainContent: React.FC = () => {
             }}
           />
         )}
+
+        <ExperimentalLoyaltyModal
+          isOpen={isExperimentalLoyaltyOpen}
+          onClose={() => setIsExperimentalLoyaltyOpen(false)}
+          initialMode={experimentalInitialMode}
+        />
       </div>
     </div>
   );

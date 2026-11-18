@@ -62,7 +62,10 @@ type AdminSubpage =
   | 'settings'
   | 'parser';
 
-export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHome }) => {
+export const AdminPanel: React.FC<{
+  onBackToHome: () => void;
+  onOpenExperimentalLoyalty?: () => void;
+}> = ({ onBackToHome, onOpenExperimentalLoyalty }) => {
   const {
     isAdmin,
     isModerator,
@@ -625,8 +628,37 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
 
       {/* SUBPAGE: MENU */}
       {activeSubpage === 'menu' && (
-        <div className="grid grid-cols-2 gap-2.5">
-          {menuItems.map((item) => {
+        <div className="space-y-3">
+          {onOpenExperimentalLoyalty && (
+            <button
+              onClick={() => {
+                hapticImpact('medium');
+                onOpenExperimentalLoyalty();
+              }}
+              className="w-full p-4 rounded-2xl bg-gradient-to-r from-purple-900/60 via-fuchsia-900/40 to-orange-900/60 border border-purple-500/40 flex items-center justify-between text-left shadow-[0_0_25px_rgba(168,85,247,0.25)] tap-active"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-purple-500 to-orange-500 flex items-center justify-center text-xl shrink-0">
+                  🎡
+                </div>
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <h4 className="text-xs font-black text-white uppercase">Бонусная система & Колесо</h4>
+                    <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-orange-500/20 text-orange-300 border border-orange-500/40">
+                      5x TAP
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-zinc-300 mt-0.5">
+                    Начисление бонусов, колёс и рублей уровней (BROZNE – VIP)
+                  </p>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-purple-300 shrink-0" />
+            </button>
+          )}
+
+          <div className="grid grid-cols-2 gap-2.5">
+            {menuItems.map((item) => {
             const Icon = item.icon;
             return (
               <button
@@ -650,6 +682,7 @@ export const AdminPanel: React.FC<{ onBackToHome: () => void }> = ({ onBackToHom
               </button>
             );
           })}
+          </div>
         </div>
       )}
 

@@ -2,15 +2,14 @@ import React, { useState, useMemo } from 'react';
 import { useStore } from '../services/store';
 import { Order } from '../types';
 import { parseDate } from '../utils/date';
+import { formatBrandSlug } from '../utils/brand';
 import {
   X,
   FileSpreadsheet,
   Download,
   Copy,
   Check,
-  Calendar,
-  Filter,
-  Layers,
+  FileJson,
 } from 'lucide-react';
 import { hapticImpact, hapticNotification } from '../services/telegram';
 
@@ -20,7 +19,7 @@ interface OrderExportModalProps {
 }
 
 export const OrderExportModal: React.FC<OrderExportModalProps> = ({ isOpen, onClose }) => {
-  const { orders, isAdmin } = useStore();
+  const { orders, isAdmin, products, brands } = useStore();
 
   const [period, setPeriod] = useState<'all' | 'today' | 'week' | 'month'>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -44,12 +43,25 @@ export const OrderExportModal: React.FC<OrderExportModalProps> = ({ isOpen, onCl
 
       return true;
     });
-  }, [orders, period, statusFilter]);
+  }, [orders, period, statusFilter, isOpen]);
+
+  const resolveBrandName = (i: any) => {
+    const prod = products.find((p) => p.id === i.id);
+    const brand = prod && prod.brand_slug ? brands.find((b) => b.slug === prod.brand_slug) : null;
+    return (
+      i.brand_name ||
+      (brand ? brand.name : null) ||
+      (i.brand_slug ? formatBrandSlug(i.brand_slug) : prod && prod.brand_slug ? formatBrandSlug(prod.brand_slug) : null)
+    );
+  };
 
   const generateExportData = () => {
     return filteredOrders.map((o) => {
-      const itemsList = o.items_json
-        .map((i) => `${i.brand_name ? `[${i.brand_name}] ` : ''}${i.name} (x${i.quantity}) — ${i.price} BYN`)
+      const itemsList = (o.items_json || [])
+        .map((i) => {
+          const brandName = resolveBrandName(i);
+          return `${brandName ? `[${brandName}] ` : ''}${i.name}${i.color_name ? ` (${i.color_name})` : ''} (x${i.quantity}) — ${i.price} BYN`;
+        })
         .join('; ');
 
       const totalMargin = o.total_margin ?? (o.total * 0.6);
@@ -58,7 +70,7 @@ export const OrderExportModal: React.FC<OrderExportModalProps> = ({ isOpen, onCl
         id: o.id,
         created_at: o.created_at || '',
         status: o.status,
-        username: o.username ? `@${o.username}` : '',
+        username: o.username ? (o.username.startsWith('@') ? o.username : `@${o.username}`) : '',
         user_id: o.user_id,
         phone: o.phone || '',
         delivery_type: o.delivery_type === 'pickup' ? 'Самовывоз (Встреча)' : 'Доставка курьером',
@@ -72,6 +84,25 @@ export const OrderExportModal: React.FC<OrderExportModalProps> = ({ isOpen, onCl
         comment: o.comment || '',
       };
     });
+  };
+
+  const handleExportJSON = () => {
+    const enriched = filteredOrders.map((o) => ({
+      ...o,
+      items_json: (o.items_json || []).map((i) => ({
+        ...i,
+        brand_name: resolveBrandName(i),
+      })),
+    }));
+    const blob = new Blob([JSON.stringify(enriched, null, 2)], { type: 'application/json;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `puff_orders_export_${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    hapticNotification('success');
   };
 
   const handleExportCSV = () => {
@@ -321,6 +352,14 @@ export const OrderExportModal: React.FC<OrderExportModalProps> = ({ isOpen, onCl
           >
             <Download className="w-4 h-4" />
             <span>Скачать файл CSV (UTF-8)</span>
+          </button>
+
+          <button
+            onClick={handleExportJSON}
+            className="w-full py-3 px-4 rounded-2xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(217,119,6,0.3)] transition-all"
+          >
+            <FileJson className="w-4 h-4" />
+            <span>Скачать полный JSON-архив (.json)</span>
           </button>
 
           <button

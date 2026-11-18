@@ -1,17 +1,42 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useStore } from '../services/store';
-import { ShoppingBag, Trash2, Plus, Minus, AlertTriangle, Truck, MapPin, CheckCircle2, ArrowRight } from 'lucide-react';
+import {
+  ShoppingBag,
+  Trash2,
+  Plus,
+  Minus,
+  AlertTriangle,
+  Truck,
+  MapPin,
+  CheckCircle2,
+  ArrowRight,
+  Coins,
+  Sparkles,
+  Crown,
+} from 'lucide-react';
 import { DeliveryType } from '../types';
-import { hapticImpact } from '../services/telegram';
+import { hapticImpact, hapticSelection } from '../services/telegram';
 import { ProductImage } from './ProductImage';
 import { calculateBundlePromotions } from '../utils/promo';
+import {
+  BONUS_PER_BYN_EARNED,
+  BONUS_PER_BYN_REDEEM,
+  DELIVERY_BONUS_COST,
+  calculateMaxBonusDiscountByn,
+  getLoyaltyTierBySpend,
+} from '../utils/loyalty';
 
 interface CartTabProps {
   onGoToCatalog: () => void;
   onOrderCompleted: (orderId: number, total: number) => void;
+  onOpenLoyaltyModal?: () => void;
 }
 
-export const CartTab: React.FC<CartTabProps> = ({ onGoToCatalog, onOrderCompleted }) => {
+export const CartTab: React.FC<CartTabProps> = ({
+  onGoToCatalog,
+  onOrderCompleted,
+  onOpenLoyaltyModal,
+}) => {
   const {
     cart,
     pickupPoints,
@@ -23,6 +48,7 @@ export const CartTab: React.FC<CartTabProps> = ({ onGoToCatalog, onOrderComplete
     removePromocode,
     placeOrder,
     bundlePromotions,
+    currentLoyaltyUser,
   } = useStore();
 
   const [deliveryType, setDeliveryType] = useState<DeliveryType>('pickup');
@@ -35,16 +61,20 @@ export const CartTab: React.FC<CartTabProps> = ({ onGoToCatalog, onOrderComplete
   const [promocodeMsg, setPromocodeMsg] = useState<{ text: string; isError: boolean } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
+  // Loyalty bonus redemption states
+  const [bonusDiscountByn, setBonusDiscountByn] = useState<number>(0);
+  const [payDeliveryWithBonuses, setPayDeliveryWithBonuses] = useState<boolean>(false);
+
   const totalItemsCount = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
   const subtotal = cart.reduce((sum, item) => {
     const price = item.discount_price && item.discount_price > 0 ? item.discount_price : item.price;
     return sum + (price || 0) * (item.quantity || 1);
   }, 0);
 
-  let deliveryCost = 0;
-  if (deliveryType === 'delivery') {
-    deliveryCost = totalItemsCount >= (settings.free_delivery_min_items || 4) ? 0 : (settings.delivery_price || 5);
-  }
+  // User Loyalty info
+  const userSpend = Number(currentLoyaltyUser?.total_spent_byn || 0);
+  const userBonuses = Math.max(0, Math.floor(Number(currentLoyaltyUser?.bonus_balance ?? 100)));
+  const userTier = getLoyaltyTierBySpend(userSpend);
 
   let discountAmount = 0;
   if (appliedPromocode) {
@@ -63,7 +93,64 @@ export const CartTab: React.FC<CartTabProps> = ({ onGoToCatalog, onOrderComplete
   const isPromoBlockedByBundle = settings.block_promo_on_bundle && bundleDiscount > 0;
   const effectiveDiscountAmount = isPromoBlockedByBundle ? 0 : discountAmount;
 
-  const grandTotal = Math.max(0, subtotal - (effectiveDiscountAmount + bundleDiscount) + deliveryCost);
+  const itemsTotalAfterPromo = Math.max(0, subtotal - (effectiveDiscountAmount + bundleDiscount));
+
+  // Delivery base cost before bonus payment
+  let baseDeliveryCost = 0;
+  if (deliveryType === 'delivery') {
+    if (userTier.freeCityDelivery || totalItemsCount >= (settings.free_delivery_min_items || 4)) {
+      baseDeliveryCost = 0;
+    } else {
+      baseDeliveryCost = settings.delivery_price || 5;
+    }
+  }
+
+  // Max integer BYN discount allowed by tier % and user's bonus balance (reserving 500 bonuses if delivery is paid with bonuses)
+  const reservedDeliveryBonuses =
+    deliveryType === 'delivery' && baseDeliveryCost > 0 && payDeliveryWithBonuses ? DELIVERY_BONUS_COST : 0;
+  const availableBonusesForItems = Math.max(0, userBonuses - reservedDeliveryBonuses);
+
+  const maxBonusInfo = calculateMaxBonusDiscountByn({
+    orderAmountAfterPromos: itemsTotalAfterPromo,
+    userBonusBalance: userBonuses,
+    userSpendByn: userSpend,
+    reserveForDeliveryBonuses: reservedDeliveryBonuses,
+  });
+  const maxAllowedBonusByn = maxBonusInfo.maxRedeemableByn;
+
+  // Clamp bonusDiscountByn whenever cart or balance changes
+  const effectiveBonusDiscountByn = Math.min(bonusDiscountByn, maxAllowedBonusByn);
+  const bonusPointsForItems = effectiveBonusDiscountByn * BONUS_PER_BYN_REDEEM;
+
+  const canPayDeliveryWithBonuses =
+    deliveryType === 'delivery' &&
+    baseDeliveryCost > 0 &&
+    userBonuses - bonusPointsForItems >= DELIVERY_BONUS_COST;
+
+  const effectivePayDeliveryWithBonuses = canPayDeliveryWithBonuses && payDeliveryWithBonuses;
+  const finalDeliveryCost = effectivePayDeliveryWithBonuses ? 0 : baseDeliveryCost;
+
+  const totalBonusPointsUsed =
+    bonusPointsForItems + (effectivePayDeliveryWithBonuses ? DELIVERY_BONUS_COST : 0);
+
+  const grandTotal = Math.max(
+    0,
+    itemsTotalAfterPromo - effectiveBonusDiscountByn + finalDeliveryCost
+  );
+
+  const earnedBonusesPreview = Math.floor(grandTotal * BONUS_PER_BYN_EARNED);
+
+  useEffect(() => {
+    if (bonusDiscountByn > maxAllowedBonusByn) {
+      setBonusDiscountByn(maxAllowedBonusByn);
+    }
+  }, [maxAllowedBonusByn, bonusDiscountByn]);
+
+  useEffect(() => {
+    if (deliveryType !== 'delivery' || baseDeliveryCost === 0) {
+      setPayDeliveryWithBonuses(false);
+    }
+  }, [deliveryType, baseDeliveryCost]);
 
   const handleApplyPromo = () => {
     if (!promocodeInput.trim()) return;
@@ -94,9 +181,13 @@ export const CartTab: React.FC<CartTabProps> = ({ onGoToCatalog, onOrderComplete
         pickupPointId: deliveryType === 'pickup' ? (selectedPickupId || pickupPoints[0]?.id || null) : null,
         deliveryAddress: deliveryType === 'delivery' ? deliveryAddress : null,
         comment,
+        bonusDiscountByn: effectiveBonusDiscountByn,
+        payDeliveryWithBonuses: effectivePayDeliveryWithBonuses,
       });
 
       if (result.success && result.orderId !== undefined && result.total !== undefined) {
+        setBonusDiscountByn(0);
+        setPayDeliveryWithBonuses(false);
         onOrderCompleted(result.orderId, result.total);
       } else {
         alert(result.error || 'Ошибка оформления заказа');
@@ -296,7 +387,7 @@ export const CartTab: React.FC<CartTabProps> = ({ onGoToCatalog, onOrderComplete
         {/* Delivery Details */}
         {deliveryType === 'delivery' && (
           <div className="space-y-3">
-            {/* Courier policy text (Fully customizable via Admin Panel) */}
+            {/* Courier policy text */}
             <div className="p-3.5 rounded-2xl bg-orange-500/10 border border-orange-500/20 text-xs text-orange-200 leading-relaxed shadow-sm">
               <p className="font-bold text-white mb-1 flex items-center gap-1.5 text-xs">
                 <Truck className="w-4 h-4 text-orange-400 shrink-0" />
@@ -306,12 +397,14 @@ export const CartTab: React.FC<CartTabProps> = ({ onGoToCatalog, onOrderComplete
                 {settings.delivery_card_subtitle || 'По будням и выходным с 13:00.'}
               </p>
               <div className="text-[11px] font-semibold text-orange-300">
-                {settings.delivery_card_conditions ||
-                  `Стоимость ${settings.delivery_price || 5.0} BYN • от ${settings.free_delivery_min_items || 4} позиций в заказе — бесплатно`}
+                {userTier.freeCityDelivery
+                  ? '👑 Статус VIP: бесплатная доставка на любой заказ в пределах города!'
+                  : settings.delivery_card_conditions ||
+                    `Стоимость ${settings.delivery_price || 5.0} BYN • от ${settings.free_delivery_min_items || 4} позиций в заказе — бесплатно`}
               </div>
             </div>
 
-            {/* Warning card (Fully customizable via Admin Panel) */}
+            {/* Warning card */}
             <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center gap-2 text-[11px] text-amber-300">
               <AlertTriangle className="w-4 h-4 shrink-0 text-amber-400" />
               <span>
@@ -402,6 +495,120 @@ export const CartTab: React.FC<CartTabProps> = ({ onGoToCatalog, onOrderComplete
           )}
         </div>
 
+        {/* ================= LOYALTY & BONUS REDEMPTION CARD ================= */}
+        <div className="p-3.5 rounded-2xl bg-gradient-to-br from-purple-950/50 via-[#151126] to-amber-950/30 border border-purple-500/30 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Coins className="w-4 h-4 text-amber-400" />
+              <div>
+                <div className="text-xs font-extrabold text-white flex items-center gap-1.5">
+                  <span>Списание бонусов</span>
+                  <span className={`text-[10px] font-black px-1.5 py-0.5 rounded bg-white/10 ${userTier.accentClass}`}>
+                    {userTier.badgeEmoji} {userTier.title} (до {userTier.maxDiscountPercent}%)
+                  </span>
+                </div>
+                <div className="text-[10px] text-zinc-400">
+                  Доступно: <strong className="text-amber-300">{userBonuses} бонусов</strong> • шаг 100 шт = 1 BYN
+                </div>
+              </div>
+            </div>
+
+            {onOpenLoyaltyModal && (
+              <button
+                type="button"
+                onClick={onOpenLoyaltyModal}
+                className="px-2.5 py-1.5 rounded-xl bg-purple-500/20 border border-purple-500/40 text-purple-200 text-[10px] font-extrabold hover:bg-purple-500/30"
+              >
+                🎡 Колесо ({currentLoyaltyUser?.wheel_spins ?? 1})
+              </button>
+            )}
+          </div>
+
+          {/* Stepper in multiples of 100 bonuses = 1 BYN */}
+          <div className="p-2.5 rounded-xl bg-black/45 border border-white/10 flex items-center justify-between gap-2">
+            <div className="text-xs">
+              <div className="text-zinc-300 font-semibold">
+                Списать на заказ:{' '}
+                <strong className="text-amber-300">
+                  {bonusPointsForItems} бон. (−{effectiveBonusDiscountByn} BYN)
+                </strong>
+              </div>
+              <div className="text-[10px] text-zinc-400">
+                Макс. для вашего уровня ({userTier.maxDiscountPercent}%): до {maxAllowedBonusByn} BYN (
+                {maxAllowedBonusByn * 100} бон.)
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1.5 shrink-0">
+              <button
+                type="button"
+                disabled={effectiveBonusDiscountByn <= 0}
+                onClick={() => {
+                  hapticSelection();
+                  setBonusDiscountByn((prev) => Math.max(0, prev - 1));
+                }}
+                className="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 disabled:opacity-30 flex items-center justify-center text-white font-bold text-xs"
+              >
+                −1₽
+              </button>
+              <button
+                type="button"
+                disabled={effectiveBonusDiscountByn >= maxAllowedBonusByn}
+                onClick={() => {
+                  hapticSelection();
+                  setBonusDiscountByn((prev) => Math.min(maxAllowedBonusByn, prev + 1));
+                }}
+                className="w-8 h-8 rounded-xl bg-amber-500/25 hover:bg-amber-500/35 border border-amber-500/40 disabled:opacity-30 flex items-center justify-center text-amber-200 font-bold text-xs"
+              >
+                +1₽
+              </button>
+              <button
+                type="button"
+                disabled={maxAllowedBonusByn <= 0 || effectiveBonusDiscountByn === maxAllowedBonusByn}
+                onClick={() => {
+                  hapticSelection();
+                  setBonusDiscountByn(maxAllowedBonusByn);
+                }}
+                className="px-2.5 h-8 rounded-xl bg-purple-600/30 border border-purple-500/40 disabled:opacity-30 text-[10px] font-extrabold text-purple-200"
+              >
+                МАКС
+              </button>
+            </div>
+          </div>
+
+          {/* Option to pay full delivery with 500 bonuses (5 BYN = 500 bonuses) */}
+          {deliveryType === 'delivery' && baseDeliveryCost > 0 && (
+            <div className="p-2.5 rounded-xl bg-orange-500/10 border border-orange-500/30 flex items-center justify-between gap-2">
+              <div className="text-[11px]">
+                <div className="font-bold text-orange-200">
+                  🚚 Оплатить доставку бонусами ({baseDeliveryCost} BYN = {DELIVERY_BONUS_COST} бонусов)
+                </div>
+                <div className="text-[10px] text-zinc-400">
+                  {userBonuses - bonusPointsForItems >= DELIVERY_BONUS_COST
+                    ? 'Полная стоимость доставки будет списана баллами'
+                    : `Недостаточно бонусов (нужно ${DELIVERY_BONUS_COST} бон.)`}
+                </div>
+              </div>
+              <input
+                type="checkbox"
+                checked={effectivePayDeliveryWithBonuses}
+                disabled={!canPayDeliveryWithBonuses}
+                onChange={(e) => {
+                  hapticSelection();
+                  setPayDeliveryWithBonuses(e.target.checked);
+                }}
+                className="w-4 h-4 accent-orange-500 rounded cursor-pointer disabled:opacity-40"
+              />
+            </div>
+          )}
+
+          {/* Cashback preview */}
+          <div className="flex items-center justify-between text-[11px] px-1 pt-0.5 text-emerald-300 font-semibold">
+            <span>🎁 Начислим за этот заказ (1 BYN = 10 бонусов):</span>
+            <span className="font-black">+{earnedBonusesPreview} бонусов</span>
+          </div>
+        </div>
+
         {/* Summary Card */}
         <div className="p-4 rounded-2xl bg-black/40 border border-white/10 space-y-2">
           <div className="flex justify-between text-xs text-zinc-400">
@@ -427,13 +634,26 @@ export const CartTab: React.FC<CartTabProps> = ({ onGoToCatalog, onOrderComplete
             </div>
           )}
 
+          {effectiveBonusDiscountByn > 0 && (
+            <div className="flex justify-between text-xs text-amber-300 font-semibold">
+              <span>Оплата бонусами ({bonusPointsForItems} бон.)</span>
+              <span>−{effectiveBonusDiscountByn.toFixed(2)} BYN</span>
+            </div>
+          )}
+
           <div className="flex justify-between text-xs text-zinc-400">
             <span>Доставка</span>
             <span className="font-semibold text-white">
-              {deliveryCost === 0 ? (
-                <span className="text-emerald-400 font-bold">Бесплатно</span>
+              {finalDeliveryCost === 0 ? (
+                <span className="text-emerald-400 font-bold">
+                  {effectivePayDeliveryWithBonuses
+                    ? `0 BYN (за ${DELIVERY_BONUS_COST} бон.)`
+                    : userTier.freeCityDelivery && deliveryType === 'delivery'
+                    ? 'Бесплатно (VIP)'
+                    : 'Бесплатно'}
+                </span>
               ) : (
-                `${deliveryCost.toFixed(2)} BYN`
+                `${finalDeliveryCost.toFixed(2)} BYN`
               )}
             </span>
           </div>
@@ -462,12 +682,21 @@ export const CartTab: React.FC<CartTabProps> = ({ onGoToCatalog, onOrderComplete
             </span>
           </div>
 
+          {totalBonusPointsUsed > 0 && (
+            <div className="flex justify-between text-[11px] text-amber-300 font-semibold">
+              <span>Будет списано бонусов:</span>
+              <span>−{totalBonusPointsUsed} бон.</span>
+            </div>
+          )}
+
           {/* Free delivery helper indicator */}
           {deliveryType === 'delivery' && (
             <div className="pt-2 text-[11px] text-zinc-400 flex items-center gap-1.5">
               <span className="inline-block w-1.5 h-1.5 rounded-full bg-orange-400" />
               <span>
-                Бесплатная доставка по Могилеву от {settings.free_delivery_min_items || 4} позиций в заказе · сейчас {totalItemsCount}
+                {userTier.freeCityDelivery
+                  ? 'Для вашего уровня VIP доставка по городу всегда бесплатна'
+                  : `Бесплатная доставка по Могилеву от ${settings.free_delivery_min_items || 4} позиций в заказе · сейчас ${totalItemsCount}`}
               </span>
             </div>
           )}

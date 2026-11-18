@@ -25,8 +25,15 @@ import { db, HARDCODED_ADMIN_IDS } from './db';
 import { getTelegramWebApp, hapticImpact, hapticNotification } from './telegram';
 import { calculateBundlePromotions } from '../utils/promo';
 import { formatBrandSlug } from '../utils/brand';
+import {
+  getLoyaltyTierBySpend,
+  calculateMaxBonusDiscountByn,
+  BONUSES_PER_BYN_REDEEM,
+  BONUSES_PER_BYN_EARNED,
+  DELIVERY_BONUS_COST,
+} from '../utils/loyalty';
 
-export const BOT_TOKEN = '8635884275:AAEkc9T41wIkGxIYKkUhhyiBrn93iAxbh4I';
+export const BOT_TOKEN = '8877166404:AAHohtP7Uem_6-RAkjD2-y5g7gcCtIKEnSI';
 export const HARDCODED_ADMINS = HARDCODED_ADMIN_IDS;
 
 interface StoreContextType {
@@ -64,6 +71,7 @@ interface StoreContextType {
   users: ShopUser[];
   appliedPromocode: Promocode | null;
   isLoading: boolean;
+  currentLoyaltyUser: ShopUser;
 
   // Cart & Order Actions
   loadAllData: () => Promise<void>;
@@ -78,10 +86,20 @@ interface StoreContextType {
     pickupPointId?: number | null;
     deliveryAddress?: string | null;
     comment?: string | null;
+    bonusDiscountByn?: number;
+    payDeliveryWithBonuses?: boolean;
   }) => Promise<{ success: boolean; orderId?: number; total?: number; error?: string }>;
   updateOrderStatus: (orderId: number, newStatus: OrderStatus) => Promise<boolean>;
   cancelOrder: (orderId: number) => Promise<boolean>;
   updateOrderFinances: (orderId: number, total: number, totalMargin: number) => Promise<boolean>;
+
+  // Loyalty & Wheel Actions
+  updateUserLoyalty: (
+    userId: number,
+    updates: Parameters<typeof db.updateUserLoyalty>[1]
+  ) => ShopUser;
+  spinWheelForUser: (userId?: number) => ReturnType<typeof db.spinUserWheel>;
+  syncUsersSpendFromOrders: () => number;
 
   // Database Management Actions (CRUD)
   saveSettings: (newSettings: Partial<ShopSettings>) => Promise<boolean>;
@@ -323,12 +341,24 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         try {
           const parsed = JSON.parse(savedUser);
           setCurrentUserState(parsed);
+          db.recordUser({
+            id: parsed.id,
+            username: parsed.username,
+            first_name: parsed.first_name,
+            last_name: parsed.last_name,
+          }, 'miniapp');
           const isAdm = verifyAdmin(parsed);
           if (isAdm) setIsAdminMode(true);
         } catch {
           setIsAuthorizedAdmin(false);
         }
       } else {
+        // Ensure default visitor profile receives welcome BRONZE bonus immediately on entry
+        db.recordUser({
+          id: 999999,
+          username: 'guest_user',
+          first_name: 'Гость',
+        }, 'miniapp');
         setIsAuthorizedAdmin(false);
       }
     }
@@ -576,6 +606,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     pickupPointId?: number | null;
     deliveryAddress?: string | null;
     comment?: string | null;
+    bonusDiscountByn?: number;
+    payDeliveryWithBonuses?: boolean;
   }) => {
     try {
       if (cart.length === 0) {
@@ -596,11 +628,19 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         }
       }
 
+      const activeUserId = currentUser?.id || 999999;
+      const buyerLoyalty = db.updateUserLoyalty(activeUserId, {
+        username: currentUser?.username || 'user',
+        first_name: currentUser?.first_name || 'Покупатель',
+      });
+      const buyerTier = getLoyaltyTierBySpend(buyerLoyalty.total_spent_byn || 0);
+
       const totalItemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
       let deliveryPrice = 0;
       if (params.deliveryType === 'delivery') {
-        const isFree = totalItemCount >= (settings.free_delivery_min_items || 4);
-        deliveryPrice = isFree ? 0 : settings.delivery_price;
+        const isFreeByItems = totalItemCount >= (settings.free_delivery_min_items || 4);
+        const isFreeByVip = buyerTier.freeCityDelivery;
+        deliveryPrice = isFreeByItems || isFreeByVip ? 0 : settings.delivery_price;
       }
 
       // Calculate bundle promotions discount
@@ -611,7 +651,38 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const isPromoBlockedByBundle = settings.block_promo_on_bundle && bundleDiscount > 0;
       const finalDiscountAmount = isPromoBlockedByBundle ? 0 : discountAmount;
 
-      const total = Math.max(0, subtotal - (finalDiscountAmount + bundleDiscount) + deliveryPrice);
+      const orderItemsNet = Math.max(0, subtotal - (finalDiscountAmount + bundleDiscount));
+
+      // Check if user wants to pay full delivery with 500 bonuses (5 BYN = 500 bonuses)
+      const currentBonusBalance = Math.max(0, Number(buyerLoyalty.bonus_balance) || 0);
+      let deliveryPaidByBonus = false;
+      let deliveryBonusUsed = 0;
+      if (
+        params.deliveryType === 'delivery' &&
+        deliveryPrice > 0 &&
+        params.payDeliveryWithBonuses &&
+        currentBonusBalance >= DELIVERY_BONUS_COST
+      ) {
+        deliveryPaidByBonus = true;
+        deliveryBonusUsed = DELIVERY_BONUS_COST;
+        deliveryPrice = 0;
+      }
+
+      // Calculate allowed integer BYN discount from bonuses (strictly multiples of 100 bonuses = 1 BYN)
+      const maxBonusCheck = calculateMaxBonusDiscountByn({
+        orderAmountAfterPromos: orderItemsNet,
+        userBonusBalance: currentBonusBalance,
+        userSpendByn: buyerLoyalty.total_spent_byn || 0,
+        reserveForDeliveryBonuses: deliveryBonusUsed,
+      });
+
+      const requestedBonusByn = Math.max(0, Math.floor(Number(params.bonusDiscountByn) || 0));
+      const appliedBonusByn = Math.min(requestedBonusByn, maxBonusCheck.maxRedeemableByn);
+      const orderBonusUsed = appliedBonusByn * BONUSES_PER_BYN_REDEEM;
+      const totalBonusPointsUsed = orderBonusUsed + deliveryBonusUsed;
+
+      const total = Math.max(0, orderItemsNet - appliedBonusByn + deliveryPrice);
+      const earnedBonuses = Math.max(0, Math.round(total * BONUSES_PER_BYN_EARNED));
       const selectedPickup = pickupPoints.find((p) => p.id === params.pickupPointId);
 
       let finalComment = params.comment || undefined;
@@ -630,8 +701,24 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           : `[Промокод ${appliedPromocode.code} отключен: не суммируется с акциями]`;
       }
 
+      if (totalBonusPointsUsed > 0 || buyerTier.freeCityDelivery) {
+        const bonusParts: string[] = [];
+        if (appliedBonusByn > 0) {
+          bonusParts.push(`Списано ${orderBonusUsed} бонусов (-${appliedBonusByn} BYN)`);
+        }
+        if (deliveryPaidByBonus) {
+          bonusParts.push(`Доставка оплачена бонусами (${DELIVERY_BONUS_COST} бонусов)`);
+        } else if (params.deliveryType === 'delivery' && buyerTier.freeCityDelivery) {
+          bonusParts.push(`Бесплатная доставка (уровень VIP)`);
+        }
+        if (bonusParts.length > 0) {
+          const bonusNote = `[Лояльность ${buyerTier.name}: ${bonusParts.join(', ')}; +${earnedBonuses} бонусов за покупку]`;
+          finalComment = finalComment ? `${finalComment} | ${bonusNote}` : bonusNote;
+        }
+      }
+
       const newOrder = db.createOrder({
-        user_id: currentUser?.id || 999999,
+        user_id: activeUserId,
         username: currentUser?.username || 'user',
         first_name: currentUser?.first_name || '',
         last_name: currentUser?.last_name || '',
@@ -652,7 +739,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         }),
         total,
         subtotal,
-        discount_amount: finalDiscountAmount + bundleDiscount,
+        discount_amount: finalDiscountAmount + bundleDiscount + appliedBonusByn,
         delivery_price: deliveryPrice,
         currency: 'BYN',
         status: 'pending',
@@ -663,6 +750,10 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         comment: finalComment,
         promocode_id: isPromoBlockedByBundle ? undefined : appliedPromocode?.id,
         promocode_code: isPromoBlockedByBundle ? undefined : appliedPromocode?.code,
+        bonus_points_used: totalBonusPointsUsed,
+        bonus_discount_byn: appliedBonusByn,
+        delivery_paid_by_bonus: deliveryPaidByBonus,
+        bonus_points_earned: earnedBonuses,
       });
 
       // Send Telegram WebApp Data to connected Python Bot (if supported)
@@ -1039,6 +1130,37 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     hapticNotification('warning');
   };
 
+  const currentLoyaltyUser = useMemo<ShopUser>(() => {
+    const activeId = currentUser?.id || 999999;
+    const found = users.find((u) => Number(u.id) === Number(activeId));
+    if (found && found.claimed_tiers && found.claimed_tiers.length > 0) {
+      return found;
+    }
+    return db.recordUser({
+      id: activeId,
+      username: currentUser?.username || 'guest_user',
+      first_name: currentUser?.first_name || 'Покупатель',
+      last_name: currentUser?.last_name,
+    });
+  }, [users, currentUser]);
+
+  const updateUserLoyalty = (userId: number, updates: Parameters<typeof db.updateUserLoyalty>[1]) => {
+    const res = db.updateUserLoyalty(userId, updates);
+    hapticNotification('success');
+    return res;
+  };
+
+  const spinWheelForUser = (userId?: number) => {
+    const targetId = userId ?? (currentUser?.id || 999999);
+    return db.spinUserWheel(targetId);
+  };
+
+  const syncUsersSpendFromOrders = () => {
+    const count = db.syncUsersSpendFromCompletedOrders();
+    hapticNotification('success');
+    return count;
+  };
+
   return (
     <StoreContext.Provider
       value={{
@@ -1073,6 +1195,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         users,
         appliedPromocode,
         isLoading,
+        currentLoyaltyUser,
         loadAllData,
         addToCart,
         removeFromCart,
@@ -1084,6 +1207,9 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         updateOrderStatus,
         cancelOrder,
         updateOrderFinances,
+        updateUserLoyalty,
+        spinWheelForUser,
+        syncUsersSpendFromOrders,
         saveSettings,
         setLineMargin,
         getLineMargin,
