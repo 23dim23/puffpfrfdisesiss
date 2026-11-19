@@ -99,7 +99,7 @@ export const ExperimentalLoyaltyModal: React.FC<ExperimentalLoyaltyModalProps> =
     );
   }, [users, searchQuery]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !isAdmin) return null;
 
   const showToast = (msg: string) => {
     setAdminToast(msg);

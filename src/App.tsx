@@ -16,7 +16,7 @@ import { ExperimentalLoyaltyModal } from './components/ExperimentalLoyaltyModal'
 import { initTelegramApp, hapticImpact } from './services/telegram';
 
 const MainContent: React.FC = () => {
-  const { isAdmin, isAuthorizedAdmin } = useStore();
+  const { isAdmin } = useStore();
 
   const [activeTab, setActiveTab] = useState<TabType>('home');
   const [catalogInitialCategory, setCatalogInitialCategory] = useState<string>('all');
@@ -24,18 +24,22 @@ const MainContent: React.FC = () => {
   const [selectedPromotion, setSelectedPromotion] = useState<Promotion | null>(null);
   const [successOrderInfo, setSuccessOrderInfo] = useState<{ id: number; total: number } | null>(null);
   const [isExperimentalLoyaltyOpen, setIsExperimentalLoyaltyOpen] = useState<boolean>(false);
-  const [experimentalInitialMode, setExperimentalInitialMode] = useState<'client' | 'admin'>('client');
 
   useEffect(() => {
     initTelegramApp();
   }, []);
 
-  // Strict guard: if activeTab is admin but user is not admin, redirect to home
+  // Strict guard: if activeTab is admin or experimental modal is open, enforce isAdmin
   useEffect(() => {
-    if (activeTab === 'admin' && !isAdmin) {
-      setActiveTab('home');
+    if (!isAdmin) {
+      if (activeTab === 'admin') {
+        setActiveTab('home');
+      }
+      if (isExperimentalLoyaltyOpen) {
+        setIsExperimentalLoyaltyOpen(false);
+      }
     }
-  }, [activeTab, isAdmin]);
+  }, [activeTab, isAdmin, isExperimentalLoyaltyOpen]);
 
   const handleNavigateToCatalog = (categorySlug: string = 'all') => {
     setCatalogInitialCategory(categorySlug);
@@ -55,8 +59,8 @@ const MainContent: React.FC = () => {
     setSuccessOrderInfo({ id: orderId, total });
   };
 
-  const openLoyaltyMenu = (mode: 'client' | 'admin' = 'client') => {
-    setExperimentalInitialMode(mode);
+  const handleOpenExperimentalMenu = () => {
+    if (!isAdmin) return;
     setIsExperimentalLoyaltyOpen(true);
   };
 
@@ -111,15 +115,11 @@ const MainContent: React.FC = () => {
             <CartTab
               onGoToCatalog={() => handleNavigateToCatalog('all')}
               onOrderCompleted={handleOrderCompleted}
-              onOpenLoyaltyModal={() => openLoyaltyMenu('client')}
             />
           )}
 
           {activeTab === 'prizes' && (
-            <PrizesTab
-              onSelectPromotion={(promo) => setSelectedPromotion(promo)}
-              onOpenLoyaltyModal={() => openLoyaltyMenu('client')}
-            />
+            <PrizesTab onSelectPromotion={(promo) => setSelectedPromotion(promo)} />
           )}
 
           {activeTab === 'orders' && (
@@ -127,18 +127,15 @@ const MainContent: React.FC = () => {
           )}
 
           {activeTab === 'admin' && (
-            <AdminPanel
-              onBackToHome={() => setActiveTab('home')}
-              onOpenExperimentalLoyalty={() => openLoyaltyMenu('admin')}
-            />
+            <AdminPanel onBackToHome={() => setActiveTab('home')} />
           )}
         </main>
 
-        {/* Bottom Floating Navigation */}
+        {/* Bottom Floating Navigation (experimental menu strictly opens via 5 rapid taps on Admin for admins only) */}
         <BottomNav
           activeTab={activeTab}
           onTabChange={handleTabChange}
-          onOpenExperimentalMenu={() => openLoyaltyMenu('client')}
+          onOpenExperimentalMenu={handleOpenExperimentalMenu}
         />
 
         {/* Modals */}
@@ -165,11 +162,12 @@ const MainContent: React.FC = () => {
           />
         )}
 
-        <ExperimentalLoyaltyModal
-          isOpen={isExperimentalLoyaltyOpen}
-          onClose={() => setIsExperimentalLoyaltyOpen(false)}
-          initialMode={experimentalInitialMode}
-        />
+        {isAdmin && isExperimentalLoyaltyOpen && (
+          <ExperimentalLoyaltyModal
+            isOpen={isExperimentalLoyaltyOpen}
+            onClose={() => setIsExperimentalLoyaltyOpen(false)}
+          />
+        )}
       </div>
     </div>
   );

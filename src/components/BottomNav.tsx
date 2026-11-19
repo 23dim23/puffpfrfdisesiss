@@ -16,7 +16,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   onTabChange,
   onOpenExperimentalMenu,
 }) => {
-  const { cart, isAdmin, isModerator, isAuthorizedAdmin } = useStore();
+  const { cart, isAdmin, isModerator } = useStore();
   const adminTapTimestampsRef = useRef<number[]>([]);
 
   const totalCartItems = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -27,16 +27,16 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   };
 
   const handleAdminButtonClick = () => {
-    const now = Date.now();
-    // Keep taps within the last 1800ms
-    const recentTaps = adminTapTimestampsRef.current.filter((t) => now - t < 1800);
-    recentTaps.push(now);
-    adminTapTimestampsRef.current = recentTaps;
+    if (isAdmin && onOpenExperimentalMenu) {
+      const now = Date.now();
+      // Keep taps within the last 1800ms
+      const recentTaps = adminTapTimestampsRef.current.filter((t) => now - t < 1800);
+      recentTaps.push(now);
+      adminTapTimestampsRef.current = recentTaps;
 
-    if (recentTaps.length >= 5) {
-      adminTapTimestampsRef.current = [];
-      hapticNotification('success');
-      if (onOpenExperimentalMenu) {
+      if (recentTaps.length >= 5) {
+        adminTapTimestampsRef.current = [];
+        hapticNotification('success');
         onOpenExperimentalMenu();
         return;
       }
@@ -128,8 +128,8 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           <span className="text-[10px] mt-0.5 tracking-tight">Заказы</span>
         </button>
 
-        {/* Админка (быстрое нажатие 5 раз открывает экспериментальное меню бонусов и колеса) */}
-        {(isAdmin || isModerator || isAuthorizedAdmin) && (
+        {/* Админка (только для админов/модераторов; 5 быстрых нажатий админа открывают экспериментальное меню) */}
+        {(isAdmin || isModerator) && (
           <button
             onClick={handleAdminButtonClick}
             className={`flex flex-col items-center justify-center flex-1 py-1 px-1 rounded-xl transition-all tap-active-sm ${
@@ -137,7 +137,6 @@ export const BottomNav: React.FC<BottomNavProps> = ({
                 ? 'text-orange-400 font-semibold'
                 : 'text-orange-400/70 hover:text-orange-300 font-medium'
             }`}
-            title="Быстрое нажатие 5 раз открывает экспериментальное меню лояльности"
           >
             <div className={`p-1 rounded-lg transition-transform ${activeTab === 'admin' ? 'scale-110 bg-orange-500/15' : ''}`}>
               <Settings className="w-5 h-5" />
