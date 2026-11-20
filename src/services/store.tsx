@@ -818,29 +818,49 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         console.error('❌ Failed to send order POST request to Flask API:', apiErr);
       }
 
-      // 2. Secondary/Fallback: Direct Telegram Notification to Admins if BOT_TOKEN is present in client
+      // 2. Secondary/Fallback: Direct Telegram Notification to Admins & Customer if BOT_TOKEN is present in client
       if (BOT_TOKEN) {
         try {
+          const escapeHtml = (val?: string | number | null) =>
+            String(val ?? '')
+              .replace(/&/g, '&amp;')
+              .replace(/</g, '&lt;')
+              .replace(/>/g, '&gt;');
+
           const itemsListText = (newOrder.items_json || [])
-            .map((it) => `  • ${it.emoji || '📦'} ${it.brand_name ? `<b>[${it.brand_name}]</b> ` : ''}${it.name} × ${it.quantity} — ${it.price} BYN`)
+            .map(
+              (it) =>
+                `  • ${it.emoji || '📦'} ${
+                  it.brand_name ? `<b>[${escapeHtml(it.brand_name)}]</b> ` : ''
+                }${escapeHtml(it.name)} × ${it.quantity} — ${it.price} BYN`
+            )
             .join('\n');
 
           const deliveryInfo =
             newOrder.delivery_type === 'pickup'
-              ? `🏪 <b>Самовывоз (Могилев):</b> ${newOrder.pickup_point_name || 'Точка не указана'}`
-              : `🚚 <b>Доставка (Могилев):</b> ${newOrder.delivery_address || 'Адрес не указан'} (+${newOrder.delivery_price} BYN)`;
+              ? `🏪 <b>Самовывоз (Могилев):</b> ${escapeHtml(newOrder.pickup_point_name || 'Точка не указана')}`
+              : `🚚 <b>Доставка (Могилев):</b> ${escapeHtml(newOrder.delivery_address || 'Адрес не указан')} (+${newOrder.delivery_price} BYN)`;
 
           let priceInfo = `💰 <b>Итого:</b> ${newOrder.total} BYN`;
           if (newOrder.discount_amount > 0) {
             priceInfo += `\n   Скидка: -${newOrder.discount_amount} BYN`;
           }
           if (newOrder.promocode_code) {
-            priceInfo += `\n   Промокод: ${newOrder.promocode_code}`;
+            priceInfo += `\n   Промокод: ${escapeHtml(newOrder.promocode_code)}`;
           }
 
-          const adminNotice = `🆕 <b>НОВЫЙ ЗАКАЗ #${newOrder.id}!</b>\n\n👤 <b>Покупатель:</b> @${currentUser?.username || 'unknown'} (${currentUser?.first_name || 'Пользователь'})\n🆔 <b>User ID:</b> <code>${newOrder.user_id}</code>\n\n📦 <b>Товары:</b>\n${itemsListText}\n\n${priceInfo}\n\n${deliveryInfo}\n💬 <b>Комментарий:</b> ${newOrder.comment || 'Нет'}\n\n🔗 <a href="tg://user?id=${newOrder.user_id}">✉️ Связаться с покупателем</a>\n📩 Менеджер: @${settings.manager_username || 'puff_mngr'}`;
+          const adminNotice = `🆕 <b>НОВЫЙ ЗАКАЗ #${newOrder.id}!</b>\n\n👤 <b>Покупатель:</b> @${escapeHtml(currentUser?.username || 'unknown')} (${escapeHtml(currentUser?.first_name || 'Пользователь')})\n🆔 <b>User ID:</b> <code>${newOrder.user_id}</code>\n\n📦 <b>Товары:</b>\n${itemsListText}\n\n${priceInfo}\n\n${deliveryInfo}\n💬 <b>Комментарий:</b> ${escapeHtml(newOrder.comment || 'Нет')}\n\n🔗 <a href="tg://user?id=${newOrder.user_id}">✉️ Связаться с покупателем</a>\n📩 Менеджер: @${escapeHtml(settings.manager_username || 'puff_mngr')}`;
 
-          for (const adminId of HARDCODED_ADMINS) {
+          const recipientAdminIds = Array.from(
+            new Set<number>([
+              ...HARDCODED_ADMINS,
+              ...admins
+                .filter((a) => a.is_active && Number(a.user_id) > 0)
+                .map((a) => Number(a.user_id)),
+            ])
+          );
+
+          for (const adminId of recipientAdminIds) {
             fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -849,7 +869,14 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                 text: adminNotice,
                 parse_mode: 'HTML',
               }),
-            }).catch(() => {});
+            })
+              .then(async (res) => {
+                if (!res.ok) {
+                  const errText = await res.text().catch(() => '');
+                  console.error(`❌ Telegram API error sending order #${newOrder.id} to admin ${adminId}: ${res.status} ${errText}`);
+                }
+              })
+              .catch((e) => console.error(`❌ Network error sending order #${newOrder.id} to admin ${adminId}:`, e));
           }
         } catch (botErr) {
           console.warn('Bot direct notification error:', botErr);
@@ -1133,30 +1160,58 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const currentLoyaltyUser = useMemo<ShopUser>(() => {
     const activeId = currentUser?.id || 999999;
     const found = users.find((u) => Number(u.id) === Number(activeId));
-    if (found && found.claimed_tiers && found.claimed_tiers.length > 0) {
+    if (found) {
       return found;
     }
-    return db.recordUser({
+    const now = new Date().toISOString();
+    return {
       id: activeId,
       username: currentUser?.username || 'guest_user',
       first_name: currentUser?.first_name || 'Покупатель',
       last_name: currentUser?.last_name,
-    });
+      source: 'miniapp',
+      created_at: now,
+      last_seen_at: now,
+      orders_count: 0,
+      total_spent_byn: 0,
+      bonus_balance: 100,
+      wheel_spins: 1,
+      claimed_tiers: ['BRONZE'],
+      spin_history: [],
+    };
   }, [users, currentUser]);
+
+  useEffect(() => {
+    const activeId = currentUser?.id;
+    if (!activeId) return;
+    const exists = users.some((u) => Number(u.id) === Number(activeId));
+    if (!exists) {
+      db.recordUser({
+        id: activeId,
+        username: currentUser?.username || `user_${activeId}`,
+        first_name: currentUser?.first_name || 'Покупатель',
+        last_name: currentUser?.last_name,
+      });
+    }
+  }, [currentUser, users]);
 
   const updateUserLoyalty = (userId: number, updates: Parameters<typeof db.updateUserLoyalty>[1]) => {
     const res = db.updateUserLoyalty(userId, updates);
+    setUsers([...db.getUsers()]);
     hapticNotification('success');
     return res;
   };
 
   const spinWheelForUser = (userId?: number) => {
     const targetId = userId ?? (currentUser?.id || 999999);
-    return db.spinUserWheel(targetId);
+    const res = db.spinUserWheel(targetId);
+    setUsers([...db.getUsers()]);
+    return res;
   };
 
   const syncUsersSpendFromOrders = () => {
     const count = db.syncUsersSpendFromCompletedOrders();
+    setUsers([...db.getUsers()]);
     hapticNotification('success');
     return count;
   };

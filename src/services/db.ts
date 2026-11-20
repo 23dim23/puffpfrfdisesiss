@@ -379,7 +379,11 @@ class CloudDatabase {
         collection(firestore, FS_COLS.USERS),
         (snapshot) => {
           if (!snapshot.empty) {
-            const list = snapshot.docs.map((d) => d.data() as ShopUser);
+            const list = snapshot.docs.map((d) => {
+              const raw = d.data() as ShopUser;
+              const numericId = Number(raw.id || d.id) || 0;
+              return this.normalizeUserLoyalty({ ...raw, id: numericId });
+            });
             setStoredItem(DB_KEYS.USERS, list);
             this.notify();
           }
@@ -1215,6 +1219,38 @@ class CloudDatabase {
   }
 
   // ================= USERS & TRAFFIC ANALYTICS =================
+  private normalizeUserLoyalty(u: ShopUser): ShopUser {
+    const hasLoyaltyFields =
+      u.bonus_balance !== undefined ||
+      u.wheel_spins !== undefined ||
+      (Array.isArray(u.claimed_tiers) && u.claimed_tiers.length > 0);
+
+    const cleanSpent = Math.max(0, Number(u.total_spent_byn) || 0);
+
+    if (!hasLoyaltyFields) {
+      const welcome = computeUnclaimedTierRewards(cleanSpent, []);
+      return {
+        ...u,
+        id: Number(u.id),
+        total_spent_byn: cleanSpent,
+        bonus_balance: welcome.addedBonuses,
+        wheel_spins: welcome.addedSpins,
+        claimed_tiers: welcome.newClaimedTiers,
+        spin_history: u.spin_history || [],
+      };
+    }
+
+    return {
+      ...u,
+      id: Number(u.id),
+      total_spent_byn: cleanSpent,
+      bonus_balance: Math.max(0, Math.floor(Number(u.bonus_balance) || 0)),
+      wheel_spins: Math.max(0, Math.floor(Number(u.wheel_spins) || 0)),
+      claimed_tiers: Array.isArray(u.claimed_tiers) ? u.claimed_tiers : ['BRONZE'],
+      spin_history: Array.isArray(u.spin_history) ? u.spin_history : [],
+    };
+  }
+
   public getUsers(): ShopUser[] {
     const now = new Date();
     const oneDay = 24 * 60 * 60 * 1000;
@@ -1226,7 +1262,8 @@ class CloudDatabase {
       { id: 394819201, username: 'smoke_puff', first_name: 'Илья', source: 'miniapp', created_at: new Date(now.getTime() - 10 * 60 * 60 * 1000).toISOString(), last_seen_at: now.toISOString(), orders_count: 1 },
       { id: 492019481, username: 'cloud_master', first_name: 'Максим', source: 'bot', created_at: new Date(now.getTime() - 3 * 60 * 60 * 1000).toISOString(), last_seen_at: now.toISOString(), orders_count: 0 },
     ];
-    return getStoredItem<ShopUser[]>(DB_KEYS.USERS, initialUsers);
+    const stored = getStoredItem<ShopUser[]>(DB_KEYS.USERS, initialUsers);
+    return stored.map((u) => this.normalizeUserLoyalty(u));
   }
 
   public recordUser(
@@ -1234,17 +1271,18 @@ class CloudDatabase {
     source: 'bot' | 'miniapp' = 'miniapp'
   ): ShopUser {
     const users = this.getUsers();
-    const existingIndex = users.findIndex((u) => u.id === user.id);
+    const existingIndex = users.findIndex((u) => Number(u.id) === Number(user.id));
     const now = new Date().toISOString();
 
     if (existingIndex > -1) {
-      const existing = users[existingIndex];
+      const existing = this.normalizeUserLoyalty(users[existingIndex]);
       const currentSpent = Math.max(0, Number(existing.total_spent_byn) || 0);
-      const claimed = (existing.claimed_tiers || []) as LoyaltyTierId[];
+      const claimed = (existing.claimed_tiers || ['BRONZE']) as LoyaltyTierId[];
       const tierCheck = computeUnclaimedTierRewards(currentSpent, claimed);
 
       const updatedUser: ShopUser = {
         ...existing,
+        id: Number(user.id),
         username: user.username || existing.username,
         first_name: user.first_name || existing.first_name,
         last_name: user.last_name || existing.last_name,
@@ -1259,14 +1297,16 @@ class CloudDatabase {
       setStoredItem(DB_KEYS.USERS, users);
       this.notify();
 
-      setDoc(doc(firestore, FS_COLS.USERS, String(user.id)), cleanFirestoreData(updatedUser), { merge: true }).catch(() => {});
+      setDoc(doc(firestore, FS_COLS.USERS, String(user.id)), cleanFirestoreData(updatedUser), { merge: true }).catch((err) => {
+        console.error('Error saving user to Firestore:', err);
+      });
       return updatedUser;
     }
 
     // Brand new user: immediately grant welcome BRONZE reward (100 bonuses + 1 wheel spin)
     const initialTierCheck = computeUnclaimedTierRewards(0, []);
     const newUser: ShopUser = {
-      id: user.id,
+      id: Number(user.id),
       username: user.username,
       first_name: user.first_name,
       last_name: user.last_name,
@@ -1284,7 +1324,9 @@ class CloudDatabase {
     setStoredItem(DB_KEYS.USERS, updated);
     this.notify();
 
-    setDoc(doc(firestore, FS_COLS.USERS, String(user.id)), cleanFirestoreData(newUser)).catch(() => {});
+    setDoc(doc(firestore, FS_COLS.USERS, String(user.id)), cleanFirestoreData(newUser)).catch((err) => {
+      console.error('Error creating user in Firestore:', err);
+    });
     return newUser;
   }
 
@@ -1300,56 +1342,72 @@ class CloudDatabase {
       setSpins?: number;
       deltaSpentByn?: number;
       setSpentByn?: number;
+      autoGrantTierRewards?: boolean;
       resetWelcomeBonus?: boolean;
     }
   ): ShopUser {
+    const numericId = Number(userId);
     const users = this.getUsers();
-    let existingIndex = users.findIndex((u) => Number(u.id) === Number(userId));
+    let existingIndex = users.findIndex((u) => Number(u.id) === numericId);
     const now = new Date().toISOString();
 
     if (existingIndex === -1) {
       // Create base record first (with welcome BRONZE)
       this.recordUser({
-        id: Number(userId),
-        username: updates.username || `user_${userId}`,
+        id: numericId,
+        username: updates.username || `user_${numericId}`,
         first_name: updates.first_name || 'Покупатель',
         last_name: updates.last_name,
       });
     }
 
     const freshUsers = this.getUsers();
-    existingIndex = freshUsers.findIndex((u) => Number(u.id) === Number(userId));
-    const target = freshUsers[existingIndex];
+    existingIndex = freshUsers.findIndex((u) => Number(u.id) === numericId);
+    const target = this.normalizeUserLoyalty(freshUsers[existingIndex]);
 
     let nextSpent = Number(target.total_spent_byn) || 0;
+    const spendChanged = updates.setSpentByn !== undefined || updates.deltaSpentByn !== undefined;
     if (updates.setSpentByn !== undefined) {
       nextSpent = Math.max(0, Number(updates.setSpentByn) || 0);
     } else if (updates.deltaSpentByn !== undefined) {
       nextSpent = Math.max(0, Number((nextSpent + updates.deltaSpentByn).toFixed(2)));
     }
 
-    let nextBonuses = Number(target.bonus_balance) || 0;
+    // Handle automatic tier rewards when spend increases (unless explicitly disabled)
+    let baseClaimed = updates.resetWelcomeBonus
+      ? ([] as LoyaltyTierId[])
+      : ((target.claimed_tiers || ['BRONZE']) as LoyaltyTierId[]);
+
+    let tierAddedBonuses = 0;
+    let tierAddedSpins = 0;
+    if (spendChanged || updates.resetWelcomeBonus) {
+      const shouldGrant = updates.autoGrantTierRewards !== false;
+      const tierCheck = computeUnclaimedTierRewards(nextSpent, baseClaimed);
+      baseClaimed = tierCheck.newClaimedTiers;
+      if (shouldGrant) {
+        tierAddedBonuses = tierCheck.addedBonuses;
+        tierAddedSpins = tierCheck.addedSpins;
+      }
+    }
+
+    // Apply explicit bonus / spin adjustments AFTER tier rewards so exact setBonuses/setSpins always wins
+    let nextBonuses = Math.max(0, Math.floor((Number(target.bonus_balance) || 0) + tierAddedBonuses));
     if (updates.setBonuses !== undefined) {
       nextBonuses = Math.max(0, Math.floor(Number(updates.setBonuses) || 0));
     } else if (updates.deltaBonuses !== undefined) {
       nextBonuses = Math.max(0, Math.floor(nextBonuses + updates.deltaBonuses));
     }
 
-    let nextSpins = Number(target.wheel_spins) || 0;
+    let nextSpins = Math.max(0, Math.floor((Number(target.wheel_spins) || 0) + tierAddedSpins));
     if (updates.setSpins !== undefined) {
       nextSpins = Math.max(0, Math.floor(Number(updates.setSpins) || 0));
     } else if (updates.deltaSpins !== undefined) {
       nextSpins = Math.max(0, Math.floor(nextSpins + updates.deltaSpins));
     }
 
-    const baseClaimed = updates.resetWelcomeBonus ? [] : ((target.claimed_tiers || []) as LoyaltyTierId[]);
-    const tierCheck = computeUnclaimedTierRewards(nextSpent, baseClaimed);
-
-    nextBonuses += tierCheck.addedBonuses;
-    nextSpins += tierCheck.addedSpins;
-
     const updatedUser: ShopUser = {
       ...target,
+      id: numericId,
       username: updates.username !== undefined ? updates.username.replace(/^@/, '') : target.username,
       first_name: updates.first_name !== undefined ? updates.first_name : target.first_name,
       last_name: updates.last_name !== undefined ? updates.last_name : target.last_name,
@@ -1357,7 +1415,7 @@ class CloudDatabase {
       total_spent_byn: nextSpent,
       bonus_balance: nextBonuses,
       wheel_spins: nextSpins,
-      claimed_tiers: tierCheck.newClaimedTiers,
+      claimed_tiers: baseClaimed,
       spin_history: target.spin_history || [],
     };
 
@@ -1365,7 +1423,9 @@ class CloudDatabase {
     setStoredItem(DB_KEYS.USERS, freshUsers);
     this.notify();
 
-    setDoc(doc(firestore, FS_COLS.USERS, String(updatedUser.id)), cleanFirestoreData(updatedUser), { merge: true }).catch(() => {});
+    setDoc(doc(firestore, FS_COLS.USERS, String(updatedUser.id)), cleanFirestoreData(updatedUser), { merge: true }).catch((err) => {
+      console.error('Error updating user loyalty in Firestore:', err);
+    });
     return updatedUser;
   }
 
@@ -1376,27 +1436,28 @@ class CloudDatabase {
     success: boolean;
     wonBonuses: number;
     sectorId: number;
+    sector?: ReturnType<typeof rollWheelSector>;
     user: ShopUser;
     error?: string;
   } {
     const user = this.updateUserLoyalty(userId, {});
-    const currentSpins = Number(user.wheel_spins) || 0;
+    const currentSpins = Math.max(0, Math.floor(Number(user.wheel_spins) || 0));
     if (currentSpins <= 0) {
       return {
         success: false,
         wonBonuses: 0,
         sectorId: 1,
         user,
-        error: 'У вас нет доступных круток колеса',
+        error: 'У клиента нет доступных круток колеса. Добавьте крутку во вкладке «Управление».',
       };
     }
 
-    const sector = rollWheelSector();
-    const wonBonuses = forcedSectorBonuses ?? sector.bonuses;
+    const rolledSector = rollWheelSector();
+    const wonBonuses = forcedSectorBonuses ?? rolledSector.bonuses;
 
     const users = this.getUsers();
     const idx = users.findIndex((u) => Number(u.id) === Number(userId));
-    const target = users[idx];
+    const target = this.normalizeUserLoyalty(users[idx]);
 
     const historyEntry = {
       id: `${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
@@ -1406,8 +1467,8 @@ class CloudDatabase {
 
     const updatedUser: ShopUser = {
       ...target,
-      wheel_spins: Math.max(0, (Number(target.wheel_spins) || 1) - 1),
-      bonus_balance: Math.max(0, (Number(target.bonus_balance) || 0) + wonBonuses),
+      wheel_spins: Math.max(0, Math.floor(Number(target.wheel_spins) || 1) - 1),
+      bonus_balance: Math.max(0, Math.floor(Number(target.bonus_balance) || 0) + wonBonuses),
       spin_history: [historyEntry, ...(target.spin_history || []).slice(0, 29)],
       last_seen_at: new Date().toISOString(),
     };
@@ -1416,11 +1477,14 @@ class CloudDatabase {
     setStoredItem(DB_KEYS.USERS, users);
     this.notify();
 
-    setDoc(doc(firestore, FS_COLS.USERS, String(updatedUser.id)), cleanFirestoreData(updatedUser), { merge: true }).catch(() => {});
+    setDoc(doc(firestore, FS_COLS.USERS, String(updatedUser.id)), cleanFirestoreData(updatedUser), { merge: true }).catch((err) => {
+      console.error('Error saving wheel spin to Firestore:', err);
+    });
     return {
       success: true,
       wonBonuses,
-      sectorId: sector.id,
+      sectorId: rolledSector.id,
+      sector: rolledSector,
       user: updatedUser,
     };
   }

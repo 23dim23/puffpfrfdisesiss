@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import json
+import html
 import logging
 import asyncio
 import threading
@@ -1603,37 +1604,52 @@ def get_orders_api():
                 f"📩 По всем вопросам: @{MANAGER_USERNAME}"
             )
 
-            async def send_notifications():
-                if tg_app:
-                    # 1. Отправить покупателю
-                    try:
-                        await tg_app.bot.send_message(
-                            chat_id=user_id,
-                            text=customer_msg,
-                            parse_mode="HTML"
-                        )
-                        logger.info(f"✅ Уведомление о новом заказе #{order_id} отправлено покупателю {user_id}")
-                    except Exception as e:
-                        logger.error(f"❌ Ошибка отправки нового заказа покупателю {user_id}: {e}")
-                    
-                    # 2. Отправить админам
-                    for admin_id in HARDCODED_ADMINS:
-                        try:
-                            await tg_app.bot.send_message(
-                                chat_id=admin_id,
-                                text=admin_msg,
-                                parse_mode="HTML",
-                                reply_markup=get_admin_order_keyboard(order_id, user_id),
-                            )
-                            logger.info(f"✅ Уведомление о новом заказе #{order_id} отправлено админу {admin_id}")
-                        except Exception as e:
-                            logger.error(f"❌ Ошибка отправки нового заказа админу {admin_id}: {e}")
+            def tg_send_sync(chat_id: Any, text: str, reply_markup: Optional[Dict[str, Any]] = None) -> bool:
+                try:
+                    payload: Dict[str, Any] = {
+                        "chat_id": int(chat_id),
+                        "text": text,
+                        "parse_mode": "HTML",
+                    }
+                    if reply_markup:
+                        payload["reply_markup"] = reply_markup
+                    resp = requests.post(
+                        f"https://api.telegram.org/bot{TOKEN}/sendMessage",
+                        json=payload,
+                        timeout=10,
+                    )
+                    if resp.status_code != 200:
+                        logger.error(f"❌ Telegram API {resp.status_code} для chat_id={chat_id}: {resp.text}")
+                        return False
+                    return True
+                except Exception as exc:
+                    logger.error(f"❌ Ошибка HTTP отправки в Telegram chat_id={chat_id}: {exc}")
+                    return False
 
-            if tg_app:
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
-                loop.run_until_complete(send_notifications())
-                loop.close()
+            # 1. Отправить покупателю
+            if user_id:
+                if tg_send_sync(user_id, customer_msg):
+                    logger.info(f"✅ Уведомление о новом заказе #{order_id} отправлено покупателю {user_id}")
+
+            # 2. Отправить админам с inline-кнопками управления
+            admin_keyboard_dict = {
+                "inline_keyboard": [
+                    [
+                        {"text": "✅ Подтвердить", "callback_data": f"status_{order_id}_confirmed"},
+                        {"text": "🚚 Отправлен", "callback_data": f"status_{order_id}_shipped"},
+                    ],
+                    [
+                        {"text": "🎉 Выполнен", "callback_data": f"status_{order_id}_completed"},
+                        {"text": "❌ Отменить", "callback_data": f"status_{order_id}_cancelled"},
+                    ],
+                    [
+                        {"text": "✉️ Написать покупателю", "url": f"tg://user?id={user_id}"},
+                    ],
+                ]
+            }
+            for admin_id in HARDCODED_ADMINS:
+                if tg_send_sync(admin_id, admin_msg, reply_markup=admin_keyboard_dict):
+                    logger.info(f"✅ Уведомление о новом заказе #{order_id} отправлено админу {admin_id}")
 
             return jsonify({"success": True, "order": saved_order}), 200
         except Exception as e:
@@ -1670,22 +1686,19 @@ def update_order_status_api():
         target_user_id = user_id or (updated.get("user_id") if updated else None)
         customer_msg = customer_status_messages.get(new_status)
         
-        if customer_msg and target_user_id and tg_app:
-            async def send():
-                try:
-                    await tg_app.bot.send_message(
-                        chat_id=int(target_user_id),
-                        text=customer_msg,
-                        parse_mode="HTML"
-                    )
+        if customer_msg and target_user_id:
+            try:
+                resp = requests.post(
+                    f"https://api.telegram.org/bot{TOKEN}/sendMessage",
+                    json={"chat_id": int(target_user_id), "text": customer_msg, "parse_mode": "HTML"},
+                    timeout=10,
+                )
+                if resp.status_code == 200:
                     logger.info(f"✅ Уведомление об изменении статуса заказа #{order_id} отправлено покупателю {target_user_id}")
-                except Exception as e:
-                    logger.error(f"❌ Ошибка отправки статуса покупателю {target_user_id}: {e}")
-
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            loop.run_until_complete(send())
-            loop.close()
+                else:
+                    logger.error(f"❌ Ошибка отправки статуса покупателю {target_user_id}: {resp.status_code} {resp.text}")
+            except Exception as e:
+                logger.error(f"❌ Ошибка отправки статуса покупателю {target_user_id}: {e}")
 
         return jsonify({"success": True}), 200
     except Exception as e:
@@ -1695,24 +1708,22 @@ def update_order_status_api():
 
 @flask_app.route("/api/send_message", methods=["POST"])
 def send_message_api():
-    global tg_app
     try:
         data = request.json or {}
         user_id = data.get("user_id")
         text = data.get("message")
 
-        if not user_id or not text or not tg_app:
-            return jsonify({"error": "Invalid params or bot not ready"}), 400
+        if not user_id or not text:
+            return jsonify({"error": "Invalid params"}), 400
 
-        full_msg = f"{text}\n\n📩 Менеджер: @{MANAGER_USERNAME}"
-
-        async def send():
-            await tg_app.bot.send_message(chat_id=user_id, text=full_msg, parse_mode="HTML")
-
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        loop.run_until_complete(send())
-        loop.close()
+        full_msg = f"{html.escape(str(text))}\n\n📩 Менеджер: @{MANAGER_USERNAME}"
+        resp = requests.post(
+            f"https://api.telegram.org/bot{TOKEN}/sendMessage",
+            json={"chat_id": int(user_id), "text": full_msg, "parse_mode": "HTML"},
+            timeout=10,
+        )
+        if resp.status_code != 200:
+            return jsonify({"error": resp.text}), resp.status_code
 
         return jsonify({"success": True}), 200
     except Exception as e:
