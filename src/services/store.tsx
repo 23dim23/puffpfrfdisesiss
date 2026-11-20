@@ -33,7 +33,7 @@ import {
   DELIVERY_BONUS_COST,
 } from '../utils/loyalty';
 
-export const BOT_TOKEN = '8877166404:AAHohtP7Uem_6-RAkjD2-y5g7gcCtIKEnSI';
+export const BOT_TOKEN = '8635884275:AAEkc9T41wIkGxIYKkUhhyiBrn93iAxbh4I';
 export const HARDCODED_ADMINS = HARDCODED_ADMIN_IDS;
 
 interface StoreContextType {

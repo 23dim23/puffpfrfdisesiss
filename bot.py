@@ -41,7 +41,7 @@ logging.basicConfig(
 logger = logging.getLogger("PuffParadiseBot")
 
 # ================= КОНФИГУРАЦИЯ И ПЕРЕМЕННЫЕ =================
-TOKEN = os.getenv("TOKEN", "8877166404:AAHohtP7Uem_6-RAkjD2-y5g7gcCtIKEnSI")
+TOKEN = os.getenv("TOKEN", "8635884275:AAEkc9T41wIkGxIYKkUhhyiBrn93iAxbh4I")
 WEBAPP_URL = os.getenv("WEBAPP_URL", "https://puffpfrfdisesiss.karpenkoov32.workers.dev")
 MANAGER_USERNAME = os.getenv("MANAGER_USERNAME", "puff_mngr")
 PARSER_GROUP_ID = -4995013422

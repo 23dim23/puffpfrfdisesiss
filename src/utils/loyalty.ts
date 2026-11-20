@@ -230,8 +230,11 @@ export function calculateMaxBonusDiscountByn(params: {
   const reserve = Math.max(0, Number(params.reserveForDeliveryBonuses) || 0);
   const availableBonusesForOrder = Math.max(0, Math.floor((Number(params.userBonusBalance) || 0) - reserve));
 
-  // Only whole BYN (100 bonuses = 1 BYN) can be deducted, never kopecks
-  const maxBynByTier = Math.floor((cleanOrder * tier.maxDiscountPercent) / 100);
+  // Only whole BYN (100 bonuses = 1 BYN) can be deducted, never kopecks.
+  // Rounding rule: >= 0.50 BYN (e.g. 5.51 BYN) rounds UP to 6 BYN (in buyer's favor),
+  // <= 0.49 BYN (e.g. 5.49 BYN) rounds DOWN to 5 BYN (in store's favor).
+  const rawDiscountKopecks = Math.round(cleanOrder * tier.maxDiscountPercent);
+  const maxBynByTier = Math.round(rawDiscountKopecks / 100);
   const maxBynByBalance = Math.floor(availableBonusesForOrder / BONUSES_PER_BYN_REDEEM);
   const maxRedeemableByn = Math.max(0, Math.min(maxBynByTier, maxBynByBalance, Math.floor(cleanOrder)));
 

@@ -12,7 +12,7 @@ from pyrogram.types import Message
 # ================= НАСТРОЙКА =================
 API_ID = int(os.getenv("API_ID", 30835466))
 API_HASH = os.getenv("API_HASH", "22374b1452abc3709de75fc214c6de35")
-BOT_TOKEN = os.getenv("TOKEN", "8877166404:AAHohtP7Uem_6-RAkjD2-y5g7gcCtIKEnSI")
+BOT_TOKEN = os.getenv("TOKEN", "8635884275:AAEkc9T41wIkGxIYKkUhhyiBrn93iAxbh4I")
 PARSER_GROUP_ID = -4995013422
 
 logging.basicConfig(

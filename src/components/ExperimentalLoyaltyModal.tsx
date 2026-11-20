@@ -643,9 +643,8 @@ export const ExperimentalLoyaltyModal: React.FC<ExperimentalLoyaltyModalProps> =
                   </div>
 
                   <div className="p-2.5 rounded-xl bg-black/40 border border-white/10">
-                    <div className="text-[10px] text-zinc-400">Покупок на</div>
-                    <div className="text-base font-black text-white mt-0.5">{userSpend.toFixed(0)} BYN</div>
-                    <div className="text-[10px] text-zinc-400">для уровня</div>
+                    <div className="text-[10px] text-zinc-400 leading-tight">Общая сумма покупок</div>
+                    <div className="text-base font-black text-white mt-1">{userSpend.toFixed(0)} BYN</div>
                   </div>
                 </div>
 
