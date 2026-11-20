@@ -1,16 +1,24 @@
 import React from 'react';
 import { useStore } from '../services/store';
 import { OrderStatus } from '../types';
-import { PackageCheck, MessageCircle, XCircle, Clock, CheckCircle2, Truck, AlertCircle, ShoppingBag } from 'lucide-react';
+import { PackageCheck, MessageCircle, XCircle, Clock, CheckCircle2, Truck, AlertCircle, ShoppingBag, ArrowRight } from 'lucide-react';
 import { openTelegramOrWeb, hapticImpact } from '../services/telegram';
 import { formatBrandSlug } from '../utils/brand';
+import { getLoyaltyTierBySpend, getNextLoyaltyTier, BONUS_PER_BYN_REDEEM } from '../utils/loyalty';
 
 interface OrdersTabProps {
   onGoToCatalog: () => void;
+  onOpenLoyalty: () => void;
 }
 
-export const OrdersTab: React.FC<OrdersTabProps> = ({ onGoToCatalog }) => {
-  const { orders, currentUser, settings, cancelOrder, products, brands } = useStore();
+export const OrdersTab: React.FC<OrdersTabProps> = ({ onGoToCatalog, onOpenLoyalty }) => {
+  const { orders, currentUser, currentLoyaltyUser, settings, cancelOrder, products, brands } = useStore();
+
+  const userSpend = Math.max(0, Number(currentLoyaltyUser?.total_spent_byn) || 0);
+  const userBonuses = Math.max(0, Math.floor(Number(currentLoyaltyUser?.bonus_balance ?? 0)));
+  const userSpins = Math.max(0, Math.floor(Number(currentLoyaltyUser?.wheel_spins ?? 0)));
+  const currentTier = getLoyaltyTierBySpend(userSpend);
+  const { nextTier, progressPercent } = getNextLoyaltyTier(userSpend);
 
   // User orders or all orders if dev
   const userOrders = currentUser
@@ -108,6 +116,56 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({ onGoToCatalog }) => {
 
   return (
     <div className="space-y-4 pb-24">
+      {/* Loyalty Status & Wheel Entry Card */}
+      <div className={`p-4 rounded-3xl bg-gradient-to-br ${currentTier.gradientClass} border ${currentTier.borderClass} space-y-3 shadow-lg`}>
+        <div className="flex items-center justify-between gap-2">
+          <div className="min-w-0">
+            <div className="text-[11px] text-zinc-300">Ваш статус лояльности</div>
+            <div className="text-base font-black text-white flex items-center gap-1.5 mt-0.5">
+              <span>{currentTier.badgeEmoji}</span>
+              <span>{currentTier.title}</span>
+              <span className="text-xs font-semibold text-amber-300 tabular-nums ml-1">
+                · {userBonuses} бон.
+              </span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              hapticImpact('medium');
+              onOpenLoyalty();
+            }}
+            className="min-h-[40px] px-3.5 rounded-xl bg-gradient-to-r from-purple-600 to-orange-500 text-white text-xs font-bold flex items-center gap-1.5 shrink-0 whitespace-nowrap shadow-md tap-active"
+          >
+            <span>{userSpins > 0 ? `Колесо (${userSpins})` : 'Колесо и бонусы'}</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        <div className="flex items-center justify-between text-[11px] text-zinc-300 tabular-nums">
+          <span>Общая сумма покупок: <strong className="text-white">{userSpend.toFixed(0)} BYN</strong></span>
+          <span>Скидка до {currentTier.maxDiscountPercent}% ({Math.floor(userBonuses / BONUS_PER_BYN_REDEEM)} BYN)</span>
+        </div>
+
+        <div className="space-y-1">
+          <div className="flex justify-between text-[11px] text-zinc-200 tabular-nums">
+            <span>
+              {nextTier
+                ? `До ${nextTier.title}: осталось ${Math.max(0, nextTier.minSpendByn - userSpend).toFixed(0)} BYN`
+                : 'Максимальный уровень VIP · бесплатная доставка по городу'}
+            </span>
+            <span className="font-bold">{progressPercent}%</span>
+          </div>
+          <div className="w-full h-1.5 rounded-full bg-black/50 overflow-hidden">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-purple-500 to-amber-400 transition-all duration-300"
+              style={{ width: `${progressPercent}%` }}
+            />
+          </div>
+        </div>
+      </div>
+
       {userOrders.length === 0 ? (
         <div className="py-16 px-4 text-center">
           <div className="w-20 h-20 mx-auto rounded-3xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-4xl mb-4 shadow-[0_0_25px_rgba(168,85,247,0.2)]">
@@ -180,6 +238,24 @@ export const OrdersTab: React.FC<OrdersTabProps> = ({ onGoToCatalog }) => {
                       <span>{order.promocode_code} (-{order.discount_amount.toFixed(2)} BYN)</span>
                     </div>
                   )}
+                  {order.bonus_discount_byn && order.bonus_discount_byn > 0 ? (
+                    <div className="flex items-center justify-between text-amber-300 font-semibold tabular-nums">
+                      <span>Оплата бонусами:</span>
+                      <span>−{order.bonus_discount_byn.toFixed(2)} BYN ({order.bonus_points_used || order.bonus_discount_byn * 100} бон.)</span>
+                    </div>
+                  ) : null}
+                  {order.delivery_paid_by_bonus && (
+                    <div className="flex items-center justify-between text-orange-300 font-semibold">
+                      <span>Доставка:</span>
+                      <span>Оплачена бонусами (500 бон.)</span>
+                    </div>
+                  )}
+                  {order.bonus_points_earned && order.bonus_points_earned > 0 ? (
+                    <div className="flex items-center justify-between text-emerald-300 font-semibold tabular-nums">
+                      <span>Начислено бонусов:</span>
+                      <span>+{order.bonus_points_earned} бон.</span>
+                    </div>
+                  ) : null}
                 </div>
 
                 {/* Items List */}

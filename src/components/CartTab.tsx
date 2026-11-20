@@ -27,11 +27,13 @@ import {
 interface CartTabProps {
   onGoToCatalog: () => void;
   onOrderCompleted: (orderId: number, total: number) => void;
+  onOpenLoyalty?: () => void;
 }
 
 export const CartTab: React.FC<CartTabProps> = ({
   onGoToCatalog,
   onOrderCompleted,
+  onOpenLoyalty,
 }) => {
   const {
     cart,
@@ -45,7 +47,6 @@ export const CartTab: React.FC<CartTabProps> = ({
     placeOrder,
     bundlePromotions,
     currentLoyaltyUser,
-    isAdmin,
   } = useStore();
 
   const [deliveryType, setDeliveryType] = useState<DeliveryType>('pickup');
@@ -58,10 +59,10 @@ export const CartTab: React.FC<CartTabProps> = ({
   const [promocodeMsg, setPromocodeMsg] = useState<{ text: string; isError: boolean } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-  // Experimental loyalty controls are strictly hidden from regular users during development
-  const canUseExperimentalLoyalty = isAdmin;
+  // Loyalty program is live for all customers
+  const canUseExperimentalLoyalty = true;
 
-  // Loyalty bonus redemption states (used only by admins while in development)
+  // Loyalty bonus redemption states
   const [bonusDiscountByn, setBonusDiscountByn] = useState<number>(0);
   const [payDeliveryWithBonuses, setPayDeliveryWithBonuses] = useState<boolean>(false);
 
@@ -71,9 +72,10 @@ export const CartTab: React.FC<CartTabProps> = ({
     return sum + (price || 0) * (item.quantity || 1);
   }, 0);
 
-  // User Loyalty info (only applied in UI/checkout when admin is testing experimental mode)
+  // User Loyalty info
   const userSpend = Number(currentLoyaltyUser?.total_spent_byn || 0);
   const userBonuses = Math.max(0, Math.floor(Number(currentLoyaltyUser?.bonus_balance ?? 100)));
+  const userSpins = Math.max(0, Math.floor(Number(currentLoyaltyUser?.wheel_spins ?? 0)));
   const userTier = getLoyaltyTierBySpend(userSpend);
 
   let discountAmount = 0;
@@ -501,25 +503,34 @@ export const CartTab: React.FC<CartTabProps> = ({
           )}
         </div>
 
-        {/* ================= EXPERIMENTAL LOYALTY BLOCK (ADMINS ONLY) ================= */}
+        {/* ================= LOYALTY & BONUS REDEMPTION BLOCK ================= */}
         {canUseExperimentalLoyalty && (
           <div className="p-3.5 rounded-2xl bg-gradient-to-br from-purple-950/50 via-[#151126] to-amber-950/30 border border-purple-500/30 space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Coins className="w-4 h-4 text-amber-400" />
-                <div>
-                  <div className="text-xs font-extrabold text-white flex items-center gap-1.5">
-                    <span>Списание бонусов</span>
-                    <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-orange-500/20 text-orange-300 border border-orange-500/40">
-                      ТЕСТ · АДМИН
-                    </span>
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <Coins className="w-4 h-4 text-amber-400 shrink-0" />
+                <div className="min-w-0">
+                  <div className="text-xs font-extrabold text-white truncate">
+                    Списание бонусов
                   </div>
-                  <div className="text-[10px] text-zinc-400">
-                    {userTier.badgeEmoji} {userTier.title} (до {userTier.maxDiscountPercent}%) • Доступно:{' '}
+                  <div className="text-[10px] text-zinc-400 tabular-nums">
+                    {userTier.badgeEmoji} {userTier.title} (до {userTier.maxDiscountPercent}%) · Доступно:{' '}
                     <strong className="text-amber-300">{userBonuses} бон.</strong>
                   </div>
                 </div>
               </div>
+              {onOpenLoyalty && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    hapticImpact('light');
+                    onOpenLoyalty();
+                  }}
+                  className="min-h-[36px] px-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-[11px] font-semibold text-purple-300 whitespace-nowrap shrink-0 transition-colors"
+                >
+                  {userSpins > 0 ? `Колесо (${userSpins}) →` : 'Бонусы →'}
+                </button>
+              )}
             </div>
 
             {/* Stepper in multiples of 100 bonuses = 1 BYN */}
@@ -544,9 +555,9 @@ export const CartTab: React.FC<CartTabProps> = ({
                     hapticSelection();
                     setBonusDiscountByn((prev) => Math.max(0, prev - 1));
                   }}
-                  className="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 disabled:opacity-30 flex items-center justify-center text-white font-bold text-xs"
+                  className="px-2 h-8 rounded-xl bg-white/10 hover:bg-white/20 disabled:opacity-30 flex items-center justify-center text-white font-bold text-[11px]"
                 >
-                  −1₽
+                  −1 BYN
                 </button>
                 <button
                   type="button"
@@ -555,9 +566,9 @@ export const CartTab: React.FC<CartTabProps> = ({
                     hapticSelection();
                     setBonusDiscountByn((prev) => Math.min(maxAllowedBonusByn, prev + 1));
                   }}
-                  className="w-8 h-8 rounded-xl bg-amber-500/25 hover:bg-amber-500/35 border border-amber-500/40 disabled:opacity-30 flex items-center justify-center text-amber-200 font-bold text-xs"
+                  className="px-2 h-8 rounded-xl bg-amber-500/25 hover:bg-amber-500/35 border border-amber-500/40 disabled:opacity-30 flex items-center justify-center text-amber-200 font-bold text-[11px]"
                 >
-                  +1₽
+                  +1 BYN
                 </button>
                 <button
                   type="button"

@@ -23,23 +23,19 @@ const MainContent: React.FC = () => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedPromotion, setSelectedPromotion] = useState<Promotion | null>(null);
   const [successOrderInfo, setSuccessOrderInfo] = useState<{ id: number; total: number } | null>(null);
-  const [isExperimentalLoyaltyOpen, setIsExperimentalLoyaltyOpen] = useState<boolean>(false);
+  const [isLoyaltyModalOpen, setIsLoyaltyModalOpen] = useState<boolean>(false);
+  const [loyaltyModalMode, setLoyaltyModalMode] = useState<'client' | 'admin'>('client');
 
   useEffect(() => {
     initTelegramApp();
   }, []);
 
-  // Strict guard: if activeTab is admin or experimental modal is open, enforce isAdmin
+  // Strict guard: only admin panel tab requires isAdmin
   useEffect(() => {
-    if (!isAdmin) {
-      if (activeTab === 'admin') {
-        setActiveTab('home');
-      }
-      if (isExperimentalLoyaltyOpen) {
-        setIsExperimentalLoyaltyOpen(false);
-      }
+    if (!isAdmin && activeTab === 'admin') {
+      setActiveTab('home');
     }
-  }, [activeTab, isAdmin, isExperimentalLoyaltyOpen]);
+  }, [activeTab, isAdmin]);
 
   const handleNavigateToCatalog = (categorySlug: string = 'all') => {
     setCatalogInitialCategory(categorySlug);
@@ -59,9 +55,9 @@ const MainContent: React.FC = () => {
     setSuccessOrderInfo({ id: orderId, total });
   };
 
-  const handleOpenExperimentalMenu = () => {
-    if (!isAdmin) return;
-    setIsExperimentalLoyaltyOpen(true);
+  const handleOpenLoyalty = (mode: 'client' | 'admin' = 'client') => {
+    setLoyaltyModalMode(mode === 'admin' && isAdmin ? 'admin' : 'client');
+    setIsLoyaltyModalOpen(true);
   };
 
   return (
@@ -101,6 +97,7 @@ const MainContent: React.FC = () => {
               onNavigateToPrizes={() => setActiveTab('prizes')}
               onSelectProduct={(p) => setSelectedProduct(p)}
               onSelectPromotion={(promo) => setSelectedPromotion(promo)}
+              onOpenLoyalty={() => handleOpenLoyalty('client')}
             />
           )}
 
@@ -115,15 +112,22 @@ const MainContent: React.FC = () => {
             <CartTab
               onGoToCatalog={() => handleNavigateToCatalog('all')}
               onOrderCompleted={handleOrderCompleted}
+              onOpenLoyalty={() => handleOpenLoyalty('client')}
             />
           )}
 
           {activeTab === 'prizes' && (
-            <PrizesTab onSelectPromotion={(promo) => setSelectedPromotion(promo)} />
+            <PrizesTab
+              onSelectPromotion={(promo) => setSelectedPromotion(promo)}
+              onOpenLoyalty={() => handleOpenLoyalty('client')}
+            />
           )}
 
           {activeTab === 'orders' && (
-            <OrdersTab onGoToCatalog={() => handleNavigateToCatalog('all')} />
+            <OrdersTab
+              onGoToCatalog={() => handleNavigateToCatalog('all')}
+              onOpenLoyalty={() => handleOpenLoyalty('client')}
+            />
           )}
 
           {activeTab === 'admin' && (
@@ -131,11 +135,11 @@ const MainContent: React.FC = () => {
           )}
         </main>
 
-        {/* Bottom Floating Navigation (experimental menu strictly opens via 5 rapid taps on Admin for admins only) */}
+        {/* Bottom Floating Navigation (5 rapid taps on Admin opens loyalty management directly for admins) */}
         <BottomNav
           activeTab={activeTab}
           onTabChange={handleTabChange}
-          onOpenExperimentalMenu={handleOpenExperimentalMenu}
+          onOpenExperimentalMenu={() => handleOpenLoyalty('admin')}
         />
 
         {/* Modals */}
@@ -162,10 +166,11 @@ const MainContent: React.FC = () => {
           />
         )}
 
-        {isAdmin && isExperimentalLoyaltyOpen && (
+        {isLoyaltyModalOpen && (
           <ExperimentalLoyaltyModal
-            isOpen={isExperimentalLoyaltyOpen}
-            onClose={() => setIsExperimentalLoyaltyOpen(false)}
+            isOpen={isLoyaltyModalOpen}
+            initialMode={loyaltyModalMode}
+            onClose={() => setIsLoyaltyModalOpen(false)}
           />
         )}
       </div>

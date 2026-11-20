@@ -5,12 +5,14 @@ import { Sparkles, Tag, MessageCircle, ArrowRight, Flame, Percent, ChevronRight 
 import { openTelegramOrWeb, hapticImpact } from '../services/telegram';
 import { ProductImage } from './ProductImage';
 import { useHorizontalScroll } from '../hooks/useHorizontalScroll';
+import { getLoyaltyTierBySpend, BONUS_PER_BYN_REDEEM } from '../utils/loyalty';
 
 interface HomeTabProps {
   onNavigateToCatalog: (categorySlug?: string) => void;
   onNavigateToPrizes: () => void;
   onSelectProduct: (product: Product) => void;
   onSelectPromotion: (promo: Promotion) => void;
+  onOpenLoyalty: () => void;
 }
 
 export const HomeTab: React.FC<HomeTabProps> = ({
@@ -18,8 +20,13 @@ export const HomeTab: React.FC<HomeTabProps> = ({
   onNavigateToPrizes,
   onSelectProduct,
   onSelectPromotion,
+  onOpenLoyalty,
 }) => {
-  const { settings, categories, catalogProducts, promotions, brands } = useStore();
+  const { settings, categories, catalogProducts, promotions, brands, currentLoyaltyUser } = useStore();
+  const userSpend = Math.max(0, Number(currentLoyaltyUser?.total_spent_byn) || 0);
+  const userBonuses = Math.max(0, Math.floor(Number(currentLoyaltyUser?.bonus_balance ?? 0)));
+  const userSpins = Math.max(0, Math.floor(Number(currentLoyaltyUser?.wheel_spins ?? 0)));
+  const userTier = getLoyaltyTierBySpend(userSpend);
 
   const promoScrollRef = useHorizontalScroll();
   const categoryScrollRef = useHorizontalScroll();
@@ -133,6 +140,53 @@ export const HomeTab: React.FC<HomeTabProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Loyalty & Prize Wheel Banner */}
+      <button
+        type="button"
+        onClick={() => {
+          hapticImpact('medium');
+          onOpenLoyalty();
+        }}
+        className="w-full text-left relative overflow-hidden rounded-3xl p-4 bg-gradient-to-br from-[#1b1233] via-[#131024] to-[#23141f] border border-purple-500/35 hover:border-amber-400/50 transition-all shadow-[0_10px_30px_rgba(0,0,0,0.45)] tap-active block"
+      >
+        <div className="absolute -right-10 -top-10 w-32 h-32 rounded-full bg-amber-500/15 blur-2xl pointer-events-none" />
+        <div className="relative z-10 flex items-center gap-3.5">
+          <div className="relative w-[74px] h-[74px] rounded-2xl overflow-hidden border border-amber-400/40 bg-gradient-to-br from-purple-700/40 via-[#151029] to-amber-500/30 shrink-0 shadow-[0_0_20px_rgba(168,85,247,0.3)] flex items-center justify-center">
+            <span className="text-2xl select-none" aria-hidden="true">🎁</span>
+            <img
+              src="/promo/frame_2_wheel.jpg"
+              alt="Колесо призов"
+              referrerPolicy="no-referrer"
+              className="absolute inset-0 w-full h-full object-cover object-center scale-110"
+              onError={(e) => {
+                (e.currentTarget as HTMLImageElement).style.display = 'none';
+              }}
+            />
+          </div>
+
+          <div className="flex-1 min-w-0">
+            <div className="text-[11px] font-semibold text-amber-300 tabular-nums truncate">
+              {userTier.badgeEmoji} {userTier.title} · {userBonuses} бон. ({Math.floor(userBonuses / BONUS_PER_BYN_REDEEM)} BYN)
+            </div>
+            <h3 className="text-sm font-black text-white tracking-tight mt-0.5 leading-snug">
+              Колесо призов и бонусы
+            </h3>
+            <p className="text-[11px] text-zinc-300 mt-0.5 leading-snug">
+              {userSpins > 0
+                ? `Доступно круток: ${userSpins} шт. — забирайте бонусы прямо сейчас`
+                : 'Копите баллы с покупок и оплачивайте до 12% заказа'}
+            </p>
+          </div>
+        </div>
+
+        <div className="relative z-10 mt-3 pt-2.5 border-t border-white/10 flex items-center justify-between text-xs font-bold">
+          <span className={userSpins > 0 ? 'text-amber-300' : 'text-purple-300'}>
+            {userSpins > 0 ? `Крутить колесо (${userSpins})` : 'Открыть бонусы и уровни'}
+          </span>
+          <ArrowRight className={`w-4 h-4 ${userSpins > 0 ? 'text-amber-300' : 'text-purple-300'}`} />
+        </div>
+      </button>
 
       {/* Section: Акции */}
       <section>

@@ -116,23 +116,23 @@ const HELP_CONTENT: Record<
   },
   wheel: {
     title: 'Как работает Колесо призов',
-    subtitle: 'Тестирование и просмотр колеса от имени выбранного клиента.',
+    subtitle: 'Крутите колесо и выигрывайте бонусные баллы для оплаты заказов и доставки.',
     bullets: [
       {
-        heading: 'Выбор клиента',
-        text: 'Колесо всегда крутится для того клиента, который выбран в верхней панели (по умолчанию — ваш профиль).',
+        heading: 'Как получить крутки',
+        text: '1 приветственную крутку вы получаете сразу на стартовом уровне BROZNE. Новые крутки начисляются автоматически при переходе на следующий уровень лояльности.',
       },
       {
-        heading: 'Мгновенное сохранение в базу',
-        text: 'После запуска 1 крутка списывается, выигрыш добавляется к балансу и записывается в историю прокрутов в Firestore.',
+        heading: 'Мгновенное зачисление приза',
+        text: 'За один запуск используется 1 крутка, а выигранные бонусы сразу зачисляются на ваш баланс.',
       },
       {
-        heading: 'Если круток 0',
-        text: 'Вы можете добавить крутку прямо здесь кнопкой «+1 крутка» или на вкладке «Управление».',
+        heading: 'Как потратить бонусы',
+        text: '100 бонусов = 1 BYN. Бонусами можно оплатить часть заказа в корзине (в пределах лимита вашего уровня) или полностью оплатить доставку за 500 бонусов.',
       },
     ],
     example:
-      'Нажмите «Крутить колесо» — стрелка остановится на выпавшем секторе, а бонусы сразу появятся на балансе клиента.',
+      'Нажмите «Крутить колесо» — стрелка укажет на ваш приз, и бонусы сразу станут доступны при оформлении заказа.',
   },
 };
 
@@ -191,6 +191,13 @@ export const ExperimentalLoyaltyModal: React.FC<ExperimentalLoyaltyModalProps> =
     };
   }, []);
 
+  // Sync initialMode whenever modal opens; regular customers are strictly locked to client mode
+  useEffect(() => {
+    if (isOpen) {
+      setActiveMode(isAdmin ? initialMode : 'client');
+    }
+  }, [isOpen, initialMode, isAdmin]);
+
   // Ensure selectedUserId points to a valid user when modal opens
   useEffect(() => {
     if (isOpen && currentLoyaltyUser?.id) {
@@ -207,11 +214,12 @@ export const ExperimentalLoyaltyModal: React.FC<ExperimentalLoyaltyModalProps> =
     setSpinError(null);
   }, [selectedUserId]);
 
-  // Active target user (always reflects live Firestore/local state)
+  // Active target user (regular customers always see ONLY their own Telegram profile)
   const targetClientUser: ShopUser = useMemo(() => {
+    if (!isAdmin) return currentLoyaltyUser;
     const found = users.find((u) => Number(u.id) === Number(selectedUserId));
     return found || currentLoyaltyUser;
-  }, [users, selectedUserId, currentLoyaltyUser]);
+  }, [isAdmin, users, selectedUserId, currentLoyaltyUser]);
 
   const userSpend = Math.max(0, Number(targetClientUser?.total_spent_byn) || 0);
   const userBonuses = Math.max(0, Math.floor(Number(targetClientUser?.bonus_balance ?? 0)));
@@ -235,8 +243,7 @@ export const ExperimentalLoyaltyModal: React.FC<ExperimentalLoyaltyModalProps> =
     );
   }, [users, searchQuery]);
 
-  // STRICT ADMIN GUARD
-  if (!isOpen || !isAdmin) return null;
+  if (!isOpen) return null;
 
   const showToast = (msg: string) => {
     setAdminToast(msg);
@@ -252,7 +259,7 @@ export const ExperimentalLoyaltyModal: React.FC<ExperimentalLoyaltyModalProps> =
     setLastWonBonus(null);
 
     if (userSpins <= 0) {
-      setSpinError('У клиента нет доступных круток. Нажмите «+1 крутка» ниже или добавьте на вкладке «Управление».');
+      setSpinError('У вас пока нет доступных круток. Совершайте покупки и повышайте уровень, чтобы получать новые прокруты!');
       hapticNotification('error');
       return;
     }
@@ -395,7 +402,9 @@ export const ExperimentalLoyaltyModal: React.FC<ExperimentalLoyaltyModalProps> =
               Лояльность и Колесо призов
             </h2>
             <p className="text-[11px] text-zinc-400 truncate">
-              Экспериментальный режим администратора
+              {activeMode === 'admin'
+                ? 'Панель управления программой лояльности'
+                : 'Копите бонусы, повышайте уровень и выигрывайте призы'}
             </p>
           </div>
 
@@ -411,7 +420,8 @@ export const ExperimentalLoyaltyModal: React.FC<ExperimentalLoyaltyModalProps> =
           </button>
         </div>
 
-        {/* Active Client Strip + Mode Switcher */}
+        {/* Active Client Strip + Mode Switcher (Admins only) */}
+        {isAdmin && (
         <div className="px-4 pt-3 pb-3 bg-[#100e1d] border-b border-white/10 space-y-2.5 shrink-0">
           {/* Active Client Quick Bar (clickable to switch user from ANY tab) */}
           <button
@@ -590,6 +600,7 @@ export const ExperimentalLoyaltyModal: React.FC<ExperimentalLoyaltyModalProps> =
             </button>
           </div>
         </div>
+        )}
 
         {/* Live Toast Banner */}
         {adminToast && (
@@ -601,7 +612,7 @@ export const ExperimentalLoyaltyModal: React.FC<ExperimentalLoyaltyModalProps> =
 
         {/* Main Scrollable Content */}
         <div className="flex-1 overflow-y-auto p-4 space-y-5">
-          {activeMode === 'client' ? (
+          {!isAdmin || activeMode === 'client' ? (
             <>
               {/* 1. Compact Status Summary Card */}
               <div
@@ -783,7 +794,7 @@ export const ExperimentalLoyaltyModal: React.FC<ExperimentalLoyaltyModalProps> =
                   </div>
                 )}
 
-                {/* Spin CTA + quick test refill if 0 spins */}
+                {/* Spin CTA */}
                 <div className="space-y-2">
                   <button
                     type="button"
@@ -799,13 +810,9 @@ export const ExperimentalLoyaltyModal: React.FC<ExperimentalLoyaltyModalProps> =
                   </button>
 
                   {userSpins === 0 && !isSpinning && (
-                    <button
-                      type="button"
-                      onClick={() => handleAdjustSpins(1)}
-                      className="w-full min-h-[42px] px-4 rounded-xl text-xs font-semibold text-purple-200 bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/30 transition-colors"
-                    >
-                      + Выдать 1 крутку клиенту прямо сейчас
-                    </button>
+                    <p className="text-[11px] text-zinc-400 text-center px-2">
+                      Новые крутки начисляются автоматически при переходе на следующий уровень лояльности
+                    </p>
                   )}
                 </div>
 
@@ -832,7 +839,7 @@ export const ExperimentalLoyaltyModal: React.FC<ExperimentalLoyaltyModalProps> =
                   <div className="pt-3 border-t border-white/10 space-y-2">
                     <div className="text-[11px] font-medium text-zinc-400 flex items-center gap-1.5">
                       <History className="w-3.5 h-3.5" />
-                      <span>Последние прокруты клиента</span>
+                      <span>История ваших прокрутов</span>
                     </div>
                     <div className="space-y-1.5 max-h-28 overflow-y-auto">
                       {spinHistory.slice(0, 6).map((item) => (
